@@ -119,6 +119,7 @@ export default function JobApplications() {
   }
 
   return (
+  <>
     <div className="min-h-screen bg-main">
       <div className="bg-white border-b-4 border-black p-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -219,10 +220,9 @@ export default function JobApplications() {
             </div>
           </div>
         )}
-          </div>
-        )}
       </div>
     </div>
+  </>
   );
 }
 
