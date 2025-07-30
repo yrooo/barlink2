@@ -146,7 +146,7 @@ export default function JobApplications() {
               <h2 className="text-xl font-bold">Total Pelamar: {applications.length}</h2>
             </div>
 
-            {applications.map((application: any) => (
+            {applications.map((application: Application) =>(
               <div 
                 key={application._id} 
                 className="bg-white p-4 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:bg-gray-50"

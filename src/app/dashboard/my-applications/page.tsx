@@ -43,9 +43,9 @@ export default function MyApplicationsPage() {
         }
         const data: ApplicationWithJobDetails[] = await response.json();
         setApplications(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching applications:", err);
-        setError(err.message || 'An unknown error occurred.');
+        setError(err instanceof Error ? err.message : 'An unknown error occurred.');
       } finally {
         setLoading(false);
       }

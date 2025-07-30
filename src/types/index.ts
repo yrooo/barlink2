@@ -53,7 +53,7 @@ export interface Application {
   answers: {
     questionId: string;
     question: string;
-    answer: any;
+    answer: string | string[];
   }[];
   status: 'pending' | 'reviewed' | 'accepted' | 'rejected';
   notes?: string;

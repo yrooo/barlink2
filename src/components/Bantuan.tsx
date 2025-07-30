@@ -18,7 +18,7 @@ interface FAQItem {
 
 export default function BantuanPage() {
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [openFAQ, setOpenFAQ] = useState<number | null>(null);
+
 
   const faqs: FAQItem[] = [
     {
@@ -75,9 +75,7 @@ export default function BantuanPage() {
     ? faqs 
     : faqs.filter(faq => faq.category === activeCategory);
 
-  const toggleFAQ = (index: number) => {
-    setOpenFAQ(openFAQ === index ? null : index);
-  };
+
 
   return (
     <div id="bantuan" className="min-h-screen bg-gray-50 py-16">

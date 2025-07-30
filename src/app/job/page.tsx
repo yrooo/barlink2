@@ -14,10 +14,10 @@ interface JobApplicationProps {
 
 const JobApplication = ({ job, onClose }: JobApplicationProps) => {
   const { data: session } = useSession();
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [loading, setLoading] = useState(false);
 
-  const handleAnswerChange = (questionId: string, value: any) => {
+  const handleAnswerChange = (questionId: string, value: string | string[]) => {
     setAnswers(prev => ({
       ...prev,
       [questionId]: value

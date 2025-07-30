@@ -33,7 +33,7 @@ export default function ProfilePage() {
     }
 
     // Session exists, initialize form data for any role
-    const initialFormData: any = {
+    const initialFormData: Record<string, string> = {
       name: session.user.name || '',
       email: session.user.email || '',
       phone: session.user.phone || '', // Make sure session.user.phone is part of your session type
