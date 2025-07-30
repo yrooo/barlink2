@@ -6,7 +6,7 @@ import Application from '@/lib/models/Application';
 import Job from '@/lib/models/Job'; // Ensure Job model is imported to populate jobDetails
 import User from '@/lib/models/User'; // Ensure User model is imported for applicantId population if needed elsewhere
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 

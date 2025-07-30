@@ -18,22 +18,6 @@ export default function JobApplications() {
   const [loading, setLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (!session) {
-      router.push('/auth/signin');
-      return;
-    }
-
-    if (session.user.role !== 'pencari_kandidat') {
-      router.push('/');
-      return;
-    }
-
-    fetchJobAndApplications();
-  }, [session, status, router, jobId]);
-
   const fetchJobAndApplications = async () => {
     try {
       // Fetch job details
@@ -55,6 +39,24 @@ export default function JobApplications() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (status === 'loading') {
+      return;
+    }
+
+    if (!session) {
+      router.push('/auth/signin');
+      return;
+    }
+
+    if (session.user.role !== 'pencari_kandidat') {
+      router.push('/');
+      return;
+    }
+
+    fetchJobAndApplications();
+  }, [session, status, router, jobId, fetchJobAndApplications]);
 
   const updateApplicationStatus = async (applicationId: string, status: string, notes?: string) => {
     try {

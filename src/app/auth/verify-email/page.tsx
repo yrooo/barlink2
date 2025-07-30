@@ -39,7 +39,8 @@ export default function VerifyEmail() {
         } else if (response.status === 400 && data.error === 'Token has expired or is invalid.') {
           setMessage('Link verifikasi telah kadaluarsa atau tidak valid. Silakan daftar ulang atau minta link baru.');
         } else {
-          setMessage(data.message || 'An error occurred during verification.');
+        } else {
+          setMessage(data.error || 'Email verification failed.');
         }
       } catch (error) {
         setMessage('An error occurred during verification.');
@@ -60,7 +61,7 @@ export default function VerifyEmail() {
           <p className="text-gray-700">Verifying your email...</p>
         ) : (
           <>
-            <p className="text-gray-700 mb-4 text-sm">{message}</p>
+            <p className="text-gray-700 mb-4">{message}</p>
             {!loading && message.includes('berhasil diverifikasi') && (
               <p className="text-gray-700">Redirecting to sign-in page...</p>
             )}

@@ -73,7 +73,7 @@ export default function CreateJob() {
     ]);
   };
 
-  const updateCustomQuestion = (index: number, field: keyof CustomQuestion, value: any) => {
+  const updateCustomQuestion = (index: number, field: keyof CustomQuestion, value: string | boolean | string[]) => {
     const updated = [...customQuestions];
     updated[index] = { ...updated[index], [field]: value };
     setCustomQuestions(updated);

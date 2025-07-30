@@ -73,7 +73,7 @@ export default function SignUp() {
       } else {
         setError(data.error || 'Terjadi kesalahan saat mendaftar');
       }
-    } catch (error) {
+    } catch (_error) {
       setError('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
       setLoading(false);
