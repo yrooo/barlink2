@@ -120,7 +120,6 @@ export default function JobApplications() {
 
   return (
     <div className="min-h-screen bg-main">
-      {/* Header */}
       <div className="bg-white border-b-4 border-black p-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
@@ -163,13 +162,15 @@ export default function JobApplications() {
                 </div>
               </div>
             ))}
-          {selectedApplication && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"> {/* Assuming bg-black bg-opacity-50 is visually similar to bg-overlay. If bg-overlay is defined and different, use that. */}
+          </div>
+        )}
+        {selectedApplication && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6"> {/* Added inner div for padding */}
-                <div className="flex items-center justify-between mb-6"> {/* Adjusted header classes */}
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl font-black">{selectedApplication.applicantId?.name}</h2> {/* font-black for title */}
+                    <h2 className="text-2xl font-black">{selectedApplication.applicantId?.name}</h2>
                     {selectedApplication.applicantId?.email && (
                       <p className="text-gray-600 text-sm mt-1">{selectedApplication.applicantId.email}</p>
                     )}
@@ -177,28 +178,27 @@ export default function JobApplications() {
                   <Button 
                     onClick={() => setSelectedApplication(null)}
                     variant="neutral" 
-                    size="sm" /* Use Button component for close */
+                    size="sm"
                   >
                     Tutup
                   </Button>
                 </div>
 
-                {/* Display answers and action buttons here */}
-                <div className="border-t-2 border-gray-200 pt-6"> {/* Wrapper for answers section */}
+                <div className="border-t-2 border-gray-200 pt-6">
                   <h3 className="text-xl font-bold mb-4">Jawaban Pelamar</h3>
                   <div className="space-y-4">
                     {selectedApplication.answers?.map((answer, index) => (
                       <div key={index} className="border-b pb-4">
-                        <h4 className="text-md font-semibold mb-1">{answer.question}</h4> {/* Adjusted question styling */}
+                        <h4 className="text-md font-semibold mb-1">{answer.question}</h4>
                         <p className="text-gray-700">{Array.isArray(answer.answer) ? answer.answer.join(', ') : answer.answer}</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-4 pt-6 border-t-2 border-gray-200 mt-6"> {/* Adjusted footer classes */}
+                <div className="flex justify-end space-x-4 pt-6 border-t-2 border-gray-200 mt-6">
                   <Button 
-                    variant="neutral" // "Tolak" button should be neutral, "Terima" is primary
+                    variant="neutral"
                     onClick={() => {
                       updateApplicationStatus(selectedApplication._id, 'rejected', 'Maaf, Anda belum memenuhi kriteria');
                       setSelectedApplication(null);
