@@ -254,7 +254,7 @@ export default function CreateJob() {
               <Button 
                 type="button"
                 onClick={addCustomQuestion}
-                variant=""
+                variant="default"
               >
                 + Tambah Pertanyaan
               </Button>
