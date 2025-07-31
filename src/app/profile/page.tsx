@@ -280,7 +280,7 @@ export default function ProfilePage() {
                 <h3 className="font-bold text-red-600">Hapus Akun</h3>
                 <p className="text-sm text-gray-600">Hapus akun dan semua data Anda secara permanen</p>
               </div>
-              <Button variant="destructive" size="sm">
+              <Button variant="default" size="sm">
                 Hapus Akun
               </Button>
             </div>
