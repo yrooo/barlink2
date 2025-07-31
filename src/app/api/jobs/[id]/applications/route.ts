@@ -7,7 +7,7 @@ import Job from '@/lib/models/Job';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,8 +22,10 @@ export async function GET(
     await dbConnect();
     
     // Verify job belongs to the employer
+    const resolvedParams = await context.params;
+    const id = resolvedParams.id;
     const job = await Job.findOne({
-      _id: params.id,
+      _id: id,
       employerId: session.user.id
     });
     
@@ -34,7 +36,7 @@ export async function GET(
       );
     }
     
-    const applications = await Application.find({ jobId: params.id })
+    const applications = await Application.find({ jobId: id })
       .populate('applicantId', 'name email')
       .sort({ createdAt: -1 });
     
