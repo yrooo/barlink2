@@ -142,7 +142,7 @@ export default function BerandaPage() {
           </div>
 
           <div className="text-center">
-            <Button asChild size="lg" variant="outline">
+            <Button asChild size="lg" variant="default">
               <Link href="/job?type=seek">Lihat Semua Lowongan →</Link>
             </Button>
           </div>
@@ -261,7 +261,7 @@ export default function BerandaPage() {
               <Button asChild size="lg" className="bg-white text-main hover:bg-black hover:text-white border-2 border-black">
                 <Link href="/job">Mulai Cari Kerja</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-black hover:text-white hover:border-black">
+              <Button asChild size="lg" variant="default" className="border-white text-white hover:bg-black hover:text-white hover:border-black">
                 <Link href="#marketplace">Jelajahi Marketplace</Link>
               </Button>
             </div>
@@ -270,7 +270,7 @@ export default function BerandaPage() {
               <Button asChild size="lg" className="bg-white text-main hover:bg-black hover:text-white border-2 border-black">
                 <Link href="/auth/signup">Daftar Sekarang</Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-black hover:text-white hover:border-black">
+              <Button asChild size="lg" variant="default" className="border-white text-white hover:bg-black hover:text-white hover:border-black">
                 <Link href="/auth/signin">Masuk</Link>
               </Button>
             </div>
