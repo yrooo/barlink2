@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import dbConnect from '@/lib/mongodb';
@@ -6,7 +6,7 @@ import Application from '@/lib/models/Application';
 import Job from '@/lib/models/Job'; // Ensure Job model is imported to populate jobDetails
 import User from '@/lib/models/User'; // Ensure User model is imported for applicantId population if needed elsewhere
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
 

@@ -40,7 +40,7 @@ export default function SignIn() {
           router.push('/job?type=seek');
         }
       }
-    } catch (_error) {
+    } catch {
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);

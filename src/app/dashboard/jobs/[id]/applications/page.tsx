@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Application, Job } from '@/types';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ export default function JobApplications() {
   const [loading, setLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
 
-  const fetchJobAndApplications = async () => {
+  const fetchJobAndApplications = useCallback(async () => {
     try {
       // Fetch job details
       const jobResponse = await fetch(`/api/jobs/${jobId}`);
@@ -38,7 +38,7 @@ export default function JobApplications() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [jobId]);
 
   useEffect(() => {
     if (status === 'loading') {
