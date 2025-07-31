@@ -22,7 +22,7 @@ export async function PATCH(
     
     // Verify application belongs to the employer
     const application = await Application.findOne({ 
-      _id: context.params.id, 
+      _id: params.id, 
       employerId: session.user.id 
     });
     
@@ -37,7 +37,7 @@ export async function PATCH(
     const { status, notes } = body;
     
     const updatedApplication = await Application.findByIdAndUpdate(
-      context.params.id,
+      params.id,
       { status, notes },
       { new: true }
     ).populate('applicantId', 'name email');
