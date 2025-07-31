@@ -6,7 +6,7 @@ declare module 'next-auth' {
       id: string;
       role: 'pelamar_kerja' | 'pencari_kandidat';
       company?: string;
-      profile?: { phone?: string; };
+      profile?: { phone?: string; description?: string; website?: string; location?: string; };
     } & DefaultSession['user'];
   }
 

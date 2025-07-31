@@ -41,9 +41,9 @@ export default function ProfilePage() {
 
     if (session.user.role === 'pencari_kandidat') {
       initialFormData.company = session.user.company || '';
-      initialFormData.description = session.user.description || '';
-      initialFormData.website = session.user.website || '';
-      initialFormData.location = session.user.location || '';
+      initialFormData.description = session.user.profile?.description || '';
+      initialFormData.website = session.user.profile?.website || '';
+      initialFormData.location = session.user.profile?.location || '';
     }
     setFormData(initialFormData);
 
