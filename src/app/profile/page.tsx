@@ -36,7 +36,7 @@ export default function ProfilePage() {
     const initialFormData: Record<string, string> = {
       name: session.user.name || '',
       email: session.user.email || '',
-      phone: session.user.phone || '', // Make sure session.user.phone is part of your session type
+      phone: session.user.profile?.phone || '', // Make sure session.user.profile.phone is part of your session type
     };
 
     if (session.user.role === 'pencari_kandidat') {
