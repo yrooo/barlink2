@@ -48,7 +48,7 @@ export interface Job {
 export interface Application {
   _id: string;
   jobId: string;
-  applicantId: string;
+  applicantId: string | User;
   employerId: string;
   answers: {
     questionId: string;

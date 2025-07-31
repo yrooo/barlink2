@@ -156,8 +156,8 @@ export default function JobApplications() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-bold">{application.applicantId?.name}</h3>
-                    <p className="text-gray-600 text-sm">{application.applicantId?.email}</p>
+                    <h3 className="text-lg font-bold">{(application.applicantId as User)?.name}</h3>
+                    <p className="text-gray-600 text-sm">{(application.applicantId as User)?.email}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.status)}`}>
                     {getStatusText(application.status)}
@@ -173,9 +173,9 @@ export default function JobApplications() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-2xl font-black">{selectedApplication.applicantId?.name}</h2>
-                    {selectedApplication.applicantId?.email && (
-                      <p className="text-gray-600 text-sm mt-1">{selectedApplication.applicantId.email}</p>
+                    <h2 className="text-2xl font-black">{(selectedApplication.applicantId as User)?.name}</h2>
+                    {(selectedApplication.applicantId as User)?.email && (
+                      <p className="text-gray-600 text-sm mt-1">{(selectedApplication.applicantId as User).email}</p>
                     )}
                   </div>
                   <Button 
