@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Application, Job } from '@/types';
+import { Application, Job, User } from '@/types';
 import Link from 'next/link';
 
 export default function JobApplications() {
