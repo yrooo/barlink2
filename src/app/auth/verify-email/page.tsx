@@ -39,7 +39,7 @@ export default function VerifyEmail() {
         } else if (response.status === 400 && data.error === 'Token has expired or is invalid.') {
           setMessage('Link verifikasi telah kadaluarsa atau tidak valid. Silakan daftar ulang atau minta link baru.');
         } else {
-          setMessage(data.error || 'Email verification failed.');
+          setMessage(data.error || 'Verifikasi email gagal.');
         }
       } catch (error) {
         setMessage('An error occurred during verification.');
