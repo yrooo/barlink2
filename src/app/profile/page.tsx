@@ -33,18 +33,15 @@ export default function ProfilePage() {
     }
 
     // Session exists, initialize form data for any role
-    const initialFormData: Record<string, string> = {
+    const initialFormData = {
       name: session.user.name || '',
       email: session.user.email || '',
-      phone: session.user.profile?.phone || '', // Make sure session.user.profile.phone is part of your session type
+      phone: session.user.profile?.phone || '',
+      company: session.user.company || '',
+      description: session.user.profile?.description || '',
+      website: session.user.profile?.website || '',
+      location: session.user.profile?.location || '',
     };
-
-    if (session.user.role === 'pencari_kandidat') {
-      initialFormData.company = session.user.company || '';
-      initialFormData.description = session.user.profile?.description || '';
-      initialFormData.website = session.user.profile?.website || '';
-      initialFormData.location = session.user.profile?.location || '';
-    }
     setFormData(initialFormData);
 
   }, [session, status, router]);
