@@ -21,7 +21,6 @@ export async function PATCH(
     await dbConnect();
     
     // Verify application belongs to the employer
-    const application = await Application.findOne({ 
     const resolvedParams = await context.params;
     const id = resolvedParams.id;
     const application = await Application.findOne({
