@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import Job from '@/lib/models/Job';
 
@@ -80,4 +80,5 @@ export async function PATCH(
     );
   }
 }
+
 
