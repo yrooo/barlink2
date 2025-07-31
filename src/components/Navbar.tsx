@@ -86,7 +86,7 @@ export default function UpdatedNavbar() {
             {session ? (
               <DropdownMenu open={isProfileDropdownOpen} onOpenChange={setIsProfileDropdownOpen}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Button variant="neutral" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10 border-2 border-black">
                       <AvatarImage src={session.user.image || ''} alt={session.user.name || 'User'} />
                       <AvatarFallback>{session.user.name ? session.user.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
