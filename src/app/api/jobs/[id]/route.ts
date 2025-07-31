@@ -6,12 +6,14 @@ import Job from '@/lib/models/Job';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     await dbConnect();
     
-    const job = await Job.findById(params.id)
+    const resolvedParams = await context.params;
+    const id = resolvedParams.id;
+    const job = await Job.findById(id)
       .populate('employerId', 'name company');
     
     if (!job) {
@@ -33,7 +35,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -48,8 +50,10 @@ export async function PATCH(
     await dbConnect();
     
     // Verify job belongs to the employer
+    const resolvedParams = await context.params;
+    const id = resolvedParams.id;
     const job = await Job.findOne({ 
-      _id: params.id, 
+      _id: id, 
       employerId: session.user.id 
     });
     
@@ -62,7 +66,7 @@ export async function PATCH(
     
     const body = await request.json();
     const updatedJob = await Job.findByIdAndUpdate(
-      params.id,
+      id,
       body,
       { new: true }
     );
