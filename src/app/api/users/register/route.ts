@@ -91,7 +91,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Return user without password
-    const { password: _password, ...userWithoutPassword } = user.toObject();  return NextResponse.json(
+    const userObject = user.toObject();
+    delete userObject.password;
+    const userWithoutPassword = userObject;  return NextResponse.json(
       { 
         message: 'User created successfully. Please check your email to verify your account.',
         user: userWithoutPassword 
