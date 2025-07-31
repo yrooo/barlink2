@@ -6,7 +6,7 @@ import Application from '@/lib/models/Application';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -22,8 +22,11 @@ export async function PATCH(
     
     // Verify application belongs to the employer
     const application = await Application.findOne({ 
-      _id: params.id, 
-      employerId: session.user.id 
+    const resolvedParams = await context.params;
+    const id = resolvedParams.id;
+    const application = await Application.findOne({
+      _id: id,
+      employerId: session.user.id
     });
     
     if (!application) {
@@ -37,7 +40,7 @@ export async function PATCH(
     const { status, notes } = body;
     
     const updatedApplication = await Application.findByIdAndUpdate(
-      params.id,
+      id,
       { status, notes },
       { new: true }
     ).populate('applicantId', 'name email');
