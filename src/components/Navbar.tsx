@@ -63,19 +63,19 @@ export default function UpdatedNavbar() {
             </button>
             <button
               onClick={() => scrollToSection('tentang-kami')}
-              className="text-black hover:text-main font-semibold transition-colors duration-200"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 hover:rotate-1 duration-300"
             >
               Tentang Kami
             </button>
             <button
               onClick={() => scrollToSection('bantuan')}
-              className="text-black hover:text-main font-semibold transition-colors duration-200"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 hover:rotate-1 duration-300"
             >
               Bantuan
             </button>
             <Link
               href="/job?type=seek"
-              className="text-black hover:text-main font-semibold transition-colors duration-200"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 hover:rotate-1 duration-300"
             >
               Lowongan Kerja
             </Link>
@@ -86,7 +86,7 @@ export default function UpdatedNavbar() {
             {session ? (
               <DropdownMenu open={isProfileDropdownOpen} onOpenChange={setIsProfileDropdownOpen}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="neutral" className="relative h-10 w-10 rounded-full">
+                  <Button variant="noShadow" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10 border-2 border-black">
                       <AvatarImage src={session.user.image || ''} alt={session.user.name || 'User'} />
                       <AvatarFallback>{session.user.name ? session.user.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
