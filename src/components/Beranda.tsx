@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -24,6 +25,7 @@ interface Job {
 // }
 
 export default function BerandaPage() {
+  const { data } = useSession();
   const [jobs, setJobs] = useState<Job[]>([]);
   // const [marketplaceItems] = useState<MarketplaceItem[]>([
   //   {
