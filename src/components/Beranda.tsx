@@ -25,7 +25,7 @@ interface Job {
 // }
 
 export default function BerandaPage() {
-  const { data: session } = useSession();
+  const { data } = useSession();
   const [jobs, setJobs] = useState<Job[]>([]);
   // const [marketplaceItems] = useState<MarketplaceItem[]>([
   //   {
