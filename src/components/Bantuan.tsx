@@ -36,16 +36,16 @@ export default function BantuanPage() {
       answer: 'Setelah login, cari lowongan yang sesuai, klik "Lihat Detail", isi formulir aplikasi yang disediakan perusahaan, dan klik "Kirim Lamaran".',
       category: 'job'
     },
-    {
-      question: 'Bagaimana cara menjual barang di marketplace?',
-      answer: 'Fitur marketplace sedang dalam tahap pengembangan. Saat ini Anda dapat melihat produk yang tersedia, dan fitur penjualan akan segera hadir.',
-      category: 'marketplace'
-    },
-    {
-      question: 'Apakah transaksi di marketplace aman?',
-      answer: 'Ya, kami menggunakan sistem keamanan berlapis untuk melindungi setiap transaksi. Semua pembayaran melalui gateway yang terverifikasi.',
-      category: 'marketplace'
-    },
+    // {
+    //   question: 'Bagaimana cara menjual barang di marketplace?',
+    //   answer: 'Fitur marketplace sedang dalam tahap pengembangan. Saat ini Anda dapat melihat produk yang tersedia, dan fitur penjualan akan segera hadir.',
+    //   category: 'marketplace'
+    // },
+    // {
+    //   question: 'Apakah transaksi di marketplace aman?',
+    //   answer: 'Ya, kami menggunakan sistem keamanan berlapis untuk melindungi setiap transaksi. Semua pembayaran melalui gateway yang terverifikasi.',
+    //   category: 'marketplace'
+    // },
     {
       question: 'Bagaimana cara mengubah profil saya?',
       answer: 'Login ke akun Anda, klik menu profil di navbar, lalu pilih "Edit Profil" untuk mengubah informasi pribadi atau perusahaan.',
@@ -66,7 +66,7 @@ export default function BantuanPage() {
   const categories = [
     { id: 'all', name: 'Semua', icon: '📋' },
     { id: 'job', name: 'Lowongan Kerja', icon: '💼' },
-    { id: 'marketplace', name: 'Marketplace', icon: '🛒' },
+    // { id: 'marketplace', name: 'Marketplace', icon: '🛒' },
     { id: 'account', name: 'Akun', icon: '👤' },
     { id: 'general', name: 'Umum', icon: '❓' }
   ];

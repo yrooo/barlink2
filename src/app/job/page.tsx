@@ -335,7 +335,7 @@ const JobPageContent = () => {
                   </div>
                 ) : (
                   filteredJobs.map((job) => (
-                    <div key={job._id} className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:transform hover:translate-y-[-4px] transition-transform">
+                    <div key={job._id} className="bg-white p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:transform hover:translate-y-[-4px] transition-transform">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h2 className="text-2xl font-bold mb-2">{job.title}</h2>

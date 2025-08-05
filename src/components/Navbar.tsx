@@ -40,7 +40,7 @@ export default function UpdatedNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center hover:scale-102 hover:rotate-1 duration-300">
+          <div className="flex items-center hover:scale-103 hover:rotate-1 duration-300">
             <Link href="/" className="flex items-center space-x-2">
               <Image
                 src="/logo.png"
@@ -57,25 +57,25 @@ export default function UpdatedNavbar() {
           <div className="hidden md:flex items-center space-x-8">
             <button
               onClick={() => scrollToSection('beranda')}
-              className="text-black hover:text-main font-semibold hover:-translate-y-1 hover:rotate-1 duration-300"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
             >
               Beranda
             </button>
             <button
               onClick={() => scrollToSection('tentang-kami')}
-              className="text-black hover:text-main font-semibold hover:-translate-y-1 hover:rotate-1 duration-300"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
             >
               Tentang Kami
             </button>
             <button
               onClick={() => scrollToSection('bantuan')}
-              className="text-black hover:text-main font-semibold hover:-translate-y-1 hover:rotate-1 duration-300"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
             >
               Bantuan
             </button>
             <Link
               href="/job?type=seek"
-              className="text-black hover:text-main font-semibold hover:-translate-y-1 hover:rotate-1 duration-300"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
             >
               Lowongan Kerja
             </Link>

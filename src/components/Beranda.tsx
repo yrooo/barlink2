@@ -81,7 +81,7 @@ export default function BerandaPage() {
   return (
     <div id="beranda" className="min-h-screen bg-main">
       {/* Hero Section */}
-      <section className="bg-main py-48 bg-[linear-gradient(to_right,#80808012_3px,transparent_1px),linear-gradient(to_bottom,#80808012_3px,transparent_1px)] bg-[size:64px_64px]">
+      <section className="bg-main border-b-4 py-48 bg-[linear-gradient(to_right,#80808012_3px,transparent_1px),linear-gradient(to_bottom,#80808012_3px,transparent_1px)] bg-[size:64px_64px]">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h1 className="text-6xl font-black mb-8 text-black bg-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black inline-block duration-300 hover:scale-102 hover:shake">
             Selamat Datang di Barlink! 👋
@@ -247,34 +247,22 @@ export default function BerandaPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-main">
+      <section className="py-16 bg-main border-t-4 border-b-4">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-black text-white mb-6">
+          <h2 className="text-4xl font-black mb-6">
             Siap Memulai Perjalanan Anda?
           </h2>
-          <p className="text-xl text-white mb-8">
+          <p className="text-xl mb-8">
             Bergabunglah dengan ribuan pengguna yang telah merasakan kemudahan Barlink
           </p>
-          
-          {session ? (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-white text-main hover:bg-black hover:text-white border-2 border-black">
-                <Link href="/job">Mulai Cari Kerja</Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button asChild size="lg" className="bg-white hover:bg-black hover:text-white">
+              <Link href="/auth/signup">Daftar Sekarang</Link>
               </Button>
-              <Button asChild size="lg" variant="default" className="border-white text-white hover:bg-black hover:text-white hover:border-black">
-                <Link href="#marketplace">Jelajahi Marketplace</Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-white text-main hover:bg-black hover:text-white border-2 border-black">
-                <Link href="/auth/signup">Daftar Sekarang</Link>
-              </Button>
-              <Button asChild size="lg" variant="default" className="border-white text-white hover:bg-black hover:text-white hover:border-black">
-                <Link href="/auth/signin">Masuk</Link>
-              </Button>
-            </div>
-          )}
+              <Button asChild size="lg" variant="default" className="border-white text-white hover:bg-black hover:text-white border-black">
+              <Link href="/auth/signin">Masuk</Link>
+            </Button>
+          </div>
         </div>
       </section>
     </div>

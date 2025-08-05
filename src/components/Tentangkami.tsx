@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui/button';
 
 export default function TentangKamiPage() {
   return (
@@ -30,7 +31,7 @@ export default function TentangKamiPage() {
               </p>
             </div>
           </div>
-          <div className="bg-main rounded-lg p-8 text-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div className="bg-main rounded-lg p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <h3 className="text-2xl font-bold mb-4">Visi Kami</h3>
             <p className="mb-6">
               Menjadi platform terdepan di Indonesia yang menghubungkan talenta dengan peluang kerja terbaik, sekaligus menyediakan marketplace terpercaya untuk ekonomi sirkular.
@@ -46,7 +47,7 @@ export default function TentangKamiPage() {
         </div>
 
         {/* Values Section */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
           <h2 className="text-3xl font-bold text-black text-center mb-12">Nilai-Nilai Kami</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6 bg-gray-50 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200">
@@ -79,53 +80,37 @@ export default function TentangKamiPage() {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Team Section */}
         <div className="mb-16">
           <h2 className="text-3xl font-bold text-black text-center mb-12">Tim Kami</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="text-5xl">👨‍💼</span>
-              </div>
-              <h3 className="text-lg font-bold mb-1">Ahmad Rizki</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+            <div className="text-center p-6 bg-white rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200">
+              <Button
+                variant="default"
+                className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <span className="text-4xl">👨‍💼</span>
+              </Button>
+              <h3 className="text-xl font-bold mb-1">Lionel Maxmiliam</h3>
               <p className="text-main font-semibold mb-2">CEO & Founder</p>
               <p className="text-sm text-gray-600">
-                Visioner dengan pengalaman 10+ tahun di industri teknologi dan HR.
+                Visioner dengan pengalaman 10+ tahun di industri teknologi.
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="text-5xl">👩‍💻</span>
-              </div>
-              <h3 className="text-lg font-bold mb-1">Sari Dewi</h3>
-              <p className="text-main font-semibold mb-2">CTO</p>
+            <div className="text-center p-6 bg-white rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200">
+              <Button
+                variant="default"
+                className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <span className="text-4xl">👩‍💻</span>
+              </Button>
+              <h3 className="text-xl font-bold mb-1">Antonius Yohri</h3>
+              <p className="text-main font-semibold mb-2">Co-CEO & Founder</p>
               <p className="text-sm text-gray-600">
                 Expert teknologi dengan spesialisasi dalam pengembangan platform digital.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="text-5xl">👨‍🎨</span>
-              </div>
-              <h3 className="text-lg font-bold mb-1">Budi Santoso</h3>
-              <p className="text-main font-semibold mb-2">Head of Design</p>
-              <p className="text-sm text-gray-600">
-                Designer berpengalaman yang fokus pada user experience dan interface design.
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-32 h-32 bg-gray-200 rounded-lg mx-auto mb-4 flex items-center justify-center border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="text-5xl">👩‍💼</span>
-              </div>
-              <h3 className="text-lg font-bold mb-1">Maya Putri</h3>
-              <p className="text-main font-semibold mb-2">Head of Operations</p>
-              <p className="text-sm text-gray-600">
-                Ahli operasional yang memastikan platform berjalan dengan lancar dan efisien.
               </p>
             </div>
           </div>
