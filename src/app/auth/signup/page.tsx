@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -81,13 +82,17 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-main flex items-center justify-center p-8">
-      <div className="bg-white p-8 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-md">
+    <div className="min-h-screen bg-main flex items-center justify-center p-8 relative">
+      <Link href="/" className="absolute top-4 left-4">
+        <Button variant="default" size="icon" className="bg-white text-black">
+          <ChevronLeft className="h-6 w-6" />
+        </Button>
+      </Link>
+      <div className="bg-white p-8 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-black text-black mb-2">Daftar ke Barlink</h1>
           <p className="text-gray-600">Buat akun baru untuk memulai</p>
         </div>
-
         {error && (
           <div className="bg-red-100 border-2 border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {error}

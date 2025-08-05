@@ -200,11 +200,11 @@ export default function BerandaPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
             <div className="text-center">
-              <div className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Button className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <span className="text-2xl">🎯</span>
-              </div>
+              </Button>
               <h3 className="text-xl font-bold mb-2">Mudah & Cepat</h3>
               <p className="text-gray-600">
                 Proses pencarian kerja dan jual beli yang simpel dan efisien
@@ -212,9 +212,9 @@ export default function BerandaPage() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Button className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <span className="text-2xl">🔒</span>
-              </div>
+              </Button>
               <h3 className="text-xl font-bold mb-2">Aman & Terpercaya</h3>
               <p className="text-gray-600">
                 Sistem keamanan berlapis untuk melindungi data dan transaksi Anda
@@ -222,22 +222,12 @@ export default function BerandaPage() {
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Button className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                 <span className="text-2xl">💼</span>
-              </div>
+              </Button>
               <h3 className="text-xl font-bold mb-2">Lowongan Berkualitas</h3>
               <p className="text-gray-600">
                 Ribuan lowongan kerja dari perusahaan terpercaya di seluruh Indonesia
-              </p>
-            </div>
-
-            <div className="text-center">
-              <div className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="text-2xl">🛍️</span>
-              </div>
-              <h3 className="text-xl font-bold mb-2">Produk Berkualitas</h3>
-              <p className="text-gray-600">
-                Barang bekas berkualitas dengan harga terjangkau dan kondisi terjamin
               </p>
             </div>
           </div>

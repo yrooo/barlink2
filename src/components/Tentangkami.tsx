@@ -7,10 +7,10 @@ export default function TentangKamiPage() {
       <div className="max-w-7xl mx-auto px-6">
         {/* Header Section */}
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-black text-black mb-6 bg-white p-4 inline-block shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-300">
+          <h1 className="text-5xl font-black text-black mb-6 bg-white p-4 inline-block shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all duration-200">
             Tentang Kami 🚀
           </h1>
-          <p className="text-xl text-black max-w-3xl mx-auto text-justify mt-4">
+          <p className="text-xl text-black mx-auto text-justify mt-4">
             Terinspirasi oleh sebuah visi untuk membawa berbagai dampak yang lebih luas, Barlink terlahir dari tangan-tangan kreatif generasi muda Indonesia. Dibangun bukan hanya untuk memenuhi kebutuhan hari ini, tapi juga sebagai sebuah langkah awal menuju solusi berkelanjutan di tengah dinamika sosial yang terus berubah kian hari. Barlink membuka sebuah ruang kolaborasi, serta mempertemukan potensi dengan kesempatan, dan terus berkembang melampaui batas fungsi utamanya. Lebih dari sekadar platform digital, Barlink membawa harapan bagi berbagai kalangan, bahwa teknologi bisa menjadi jembatan untuk membantu sesama, serta menjangkau lebih banyak orang, dan menjadi bagian dari perubahan yang bermakna.
           </p>
         </div>
@@ -21,10 +21,10 @@ export default function TentangKamiPage() {
             <h2 className="text-3xl font-bold text-black mb-6">Cerita Kami</h2>
             <div className="space-y-4 text-gray-700">
               <p>
-                Barlink lahir dari kebutuhan untuk menyederhanakan dua aspek penting dalam kehidupan sehari-hari: mencari pekerjaan dan berbelanja barang berkualitas dengan harga terjangkau.
+                Barlink lahir dari kebutuhan untuk menyederhanakan aspek penting dalam kehidupan sehari-hari: mencari pekerjaan.
               </p>
               <p>
-                Kami percaya bahwa setiap orang berhak mendapatkan kesempatan kerja yang layak dan akses terhadap barang-barang berkualitas tanpa harus menguras kantong. Itulah mengapa kami menciptakan platform yang menggabungkan kedua kebutuhan ini.
+                Kami percaya bahwa setiap orang berhak mendapatkan kesempatan kerja yang layak. Itulah mengapa kami menciptakan platform ini.
               </p>
               <p>
                 Dengan teknologi terdepan dan antarmuka yang user-friendly, Barlink hadir untuk memudahkan perjalanan karir dan gaya hidup Anda.
@@ -34,13 +34,12 @@ export default function TentangKamiPage() {
           <div className="bg-main rounded-lg p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <h3 className="text-2xl font-bold mb-4">Visi Kami</h3>
             <p className="mb-6">
-              Menjadi platform terdepan di Indonesia yang menghubungkan talenta dengan peluang kerja terbaik, sekaligus menyediakan marketplace terpercaya untuk ekonomi sirkular.
+              Menjadi platform terdepan di Indonesia yang menghubungkan talenta dengan peluang kerja terbaik.
             </p>
             <h3 className="text-2xl font-bold mb-4">Misi Kami</h3>
             <ul className="space-y-2">
               <li>• Memudahkan pencarian kerja untuk semua kalangan</li>
-              <li>• Menyediakan platform jual-beli yang aman dan terpercaya</li>
-              <li>• Mendukung ekonomi sirkular melalui perdagangan barang bekas</li>
+
               <li>• Menciptakan ekosistem digital yang berkelanjutan</li>
             </ul>
           </div>
