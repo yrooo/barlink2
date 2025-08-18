@@ -3,8 +3,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import Application from '@/lib/models/Application';
-import Job from '@/lib/models/Job';
-import User from '@/lib/models/User';
 import EmailService from '@/lib/emailService';
 
 export async function PATCH(
@@ -51,7 +49,7 @@ export async function PATCH(
     // Send email notification for accepted/rejected applications
     if (status === 'accepted' || status === 'rejected') {
       try {
-        await EmailService.sendNotificationFromApplication(updatedApplication as any);
+        await EmailService.sendNotificationFromApplication(updatedApplication);
         console.log(`Email notification sent for application ${id} with status ${status}`);
       } catch (emailError) {
         console.error('Failed to send email notification:', emailError);
