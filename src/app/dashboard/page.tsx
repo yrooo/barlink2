@@ -102,7 +102,7 @@ export default function Dashboard() {
                 variant="neutral"
                 className="w-full text-lg py-4"
               >
-                <Link href="/dashboard/profile">Edit Profil</Link>
+                <Link href="/profile">Edit Profil</Link>
               </Button>
             </div>
 
