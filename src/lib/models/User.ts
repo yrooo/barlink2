@@ -48,6 +48,12 @@ const UserSchema = new mongoose.Schema({
     bio: String,
     phone: String,
     address: String,
+    cv: {
+      publicId: String,
+      url: String,
+      fileName: String,
+      uploadedAt: Date,
+    },
     website: String,
   },
   phone: {

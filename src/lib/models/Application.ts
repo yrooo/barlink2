@@ -32,6 +32,24 @@ const ApplicationSchema = new mongoose.Schema({
     required: true,
   },
   answers: [ApplicationAnswerSchema],
+  cv: {
+    publicId: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+    fileName: {
+      type: String,
+      required: true,
+    },
+    uploadedAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
   status: {
     type: String,
     enum: ['pending', 'reviewed', 'accepted', 'rejected'],

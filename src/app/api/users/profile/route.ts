@@ -18,24 +18,27 @@ export async function PUT(request: NextRequest) {
     await dbConnect();
     const body = await request.json();
     
-    const { name, company, description, website, location } = body;
+    const { name, company, description, website, location, phone } = body;
     
-    if (!name || !company) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Name and company are required' },
+        { error: 'Name is required' },
         { status: 400 }
       );
     }
 
+    const updateData: any = {
+      name,
+      ...(company && { company }),
+      ...(description && { description }),
+      ...(website && { website }),
+      ...(location && { location }),
+      ...(phone && { phone }),
+    };
+
     const updatedUser = await User.findByIdAndUpdate(
       session.user.id,
-      {
-        name,
-        company,
-        description,
-        website,
-        location,
-      },
+      updateData,
       { new: true }
     );
 
@@ -56,6 +59,7 @@ export async function PUT(request: NextRequest) {
         description: updatedUser.description,
         website: updatedUser.website,
         location: updatedUser.location,
+        phone: updatedUser.phone,
       }
     });
   } catch (error) {

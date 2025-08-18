@@ -6,7 +6,18 @@ declare module 'next-auth' {
       id: string;
       role: 'pelamar_kerja' | 'pencari_kandidat';
       company?: string;
-      profile?: { phone?: string; description?: string; website?: string; location?: string; };
+      profile?: { 
+        phone?: string; 
+        description?: string; 
+        website?: string; 
+        location?: string; 
+        cv?: {
+          publicId: string;
+          url: string;
+          fileName: string;
+          uploadedAt: string;
+        };
+      };
     } & DefaultSession['user'];
   }
 
@@ -46,6 +57,13 @@ export interface Job {
   updatedAt: string;
 }
 
+export interface CVInfo {
+  publicId: string;
+  url: string;
+  fileName: string;
+  uploadedAt: string;
+}
+
 export interface Application {
   _id: string;
   jobId: string;
@@ -56,6 +74,7 @@ export interface Application {
     question: string;
     answer: string | string[];
   }[];
+  cv: CVInfo;
   status: 'pending' | 'reviewed' | 'accepted' | 'rejected';
   notes?: string;
   createdAt: string;
@@ -79,6 +98,7 @@ export interface User {
     phone?: string;
     address?: string;
     website?: string;
+    cv?: CVInfo;
   };
   createdAt: string;
   updatedAt: string;

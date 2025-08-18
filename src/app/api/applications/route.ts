@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import Application from '@/lib/models/Application';
 import Job from '@/lib/models/Job';
+import User from '@/lib/models/User';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +25,15 @@ export async function POST(request: NextRequest) {
     if (!jobId || !answers) {
       return NextResponse.json(
         { error: 'Job ID and answers are required' },
+        { status: 400 }
+      );
+    }
+    
+    // Check if user has uploaded a CV
+    const user = await User.findById(session.user.id);
+    if (!user?.profile?.cv) {
+      return NextResponse.json(
+        { error: 'You must upload a CV before applying to jobs' },
         { status: 400 }
       );
     }
@@ -55,6 +65,12 @@ export async function POST(request: NextRequest) {
       applicantId: session.user.id,
       employerId: job.employerId,
       answers,
+      cv: {
+        publicId: user.profile.cv.publicId,
+        url: user.profile.cv.url,
+        fileName: user.profile.cv.fileName,
+        uploadedAt: user.profile.cv.uploadedAt,
+      },
     });
 
     await application.save();

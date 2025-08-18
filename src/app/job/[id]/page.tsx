@@ -16,6 +16,29 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
   const { data: session } = useSession();
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [loading, setLoading] = useState(false);
+  const [userCV, setUserCV] = useState<any>(null);
+  const [checkingCV, setCheckingCV] = useState(true);
+
+  // Check if user has uploaded CV
+  useEffect(() => {
+    const checkUserCV = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const userData = await response.json();
+          setUserCV(userData.profile?.cv || null);
+        }
+      } catch (error) {
+        console.error('Error checking user CV:', error);
+      } finally {
+        setCheckingCV(false);
+      }
+    };
+
+    checkUserCV();
+  }, [session]);
 
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
     setAnswers(prev => ({
@@ -34,6 +57,11 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
 
     if (session.user.role !== 'pelamar_kerja') {
       alert('Hanya pelamar kerja yang dapat melamar pekerjaan');
+      return;
+    }
+
+    if (!userCV) {
+      alert('Anda harus mengunggah CV terlebih dahulu sebelum melamar pekerjaan. Silakan lengkapi profil Anda.');
       return;
     }
 
@@ -184,6 +212,44 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
             {job.location && <p className="text-gray-600">📍 {job.location}</p>}
           </div>
 
+          {/* CV Status Indicator */}
+          <div className={`mb-6 p-4 border-2 rounded-lg ${
+            checkingCV ? 'border-gray-300 bg-gray-50' :
+            userCV ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'
+          }`}>
+            <div className="flex items-center space-x-2">
+              {checkingCV ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-gray-600">Memeriksa status CV...</span>
+                </>
+              ) : userCV ? (
+                <>
+                  <span className="text-green-600">✅</span>
+                  <span className="text-green-700 font-medium">CV sudah diunggah: {userCV.fileName}</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-red-600">❌</span>
+                  <span className="text-red-700 font-medium">CV belum diunggah</span>
+                  <a 
+                    href="/profile" 
+                    className="ml-2 text-blue-600 underline hover:text-blue-800"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Unggah CV di Profil
+                  </a>
+                </>
+              )}
+            </div>
+            {!checkingCV && !userCV && (
+              <p className="text-sm text-red-600 mt-2">
+                Anda harus mengunggah CV terlebih dahulu sebelum dapat melamar pekerjaan.
+              </p>
+            )}
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {job.customQuestions.length > 0 ? (
               <>
@@ -218,9 +284,12 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
               </Button>
               <Button 
                 type="submit"
-                disabled={loading}
+                disabled={loading || checkingCV || !userCV}
+                className={!userCV && !checkingCV ? 'opacity-50 cursor-not-allowed' : ''}
               >
-                {loading ? 'Mengirim...' : 'Kirim Lamaran'}
+                {loading ? 'Mengirim...' : 
+                 checkingCV ? 'Memeriksa CV...' :
+                 !userCV ? 'CV Diperlukan' : 'Kirim Lamaran'}
               </Button>
             </div>
           </form>

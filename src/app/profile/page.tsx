@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import CVUpload from '@/components/CVUpload';
+import { CVInfo } from '@/types';
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [currentCV, setCurrentCV] = useState<CVInfo | undefined>(undefined);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -43,6 +46,11 @@ export default function ProfilePage() {
       location: session.user.profile?.location || '',
     };
     setFormData(initialFormData);
+
+    // Initialize CV data if available
+    if (session.user.profile?.cv) {
+      setCurrentCV(session.user.profile.cv);
+    }
 
   }, [session, status, router]);
 
@@ -166,9 +174,27 @@ export default function ProfilePage() {
                     className="w-full p-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-main"
                   />
                 </div>
-              </div>
+            </div>
 
-              {/* Fields for 'pencari_kandidat' role */}
+            {/* CV Upload for Job Seekers */}
+            {session.user.role === 'pelamar_kerja' && (
+              <div className="space-y-4 pt-4">
+                <h2 className="text-2xl font-bold border-b-2 border-black pb-2">Curriculum Vitae</h2>
+                <CVUpload
+                  currentCV={currentCV}
+                  onUploadSuccess={(cv) => {
+                    setCurrentCV(cv);
+                    // Update session data would require a refresh or manual update
+                  }}
+                  onDeleteSuccess={() => {
+                    setCurrentCV(undefined);
+                  }}
+                  required={false}
+                />
+              </div>
+            )}
+
+            {/* Fields for 'pencari_kandidat' role */}
               {session.user.role === 'pencari_kandidat' && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
