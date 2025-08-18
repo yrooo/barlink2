@@ -55,10 +55,32 @@ export default function CreateJob() {
   }, [session, status, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    if (name === 'salary') {
+      // Remove all non-digit characters except for the hyphen
+      let formattedValue = value.replace(/[^\d-]/g, '');
+
+      // Handle range input (e.g., "1000000 - 2000000")
+      const parts = formattedValue.split('-');
+      const formattedParts = parts.map(part => {
+        // Remove leading zeros unless the number is '0'
+        let num = part.replace(/^0+(?!$)/, '');
+        // Add thousands separator
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      });
+      formattedValue = formattedParts.join(' - ');
+
+      setFormData({
+        ...formData,
+        [name]: formattedValue,
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
 
   const addCustomQuestion = () => {
@@ -161,7 +183,7 @@ export default function CreateJob() {
       <div className="max-w-4xl mx-auto p-6">
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Job Information */}
-          <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div className="bg-white p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <h2 className="text-2xl font-black mb-6">Informasi Lowongan</h2>
             
             <div className="space-y-6">
@@ -192,14 +214,20 @@ export default function CreateJob() {
 
               <div>
                 <label className="block text-lg font-bold mb-2">Gaji</label>
-                <input
-                  type="text"
-                  name="salary"
-                  value={formData.salary}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
-                  placeholder="e.g. Rp 10.000.000 - Rp 15.000.000"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg font-bold text-gray-700 z-10">
+                    Rp
+                  </span>
+                  <input
+                    type="text"
+                    name="salary"
+                    value={formData.salary}
+                    onChange={handleInputChange}
+                    className="w-full p-3 pl-12 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+                    placeholder="10.000.000 - 15.000.000"
+                  />
+                </div>
+                <p className="text-sm text-gray-600 mt-1">Gunakan tanda "-" untuk rentang gaji (contoh: 10.000.000 - 15.000.000)</p>
               </div>
 
               <div>
@@ -248,7 +276,7 @@ export default function CreateJob() {
           </div>
 
           {/* Custom Questions */}
-          <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <div className="bg-white p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-black">Pertanyaan Khusus</h2>
               <Button 

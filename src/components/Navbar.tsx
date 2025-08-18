@@ -21,14 +21,20 @@ export default function UpdatedNavbar() {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    }
+    // This function is now primarily for mobile menu closing and potential future direct scrolling needs
+    // Desktop navigation now uses <Link href="/#sectionId"> for better routing
     setIsMenuOpen(false); // Close mobile menu after clicking
+
+    // If on the home page, scroll to section directly
+    if (window.location.pathname === '/') {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -55,24 +61,24 @@ export default function UpdatedNavbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <button
-              onClick={() => scrollToSection('beranda')}
+            <Link
+              href="/#beranda"
               className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
             >
               Beranda
-            </button>
-            <button
-              onClick={() => scrollToSection('tentang-kami')}
+            </Link>
+            <Link
+              href="/#tentang-kami"
               className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
             >
               Tentang Kami
-            </button>
-            <button
-              onClick={() => scrollToSection('bantuan')}
+            </Link>
+            <Link
+              href="/#bantuan"
               className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
             >
               Bantuan
-            </button>
+            </Link>
             <Link
               href="/job?type=seek"
               className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
@@ -170,24 +176,27 @@ export default function UpdatedNavbar() {
         {isMenuOpen && (
           <div className="md:hidden border-t-2 border-black bg-white">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <button
-                onClick={() => scrollToSection('beranda')}
+              <Link
+                href="/#beranda"
                 className="block w-full text-left px-3 py-2 text-black hover:text-main font-semibold"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Beranda
-              </button>
-              <button
-                onClick={() => scrollToSection('tentang-kami')}
+              </Link>
+              <Link
+                href="/#tentang-kami"
                 className="block w-full text-left px-3 py-2 text-black hover:text-main font-semibold"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Tentang Kami
-              </button>
-              <button
-                onClick={() => scrollToSection('bantuan')}
+              </Link>
+              <Link
+                href="/#bantuan"
                 className="block w-full text-left px-3 py-2 text-black hover:text-main font-semibold"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Bantuan
-              </button>
+              </Link>
               <Link
                 href="/job"
                 className="block px-3 py-2 text-black hover:text-main font-semibold"
