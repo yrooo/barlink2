@@ -240,29 +240,29 @@ const JobDetailPage = () => {
   const jobId = params.id as string;
 
   useEffect(() => {
+    const fetchJob = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/jobs/${jobId}`, {
+          cache: 'no-store'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setJob(data);
+        } else {
+          console.error('Job not found');
+        }
+      } catch (error) {
+        console.error('Error fetching job:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (jobId) {
       fetchJob();
     }
   }, [jobId]);
-
-  const fetchJob = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`/api/jobs/${jobId}`, {
-        cache: 'no-store'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setJob(data);
-      } else {
-        console.error('Job not found');
-      }
-    } catch (error) {
-      console.error('Error fetching job:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleApply = (job: Job) => {
     if (!session) {

@@ -20,22 +20,7 @@ export default function UpdatedNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
-  const scrollToSection = (sectionId: string) => {
-    // This function is now primarily for mobile menu closing and potential future direct scrolling needs
-    // Desktop navigation now uses <Link href="/#sectionId"> for better routing
-    setIsMenuOpen(false); // Close mobile menu after clicking
 
-    // If on the home page, scroll to section directly
-    if (window.location.pathname === '/') {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-        });
-      }
-    }
-  };
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/' });

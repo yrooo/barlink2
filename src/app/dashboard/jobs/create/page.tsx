@@ -65,7 +65,7 @@ export default function CreateJob() {
       const parts = formattedValue.split('-');
       const formattedParts = parts.map(part => {
         // Remove leading zeros unless the number is '0'
-        let num = part.replace(/^0+(?!$)/, '');
+        const num = part.replace(/^0+(?!$)/, '');
         // Add thousands separator
         return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
       });
@@ -227,7 +227,7 @@ export default function CreateJob() {
                     placeholder="10.000.000 - 15.000.000"
                   />
                 </div>
-                <p className="text-sm text-gray-600 mt-1">Gunakan tanda "-" untuk rentang gaji (contoh: 10.000.000 - 15.000.000)</p>
+                <p className="text-sm text-gray-600 mt-1">Gunakan tanda &quot;-&quot; untuk rentang gaji (contoh: 10.000.000 - 15.000.000)</p>
               </div>
 
               <div>

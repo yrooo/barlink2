@@ -237,7 +237,7 @@ const JobPageContent = () => {
   const type = searchParams.get('type');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -279,19 +279,7 @@ const JobPageContent = () => {
     job.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleApply = (job: Job) => {
-    if (!session) {
-      router.push('/auth/signin');
-      return;
-    }
 
-    if (session.user.role !== 'pelamar_kerja') {
-      alert('Hanya pelamar kerja yang dapat melamar pekerjaan. Silakan daftar sebagai pelamar kerja.');
-      return;
-    }
-
-    setSelectedJob(job);
-  };
 
   if (type !== 'seek') {
     return null;
@@ -387,12 +375,7 @@ const JobPageContent = () => {
         </div>
       </div>
 
-      {selectedJob && (
-        <JobApplication 
-          job={selectedJob} 
-          onClose={() => setSelectedJob(null)} 
-        />
-      )}
+
     </div>
   );
 };
