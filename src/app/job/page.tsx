@@ -1,11 +1,12 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
-import { Job } from '@/types';
+import { Job, JobFilters, FilterOption } from '@/types';
+import { ChevronDown, Filter, X } from 'lucide-react';
 
 const JobPageContent = () => {
   const searchParams = useSearchParams();
@@ -16,6 +17,13 @@ const JobPageContent = () => {
   const [loading, setLoading] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<JobFilters>({
+    location: '',
+    salaryRange: '',
+    company: '',
+    datePosted: ''
+  });
 
   useEffect(() => {
     if (type === 'seek') {
@@ -50,13 +58,107 @@ const JobPageContent = () => {
     }
   };
 
-  const filteredJobs = jobs.filter(job =>
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Generate filter options from jobs data
+  const filterOptions = useMemo(() => {
+    const locations = [...new Set(jobs.map(job => job.location).filter(Boolean))];
+    const companies = [...new Set(jobs.map(job => job.company))];
+    
+    return {
+      locations: locations.map(loc => ({ value: loc!, label: loc! })),
+      companies: companies.map(comp => ({ value: comp, label: comp })),
+      salaryRanges: [
+        { value: '0-5000000', label: 'Under 5 Million' },
+        { value: '5000000-10000000', label: '5-10 Million' },
+        { value: '10000000-15000000', label: '10-15 Million' },
+        { value: '15000000+', label: 'Above 15 Million' }
+      ],
+      datePosted: [
+        { value: '1', label: 'Last 24 hours' },
+        { value: '7', label: 'Last 7 days' },
+        { value: '30', label: 'Last 30 days' },
+        { value: 'all', label: 'All time' }
+      ]
+    };
+  }, [jobs]);
 
+  // Filter jobs based on search term and filters
+  const filteredJobs = useMemo(() => {
+    let filtered = jobs;
 
+    // Apply search term filter
+    if (searchTerm.trim() !== '') {
+      filtered = filtered.filter(job =>
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (job.location && job.location.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Apply location filter
+    if (filters.location) {
+      filtered = filtered.filter(job => job.location === filters.location);
+    }
+
+    // Apply company filter
+    if (filters.company) {
+      filtered = filtered.filter(job => job.company === filters.company);
+    }
+
+    // Apply salary range filter
+    if (filters.salaryRange) {
+      filtered = filtered.filter(job => {
+        if (!job.salary) return false;
+        const salary = parseInt(job.salary.replace(/[^0-9]/g, ''));
+        
+        switch (filters.salaryRange) {
+          case '0-5000000':
+            return salary < 5000000;
+          case '5000000-10000000':
+            return salary >= 5000000 && salary < 10000000;
+          case '10000000-15000000':
+            return salary >= 10000000 && salary < 15000000;
+          case '15000000+':
+            return salary >= 15000000;
+          default:
+            return true;
+        }
+      });
+    }
+
+    // Apply date posted filter
+    if (filters.datePosted && filters.datePosted !== 'all') {
+      const daysAgo = parseInt(filters.datePosted);
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysAgo);
+      
+      filtered = filtered.filter(job => {
+        const jobDate = new Date(job.createdAt);
+        return jobDate >= cutoffDate;
+      });
+    }
+
+    return filtered;
+  }, [searchTerm, jobs, filters]);
+
+  // Filter management functions
+  const handleFilterChange = (filterType: keyof JobFilters, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      location: '',
+      salaryRange: '',
+      company: '',
+      datePosted: ''
+    });
+  };
+
+  const hasActiveFilters = Object.values(filters).some(filter => filter !== '');
 
   if (type !== 'seek') {
     return null;
@@ -76,13 +178,176 @@ const JobPageContent = () => {
 
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
-                placeholder="Cari berdasarkan posisi, perusahaan, atau deskripsi..."
-              />
+              <div className="flex gap-4 mb-4">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+                  placeholder="Cari berdasarkan posisi, perusahaan, atau deskripsi..."
+                />
+                <Button 
+                  onClick={() => setShowFilters(!showFilters)}
+                  variant="default"
+                  className="flex items-center gap-2 px-4 py-3 border-4 border-black rounded hover:bg-gray-50"
+                >
+                  <Filter className="w-4 h-4" />
+                  Filter
+                  {hasActiveFilters && (
+                    <span className="bg-main text-white text-xs rounded-full px-2 py-1">
+                      {Object.values(filters).filter(f => f !== '').length}
+                    </span>
+                  )}
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                </Button>
+              </div>
+
+              {/* Filter Panel */}
+              {showFilters && (
+                <div className="bg-gray-50 p-6 rounded-lg border-2 border-black">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-black">Filter Pekerjaan</h3>
+                    {hasActiveFilters && (
+                      <Button
+                        onClick={clearFilters}
+                        variant="default"
+                        className="text-sm text-gray-600 hover:text-gray-900"
+                      >
+                        Hapus Semua
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Location Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Lokasi
+                      </label>
+                      <select
+                        value={filters.location}
+                        onChange={(e) => handleFilterChange('location', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-black rounded focus:ring-2 focus:ring-main focus:border-transparent"
+                      >
+                        <option value="">Semua Lokasi</option>
+                        {filterOptions.locations.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Company Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Perusahaan
+                      </label>
+                      <select
+                        value={filters.company}
+                        onChange={(e) => handleFilterChange('company', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-black rounded focus:ring-2 focus:ring-main focus:border-transparent"
+                      >
+                        <option value="">Semua Perusahaan</option>
+                        {filterOptions.companies.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Salary Range Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Rentang Gaji
+                      </label>
+                      <select
+                        value={filters.salaryRange}
+                        onChange={(e) => handleFilterChange('salaryRange', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-black rounded focus:ring-2 focus:ring-main focus:border-transparent"
+                      >
+                        <option value="">Semua Gaji</option>
+                        {filterOptions.salaryRanges.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Date Posted Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tanggal Posting
+                      </label>
+                      <select
+                        value={filters.datePosted}
+                        onChange={(e) => handleFilterChange('datePosted', e.target.value)}
+                        className="w-full px-3 py-2 border-2 border-black rounded focus:ring-2 focus:ring-main focus:border-transparent"
+                      >
+                        <option value="">Kapan Saja</option>
+                        {filterOptions.datePosted.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Active Filters Display */}
+                  {hasActiveFilters && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="flex flex-wrap gap-2">
+                        {Object.entries(filters).map(([key, value]) => {
+                          if (!value) return null;
+                          
+                          let displayValue = value;
+                          if (key === 'salaryRange') {
+                            const option = filterOptions.salaryRanges.find(opt => opt.value === value);
+                            displayValue = option?.label || value;
+                          } else if (key === 'datePosted') {
+                            const option = filterOptions.datePosted.find(opt => opt.value === value);
+                            displayValue = option?.label || value;
+                          }
+                          
+                          return (
+                            <span
+                              key={key}
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-main text-white text-sm rounded-full"
+                            >
+                              {key.charAt(0).toUpperCase() + key.slice(1)}: {displayValue}
+                              <button
+                                onClick={() => handleFilterChange(key as keyof JobFilters, '')}
+                                className="ml-1 hover:text-gray-200"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Results Summary */}
+              <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
+                <span>
+                  Menampilkan {filteredJobs.length} dari {jobs.length} pekerjaan
+                  {hasActiveFilters && ' (terfilter)'}
+                </span>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-main hover:text-blue-800 underline"
+                  >
+                    Hapus semua filter
+                  </button>
+                )}
+              </div>
             </div>
 
             {loading ? (

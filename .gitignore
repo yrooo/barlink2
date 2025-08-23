@@ -42,3 +42,4 @@ next-env.d.ts
 EMAIL_NOTIFICATION_SETUP.md
 /src/app/api/test
 src/lib/testEmailNotification.ts
+GOOGLE_CALENDAR_SETUP.md

@@ -6,6 +6,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Application, Job, User } from '@/types';
 import Link from 'next/link';
+import InterviewScheduler from '@/components/InterviewScheduler';
+import { Calendar, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function JobApplications() {
   const { data: session, status } = useSession();
@@ -16,7 +19,8 @@ export default function JobApplications() {
   const [job, setJob] = useState<Job | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [isInterviewSchedulerOpen, setIsInterviewSchedulerOpen] = useState(false);
+  const [currentApplicationForInterview, setCurrentApplicationForInterview] = useState<Application | null>(null);
 
   const fetchJobAndApplications = useCallback(async () => {
     try {
@@ -148,79 +152,125 @@ export default function JobApplications() {
               <h2 className="text-xl font-bold">Total Pelamar: {applications.length}</h2>
             </div>
 
-            {applications.map((application: Application) =>(
-              <div 
-                key={application._id} 
-                className="bg-white p-4 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] cursor-pointer hover:bg-gray-50"
-                onClick={() => setSelectedApplication(application)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold">{(application.applicantId as User)?.name}</h3>
-                    <p className="text-gray-600 text-sm">{(application.applicantId as User)?.email}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {applications.map((application: Application) =>(
+                <div 
+                  key={application._id} 
+                  className="bg-white p-4 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"
+                  
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-bold">{(application.applicantId as User)?.name}</h3>
+                      <p className="text-gray-600 text-sm">{(application.applicantId as User)?.email}</p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.status)}`}>
+                      {getStatusText(application.status)}
+                    </span>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.status)}`}>
-                    {getStatusText(application.status)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {selectedApplication && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-black">{(selectedApplication.applicantId as User)?.name}</h2>
-                    {(selectedApplication.applicantId as User)?.email && (
-                      <p className="text-gray-600 text-sm mt-1">{(selectedApplication.applicantId as User).email}</p>
+                  <div className="mt-4 flex gap-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="noShadow"
+                          className="bg-white flex-1 text-xs"
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          Lihat Detail
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-black">{(application.applicantId as User)?.name}</DialogTitle>
+                          {(application.applicantId as User)?.email && (
+                            <p className="text-gray-600 text-sm mt-1">{(application.applicantId as User).email}</p>
+                          )}
+                        </DialogHeader>
+
+                        <div className="border-t-2 border-gray-200 pt-6">
+                           <h3 className="text-xl font-bold mb-4">Jawaban Pelamar</h3>
+                           <div className="space-y-4">
+                             {application.answers?.map((answer, index) => (
+                               <div key={index} className="border-b pb-4">
+                                 <h4 className="text-md font-semibold mb-1">{answer.question}</h4>
+                                 <p className="text-gray-700">{Array.isArray(answer.answer) ? answer.answer.join(', ') : answer.answer}</p>
+                               </div>
+                             ))}
+                           </div>
+                         </div>
+
+                         <div className="border-t-2 border-gray-200 pt-6">
+                           <h3 className="text-xl font-bold mb-4">Status Lamaran</h3>
+                           <div className="flex items-center justify-between mb-4">
+                             <span className={`px-4 py-2 rounded-full text-sm font-bold ${getStatusColor(application.status)}`}>
+                               {getStatusText(application.status)}
+                             </span>
+                             <div className="text-sm text-gray-500">
+                               Dilamar pada: {new Date(application.createdAt).toLocaleDateString('id-ID')}
+                             </div>
+                           </div>
+
+                           {application.status === 'pending' && (
+                             <div className="flex gap-2">
+                               <Button
+                                 onClick={() => updateApplicationStatus(application._id, 'accepted')}
+                                 className="bg-green-500 hover:bg-green-600"
+                               >
+                                 Terima
+                               </Button>
+                               <Button
+                                 onClick={() => updateApplicationStatus(application._id, 'rejected')}
+                                 variant="neutral"
+                               >
+                                 Tolak
+                               </Button>
+                             </div>
+                           )}
+
+                           {application.notes && (
+                             <div className="mt-4">
+                               <h4 className="font-semibold mb-2">Catatan:</h4>
+                               <p className="text-gray-700 bg-gray-50 p-3 rounded border">{application.notes}</p>
+                             </div>
+                           )}
+                         </div>
+                      </DialogContent>
+                    </Dialog>
+                    {application.status === 'accepted' && (
+                      <Button
+                        size="sm"
+                        className="hover:bg-blue-600 flex-1 text-xs"
+                        onClick={() => {
+                          setCurrentApplicationForInterview(application);
+                          setIsInterviewSchedulerOpen(true);
+                        }}
+                      >
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Jadwalkan Interview
+                      </Button>
                     )}
                   </div>
-                  <Button 
-                    onClick={() => setSelectedApplication(null)}
-                    variant="neutral" 
-                    size="sm"
-                  >
-                    Tutup
-                  </Button>
                 </div>
-
-                <div className="border-t-2 border-gray-200 pt-6">
-                  <h3 className="text-xl font-bold mb-4">Jawaban Pelamar</h3>
-                  <div className="space-y-4">
-                    {selectedApplication.answers?.map((answer, index) => (
-                      <div key={index} className="border-b pb-4">
-                        <h4 className="text-md font-semibold mb-1">{answer.question}</h4>
-                        <p className="text-gray-700">{Array.isArray(answer.answer) ? answer.answer.join(', ') : answer.answer}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-4 pt-6 border-t-2 border-gray-200 mt-6">
-                  <Button 
-                    variant="neutral"
-                    onClick={() => {
-                      updateApplicationStatus(selectedApplication._id, 'rejected', 'Maaf, Anda belum memenuhi kriteria');
-                      setSelectedApplication(null);
-                    }}
-                  >
-                    Tolak
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      updateApplicationStatus(selectedApplication._id, 'accepted', 'Selamat! Anda diterima');
-                      setSelectedApplication(null);
-                    }}
-                  >
-                    Terima
-                  </Button>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
+        )}
+
+
+        {currentApplicationForInterview && isInterviewSchedulerOpen && (
+          <InterviewScheduler
+            applicationId={currentApplicationForInterview._id}
+            candidateName={(currentApplicationForInterview.applicantId as User)?.name || ''}
+            position={job?.title || ''}
+            isOpen={isInterviewSchedulerOpen}
+            setIsOpen={setIsInterviewSchedulerOpen}
+            onScheduled={() => {
+              setIsInterviewSchedulerOpen(false);
+              setCurrentApplicationForInterview(null);
+              fetchJobAndApplications();
+            }}
+          />
         )}
       </div>
     </div>

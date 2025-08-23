@@ -46,6 +46,45 @@ export interface Job {
   updatedAt: string;
 }
 
+export interface JobFilters {
+  location: string;
+  salaryRange: string;
+  company: string;
+  datePosted: string;
+}
+
+export interface FilterOption {
+  value: string;
+  label: string;
+  count?: number;
+}
+
+export interface Interview {
+  _id?: string;
+  applicationId: string;
+  candidateName: string;
+  position: string;
+  date: string;
+  time: string;
+  type: 'online' | 'offline';
+  location?: string;
+  meetingLink?: string;
+  notes?: string;
+  googleCalendarEventId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface InterviewFormData {
+  candidateName: string;
+  position: string;
+  date: string;
+  time: string;
+  type: 'online' | 'offline';
+  location: string;
+  notes: string;
+}
+
 export interface Application {
   _id: string;
   jobId: string;
