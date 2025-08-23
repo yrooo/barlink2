@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { connectDB } from '@/lib/mongodb';
-import Application from '@/models/Application';
-import Job from '@/models/Job';
+import { authOptions } from '@/lib/authOptions';
+import dbConnect from '@/lib/mongodb';
+import Application from '@/lib/models/Application';
+// import Job from '@/lib/models/Job';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id: applicationId } = (await context.params);
   try {
     const session = await getServerSession(authOptions);
     
@@ -42,9 +43,10 @@ export async function PATCH(
       );
     }
 
-    await connectDB();
+    await dbConnect();
 
-    const applicationId = params.id;
+
+
 
     // Find the application and populate job data to verify ownership
     const application = await Application.findById(applicationId).populate('jobId');

@@ -101,7 +101,14 @@ export const updateCalendarEvent = async (eventId: string, eventData: {
   try {
     const calendar = getGoogleCalendarClient();
     
-    const updateData: any = {};
+    const updateData: { 
+      summary?: string;
+      description?: string;
+      start?: { dateTime: string; timeZone?: string };
+      end?: { dateTime: string; timeZone?: string };
+      location?: string;
+      attendees?: { email: string }[];
+    } = {};
     
     if (eventData.summary) updateData.summary = eventData.summary;
     if (eventData.description) updateData.description = eventData.description;
@@ -118,7 +125,7 @@ export const updateCalendarEvent = async (eventId: string, eventData: {
       };
     }
     if (eventData.attendeeEmails) {
-      updateData.attendees = eventData.attendeeEmails.map(email => ({ email }));
+      updateData.attendees = eventData.attendeeEmails.map((email: string) => ({ email }));
     }
     if (eventData.location) updateData.location = eventData.location;
 

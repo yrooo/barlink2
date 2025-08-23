@@ -5,7 +5,7 @@ import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
-import { Job, JobFilters, FilterOption } from '@/types';
+import { Job, JobFilters } from '@/types';
 import { ChevronDown, Filter, X } from 'lucide-react';
 
 const JobPageContent = () => {

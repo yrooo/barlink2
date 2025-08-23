@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
-import { connectToDatabase } from '@/lib/mongodb';
+import dbConnect from '@/lib/mongodb';
+import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
-import { Interview } from '@/types';
+
+// import { Interview } from '@/types';
 import { createCalendarEvent } from '@/lib/googleCalendar';
 import InterviewModel from '@/lib/models/Interview';
 
@@ -65,11 +67,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { db } = await connectToDatabase();
+    await dbConnect();
+    const db = mongoose.connection.db;
 
     // Verify the application exists and belongs to the current employer
-    const application = await db.collection('applications').findOne({
-      _id: new ObjectId(applicationId),
+    const application = await db!.collection('applications').findOne({
+      _id: new mongoose.Types.ObjectId(applicationId),
       status: 'accepted' // Only allow scheduling for accepted applications
     });
 
@@ -81,9 +84,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the job to verify employer ownership
-    const job = await db.collection('jobs').findOne({
-      _id: new ObjectId(application.jobId),
-      employerId: new ObjectId(session.user.id)
+    const job = await db!.collection('jobs').findOne({
+      _id: new mongoose.Types.ObjectId(application.jobId),
+      employerId: new mongoose.Types.ObjectId(session.user.id)
     });
 
     if (!job) {
@@ -94,8 +97,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if interview already exists for this application
-    const existingInterview = await db.collection('interviews').findOne({
-      applicationId: new ObjectId(applicationId)
+    const existingInterview = await db!.collection('interviews').findOne({
+      applicationId: new mongoose.Types.ObjectId(applicationId)
     });
 
     if (existingInterview) {
@@ -106,8 +109,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Get applicant details for calendar event
-    const applicant = await db.collection('users').findOne({
-      _id: new ObjectId(application.applicantId)
+    const applicant = await db!.collection('users').findOne({
+      _id: new mongoose.Types.ObjectId(application.applicantId)
     });
 
     if (!applicant) {
@@ -153,7 +156,7 @@ export async function POST(request: NextRequest) {
     const interviewData = {
       applicationId: new ObjectId(applicationId),
       jobId: new ObjectId(application.jobId),
-      employerId: new ObjectId(session.user.id),
+      employerId: new mongoose.Types.ObjectId(session.user.id),
       applicantId: new ObjectId(application.applicantId),
       scheduledDate: interviewDateTime,
       scheduledTime: time,
@@ -171,8 +174,8 @@ export async function POST(request: NextRequest) {
     const savedInterview = await interview.save();
 
     // Update application status to indicate interview is scheduled
-    await db.collection('applications').updateOne(
-      { _id: new ObjectId(applicationId) },
+    await db!.collection('applications').updateOne( 
+      { _id: new mongoose.Types.ObjectId(applicationId) },
       { 
         $set: { 
           interviewScheduled: true,
@@ -212,7 +215,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const applicationId = searchParams.get('applicationId');
 
-    const { db } = await connectToDatabase();
+    await dbConnect();
+    const db = mongoose.connection.db;
 
     let query = {};
     if (applicationId) {
@@ -220,7 +224,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get interviews for jobs owned by the current employer
-    const interviews = await db.collection('interviews').aggregate([
+    const interviews = await db!.collection('interviews').aggregate([
       { $match: query },
       {
         $lookup: {
@@ -242,7 +246,7 @@ export async function GET(request: NextRequest) {
       { $unwind: '$job' },
       {
         $match: {
-          'job.employerId': new ObjectId(session.user.id)
+          'job.employerId': new mongoose.Types.ObjectId(session.user.id)
         }
       },
       {

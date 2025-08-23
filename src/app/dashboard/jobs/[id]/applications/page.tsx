@@ -174,7 +174,7 @@ export default function JobApplications() {
                         <Button
                           size="sm"
                           variant="noShadow"
-                          className="bg-white flex-1 text-xs"
+                          className="flex-1"
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           Lihat Detail
@@ -240,7 +240,7 @@ export default function JobApplications() {
                     {application.status === 'accepted' && (
                       <Button
                         size="sm"
-                        className="hover:bg-blue-600 flex-1 text-xs"
+                        className="bg-blue-500 hover:bg-blue-600 flex-1 text-xs"
                         onClick={() => {
                           setCurrentApplicationForInterview(application);
                           setIsInterviewSchedulerOpen(true);
