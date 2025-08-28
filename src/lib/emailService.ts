@@ -26,6 +26,33 @@ export class EmailService {
   }
 
   /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(email: string, resetToken: string): Promise<boolean> {
+    try {
+      const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`;
+      
+      const { error } = await resend.emails.send({
+        from: this.fromEmail,
+        to: email,
+        subject: 'Reset Password - Barlink ID',
+        html: this.getPasswordResetEmailTemplate(resetUrl),
+      });
+
+      if (error) {
+        console.error('Password reset email sending error:', error);
+        return false;
+      }
+
+      console.log(`Password reset email sent successfully to ${email}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to send password reset email:', error);
+      return false;
+    }
+  }
+
+  /**
    * Send application status notification email
    */
   async sendApplicationStatusNotification(data: EmailNotificationData): Promise<boolean> {
@@ -69,6 +96,107 @@ export class EmailService {
         htmlContent: this.getRejectedEmailTemplate(applicantName, jobTitle, companyName, notes),
       };
     }
+  }
+
+  /**
+   * Email template for password reset
+   */
+  private getPasswordResetEmailTemplate(resetUrl: string): string {
+    return `
+      <!DOCTYPE html>
+      <html lang="id">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reset Password</title>
+        <style>
+          body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+          }
+          .container {
+            background-color: #ffffff;
+            border: 4px solid #000000;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 8px 8px 0px 0px rgba(0,0,0,1);
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 10px;
+          }
+          .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 20px;
+          }
+          .content {
+            margin-bottom: 30px;
+          }
+          .reset-button {
+            display: inline-block;
+            background-color: #FFD700;
+            color: #000;
+            padding: 15px 30px;
+            text-decoration: none;
+            font-weight: bold;
+            border: 3px solid #000;
+            border-radius: 5px;
+            margin: 20px 0;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #000;
+            font-size: 14px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div class="logo">BARLINK</div>
+            <div class="title">Reset Password</div>
+          </div>
+          
+          <div class="content">
+            <p>Halo,</p>
+            <p>Kami menerima permintaan untuk mereset password akun Barlink Anda. Klik tombol di bawah ini untuk membuat password baru:</p>
+            
+            <div style="text-align: center;">
+              <a href="${resetUrl}" class="reset-button">Reset Password</a>
+            </div>
+            
+            <p>Atau salin dan tempel link berikut di browser Anda:</p>
+            <p style="word-break: break-all; background-color: #f5f5f5; padding: 10px; border: 1px solid #ddd;">${resetUrl}</p>
+            
+            <p><strong>Link ini akan kedaluwarsa dalam 1 jam.</strong></p>
+            
+            <p>Jika Anda tidak meminta reset password, abaikan email ini. Password Anda tidak akan berubah.</p>
+          </div>
+          
+          <div class="footer">
+            <p>Email ini dikirim secara otomatis, mohon jangan membalas email ini.</p>
+            <p>&copy; 2024 Barlink ID. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
   }
 
   /**

@@ -101,7 +101,12 @@ export default function SignIn() {
           </Button>
         </form>
 
-        <div className="text-center mt-6">
+        <div className="text-center mt-6 space-y-3">
+          <p className="text-gray-600">
+            <Link href="/auth/forgot-password" className="text-main font-bold hover:underline">
+              Lupa password?
+            </Link>
+          </p>
           <p className="text-gray-600">
             Belum punya akun?{' '}
             <Link href="/auth/signup" className="text-main font-bold hover:underline">

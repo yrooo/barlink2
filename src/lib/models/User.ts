@@ -23,6 +23,8 @@ const UserSchema = new mongoose.Schema({
   },
   verificationToken: String,
   verificationTokenExpiry: Date,
+  resetPasswordToken: String,
+  resetPasswordTokenExpiry: Date,
   role: {
     type: String,
     enum: ['pelamar_kerja', 'pencari_kandidat'],

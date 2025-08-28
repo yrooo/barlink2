@@ -31,16 +31,16 @@ export default function UpdatedNavbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center hover:scale-103 hover:rotate-1 duration-300">
+          <div className="flex items-center duration-300">
             <Link href="/" className="flex items-center space-x-2">
               <Image
                 src="/logo.png"
                 alt="BarLink Logo"
                 width={50}
                 height={50}
-                className=""
+                className="hover:scale-103 hover:rotate-1"
               />
-              <span className="text-2xl font-black text-black">Barlink</span>
+              <span className="text-2xl font-black text-black hover:scale-103 duration-300">Barlink</span>
             </Link>
           </div>
 

@@ -275,15 +275,7 @@ export default function ProfilePage() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-between p-4 border-2 border-red-200 rounded-lg">
-              <div>
-                <h3 className="font-bold text-red-600">Hapus Akun</h3>
-                <p className="text-sm text-gray-600">Hapus akun dan semua data Anda secara permanen</p>
-              </div>
-              <Button variant="default" size="sm">
-                Hapus Akun
-              </Button>
-            </div>
+
           </div>
         </div>
       </div>
