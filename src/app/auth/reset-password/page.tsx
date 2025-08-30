@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Eye, EyeOff } from 'lucide-react';
 
-export default function ResetPassword() {
+function ResetPasswordContent() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,6 @@ export default function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [tokenValid, setTokenValid] = useState(false);
   
-  const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -50,19 +49,14 @@ export default function ResetPassword() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setError('');
 
-    if (password.length < 6) {
-      setError('Password harus minimal 6 karakter');
-      return;
-    }
-
     if (password !== confirmPassword) {
-      setError('Password dan konfirmasi password tidak cocok');
+      setError('Kata sandi tidak cocok');
+      setLoading(false);
       return;
     }
-
-    setLoading(true);
 
     try {
       const response = await fetch('/api/auth/reset-password', {
@@ -72,16 +66,15 @@ export default function ResetPassword() {
         },
         body: JSON.stringify({ token, password }),
       });
-
       const data = await response.json();
 
       if (data.success) {
         setSuccess(true);
       } else {
-        setError(data.error || 'Terjadi kesalahan');
+        setError(data.error || 'Gagal mengatur ulang kata sandi');
       }
     } catch {
-      setError('Terjadi kesalahan. Silakan coba lagi.');
+      setError('Terjadi kesalahan saat mengatur ulang kata sandi');
     } finally {
       setLoading(false);
     }
@@ -89,157 +82,117 @@ export default function ResetPassword() {
 
   if (validating) {
     return (
-      <div className="min-h-screen bg-main flex items-center justify-center">
-        <div className="text-2xl font-bold">Memvalidasi token...</div>
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <p>Memvalidasi token...</p>
       </div>
     );
   }
 
-  if (!tokenValid && !success) {
+  if (!tokenValid) {
     return (
-      <div className="min-h-screen bg-main flex items-center justify-center p-8 relative">
-        <Link href="/auth/signin" className="absolute top-4 left-4">
-          <Button variant="default" size="icon" className="bg-white text-black">
-            <ChevronLeft className="h-6 w-6" />
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <h1 className="text-2xl font-bold mb-4">Reset Kata Sandi</h1>
+        <p className="text-red-500 mb-4">{error}</p>
+        <Link href="/auth/forgot-password">
+          <Button variant="default">
+            Kembali ke Lupa Kata Sandi
           </Button>
         </Link>
-        
-        <div className="bg-white p-8 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-black text-black mb-2">Token Tidak Valid</h1>
-            <p className="text-gray-600">Token reset password tidak valid atau sudah kedaluwarsa</p>
-          </div>
-
-          {error && (
-            <div className="bg-red-100 border-2 border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <Button asChild className="w-full">
-              <Link href="/auth/forgot-password">Minta Link Reset Baru</Link>
-            </Button>
-            
-            <Button asChild variant="neutral" className="w-full">
-              <Link href="/auth/signin">Kembali ke Login</Link>
-            </Button>
-          </div>
-        </div>
       </div>
     );
   }
 
   if (success) {
     return (
-      <div className="min-h-screen bg-main flex items-center justify-center p-8 relative">
-        <Link href="/auth/signin" className="absolute top-4 left-4">
-          <Button variant="default" size="icon" className="bg-white text-black">
-            <ChevronLeft className="h-6 w-6" />
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+        <h1 className="text-2xl font-bold mb-4">Reset Kata Sandi Berhasil</h1>
+        <p className="text-green-500 mb-4">Kata sandi Anda telah berhasil diatur ulang.</p>
+        <Link href="/auth/login">
+          <Button>
+            Masuk Sekarang
           </Button>
         </Link>
-        
-        <div className="bg-white p-8 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-black text-black mb-2">Password Berhasil Direset</h1>
-            <p className="text-gray-600">Password Anda telah berhasil diperbarui</p>
-          </div>
-
-          <div className="bg-green-100 border-2 border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            Password Anda telah berhasil direset. Silakan login dengan password baru Anda.
-          </div>
-
-          <Button asChild className="w-full">
-            <Link href="/auth/signin">Login Sekarang</Link>
-          </Button>
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-main flex items-center justify-center p-8 relative">
-      <Link href="/auth/signin" className="absolute top-4 left-4">
-        <Button variant="default" size="icon" className="bg-white text-black">
-          <ChevronLeft className="h-6 w-6" />
-        </Button>
-      </Link>
-      
-      <div className="bg-white p-8 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-black mb-2">Reset Password</h1>
-          <p className="text-gray-600">Masukkan password baru Anda</p>
-        </div>
-
-        {error && (
-          <div className="bg-red-100 border-2 border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white shadow-neobrutalist rounded-lg border-4 border-black">
+        <Link href="/auth/login" className="flex items-center text-black hover:underline">
+          <ChevronLeft className="w-5 h-5 mr-2" />
+          Kembali ke Login
+        </Link>
+        <h1 className="text-2xl font-bold text-center text-black">Reset Kata Sandi</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-lg font-bold mb-2">Password Baru</label>
+            <label htmlFor="password" className="block text-sm font-medium text-black">Kata Sandi Baru</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
+                id="password"
+                className="mt-1 block w-full p-3 border-4 border-black rounded-lg focus:outline-none focus:ring-0 focus:border-blue-500"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
-                className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main pr-12"
-                placeholder="Masukkan password baru"
+                disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-500" />
+                )}
               </button>
             </div>
-            <p className="text-sm text-gray-500 mt-1">Minimal 6 karakter</p>
           </div>
-
           <div>
-            <label className="block text-lg font-bold mb-2">Konfirmasi Password</label>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-black">Konfirmasi Kata Sandi Baru</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
+                id="confirmPassword"
+                className="mt-1 block w-full p-3 border-4 border-black rounded-lg focus:outline-none focus:ring-0 focus:border-blue-500"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main pr-12"
-                placeholder="Konfirmasi password baru"
+                disabled={loading}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
               >
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-500" />
+                )}
               </button>
             </div>
           </div>
-
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           <Button
             type="submit"
+            className="w-full py-3 bg-black text-white font-bold rounded-lg border-2 border-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
-            className="w-full text-lg py-3"
           >
-            {loading ? 'Mereset Password...' : 'Reset Password'}
+            {loading ? 'Mengatur Ulang...' : 'Atur Ulang Kata Sandi'}
           </Button>
         </form>
-
-        <div className="text-center mt-6">
-          <p className="text-gray-600">
-            Ingat password Anda?{' '}
-            <Link href="/auth/signin" className="text-main font-bold hover:underline">
-              Masuk di sini
-            </Link>
-          </p>
-        </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
