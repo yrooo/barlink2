@@ -6,12 +6,22 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Job } from '@/types';
 import Link from 'next/link';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [selectedJobId, setSelectedJobId] = useState<string>('');
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -40,6 +50,34 @@ export default function Dashboard() {
       console.error('Error fetching jobs:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleJobStatus = (jobId: string, currentStatus: string) => {
+    if (currentStatus === 'active') {
+      setSelectedJobId(jobId);
+      setShowDeactivateModal(true);
+    }
+    // Don't allow reactivation of inactive jobs
+  };
+
+  const confirmDeactivateJob = async () => {
+    try {
+      const response = await fetch(`/api/jobs/${selectedJobId}/toggle-status`, {
+        method: 'PATCH',
+      });
+      
+      if (response.ok) {
+        // Refresh jobs list
+        fetchJobs();
+        setShowDeactivateModal(false);
+        setSelectedJobId('');
+      } else {
+        alert('Gagal mengubah status lowongan');
+      }
+    } catch (error) {
+      console.error('Error toggling job status:', error);
+      alert('Terjadi kesalahan saat mengubah status');
     }
   };
 
@@ -177,6 +215,15 @@ export default function Dashboard() {
                         </div>
                         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
                           <Button 
+                            onClick={() => handleToggleJobStatus(job._id, job.status)}
+                            size="sm"
+                            variant={job.status === 'active' ? 'neutral' : 'default'}
+                            className="w-full sm:w-auto"
+                            disabled={job.status === 'inactive'}
+                          >
+                            {job.status === 'active' ? 'Nonaktifkan' : 'Tidak Dapat Diaktifkan'}
+                          </Button>
+                          <Button 
                             asChild
                             size="sm"
                             variant="neutral"
@@ -214,6 +261,34 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Deactivate Job Confirmation Modal */}
+      <Dialog open={showDeactivateModal} onOpenChange={setShowDeactivateModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Nonaktifkan Lowongan</DialogTitle>
+            <DialogDescription>
+              Apakah anda yakin untuk menonaktifkan pekerjaan ini?
+              <br />
+              <strong>Anda tidak bisa mengaktifkan lagi</strong> setelah lowongan dinonaktifkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="neutral" 
+              onClick={() => setShowDeactivateModal(false)}
+            >
+              Batal
+            </Button>
+            <Button 
+              onClick={confirmDeactivateJob}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Iya, Nonaktifkan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -372,7 +372,7 @@ const JobPageContent = () => {
                             <h2 className="text-lg sm:text-xl font-bold mb-2">{job.title}</h2>
                             <p className="text-base sm:text-lg mb-2 text-blue-600">{job.company}</p>
                             {job.location && <p className="text-xs sm:text-sm mb-2 text-gray-600">📍 {job.location}</p>}
-                            {job.salary && <p className="text-xs sm:text-sm mb-2 text-green-600">💰 {job.salary}</p>}
+                            {job.salary && <p className="text-xs sm:text-sm mb-2 text-green-600">💰 Rp {job.salary}</p>}
                             <p className="text-xs sm:text-sm mb-4 text-gray-700">
                               {job.description.length > 80 
                                 ? `${job.description.substring(0, 80)}...` 

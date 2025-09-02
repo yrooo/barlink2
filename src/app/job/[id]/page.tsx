@@ -307,6 +307,21 @@ const JobDetailPage = () => {
     );
   }
 
+  if (job.status !== 'active') {
+    return (
+      <div className="min-h-screen bg-main">
+        <Navbar />
+        <div className="section-padding">
+          <div className="container-responsive text-center py-8 sm:py-12">
+            <div className="text-xl sm:text-2xl font-bold mb-4">Pekerjaan ini tidak tersedia</div>
+            <p className="text-gray-600 mb-6">Maaf, lowongan pekerjaan ini sudah tidak aktif.</p>
+            <Button onClick={() => router.push('/job?type=seek')} className="touch-target">Kembali ke Daftar Pekerjaan</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-main">
       <Navbar />
