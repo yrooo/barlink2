@@ -175,11 +175,12 @@ export default function Dashboard() {
                             <span>{new Date(job.createdAt).toLocaleDateString('id-ID')}</span>
                           </div>
                         </div>
-                        <div className="flex space-x-2 ml-4">
+                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
                           <Button 
                             asChild
                             size="sm"
                             variant="neutral"
+                            className="w-full sm:w-auto"
                           >
                             <Link href={`/dashboard/jobs/${job._id}/applications`}>
                               Lihat Pelamar
@@ -188,6 +189,7 @@ export default function Dashboard() {
                           <Button 
                             asChild
                             size="sm"
+                            className="w-full sm:w-auto"
                           >
                             <Link href={`/dashboard/jobs/${job._id}/edit`}>
                               Edit

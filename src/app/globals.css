@@ -71,11 +71,52 @@
   h1, h2, h3, h4, h5, h6{
     @apply font-heading;
   }
+
+  /* Responsive text scaling */
+  h1 {
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
+  }
+  
+  h2 {
+    @apply text-2xl sm:text-3xl md:text-4xl;
+  }
+  
+  h3 {
+    @apply text-xl sm:text-2xl md:text-3xl;
+  }
+
+  /* Responsive containers */
+  .container-responsive {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Touch-friendly interactive elements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Responsive grid utilities */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+
+  .grid-responsive-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6;
+  }
+
+  /* Responsive spacing */
+  .section-padding {
+    @apply py-8 sm:py-12 md:py-16 lg:py-20;
+  }
+
+  .content-padding {
+    @apply p-4 sm:p-4 md:p-6;
+  }
 }
 
 ::-webkit-scrollbar {
-  width: 16px;
-  outline: 4px solid #000000;
+  width: 12px;
+  outline: 2px solid #000000;
 }
 
 ::-webkit-scrollbar-track {
@@ -84,4 +125,31 @@
 
 ::-webkit-scrollbar-thumb {
   background: #000000;
+}
+
+/* Mobile scrollbar */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    width: 8px;
+    outline: 1px solid #000000;
+  }
+}
+
+/* Responsive utilities */
+@layer utilities {
+  .text-responsive {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+
+  .shadow-responsive {
+    @apply shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)];
+  }
+
+  .border-responsive {
+    @apply border-2 sm:border-3 md:border-4;
+  }
+
+  .rounded-responsive {
+    @apply rounded-sm;
+  }
 }

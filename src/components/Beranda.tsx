@@ -79,68 +79,59 @@ export default function BerandaPage() {
   return (
     <div id="beranda" className="min-h-screen bg-main">
       {/* Hero Section */}
-      <section className="bg-main border-b-4 py-48 bg-[linear-gradient(to_right,#80808012_3px,transparent_1px),linear-gradient(to_bottom,#80808012_3px,transparent_1px)] bg-[size:64px_64px]">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h1 className="text-6xl font-black mb-8 text-black bg-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black inline-block duration-300 hover:scale-102 hover:shake">
+      <section className="bg-main border-b-2 sm:border-b-4 section-padding bg-[linear-gradient(to_right,#80808012_3px,transparent_1px),linear-gradient(to_bottom,#80808012_3px,transparent_1px)] bg-[size:32px_32px] sm:bg-[size:64px_64px]">
+        <div className="container-responsive text-center">
+          <h1 className="font-black mb-6 sm:mb-8 text-black bg-white content-padding shadow-responsive border-responsive inline-block duration-300 hover:scale-102 hover:shake">
             Selamat Datang di Barlink! 👋
           </h1>
-          <p className="text-2xl mb-12 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
             Coming Soon!!
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               asChild 
               size="lg" 
-              className="bg-white hover:bg-black hover:text-white text-xl px-8 py-4 h-auto border-2 border-black"
+              className="bg-white text-base sm:text-lg md:text-xl px-6 sm:px-8 py-3 sm:py-4 h-auto border-responsive touch-target w-full sm:w-auto"
             >
               <Link href="/job?type=seek">🔍 Cari Lowongan Kerja</Link>
             </Button>
-            {/* <Button 
-              asChild 
-              size="lg" 
-              variant="default" 
-              className="border-white hover:bg-black hover:text-white hover:border-black text-xl px-8 py-4 h-auto"
-            >
-              <Link href="#marketplace">🛒 Jelajahi Marketplace</Link>
-            </Button> */}
           </div>
         </div>
       </section>
 
       {/* Job Seeking Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-black text-black mb-4">
+      <section className="section-padding bg-background">
+        <div className="container-responsive">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="font-black text-black mb-4">
               💼 Lowongan Kerja Terbaru
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-responsive text-gray-600 px-4">
               Temukan pekerjaan impian Anda dengan mudah
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid-responsive mb-6 sm:mb-8">
             {jobs.map((job) => (
               <div
                 key={job._id}
-                className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1"
-              >
-                <h3 className="text-xl font-bold text-black mb-2">{job.title}</h3>
-                <p className="text-main font-semibold mb-2">{job.company}</p>
-                <p className="text-gray-600 mb-2">📍 {job.location}</p>
-                <p className="text-green-600 font-bold mb-4">💰 {job.salary}</p>
-                <p className="text-gray-700 text-sm mb-4 line-clamp-3">
+                className="bg-white content-padding border-responsive shadow-responsive hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1 w-full flex flex-col h-full">
+                <h3 className="text-lg sm:text-xl font-bold text-black mb-2 line-clamp-2">{job.title}</h3>
+                <p className="text-main font-semibold mb-2 text-sm sm:text-base">{job.company}</p>
+                <p className="text-gray-600 mb-2 text-sm sm:text-base">📍 {job.location}</p>
+                <p className="text-green-600 font-bold mb-4 text-sm sm:text-base">💰 Rp {job.salary}</p>
+                <p className="text-gray-700 text-xs sm:text-sm mb-4 line-clamp-3 flex-grow">
                   {job.description}
                 </p>
-                <Button asChild className="w-full">
-                  <Link href="/job?type=seek">Lihat Detail</Link>
+                <Button asChild className="w-full touch-target">
+                  <Link href={`/job/${job._id}`}>Lihat Detail</Link>
                 </Button>
               </div>
             ))}
           </div>
 
-          <div className="text-center">
-            <Button asChild size="lg" variant="default">
+          <div className="text-center sm:pt-4">
+            <Button asChild size="lg" variant="default" className="touch-target w-full sm:w-auto">
               <Link href="/job?type=seek">Lihat Semua Lowongan →</Link>
             </Button>
           </div>
@@ -192,41 +183,41 @@ export default function BerandaPage() {
       </section> */}
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-black text-black mb-4">
+      <section className="section-padding sm:pt-0 bg-background">
+        <div className="container-responsive">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="font-black text-black mb-4">
               ✨ Mengapa Memilih Barlink?
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
-            <div className="text-center">
-              <Button className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="text-2xl">🎯</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="text-center content-padding bg-white border-responsive shadow-responsive hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1">
+              <Button className="w-12 h-12 sm:w-16 sm:h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-responsive border-black">
+                <span className="text-xl sm:text-2xl">🎯</span>
               </Button>
-              <h3 className="text-xl font-bold mb-2">Mudah & Cepat</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg sm:text-xl font-bold mb-2">Mudah & Cepat</h3>
+              <p className="text-gray-600 text-sm sm:text-base">
                 Proses pencarian kerja dan jual beli yang simpel dan efisien
               </p>
             </div>
 
-            <div className="text-center">
-              <Button className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="text-2xl">🔒</span>
+            <div className="text-center content-padding bg-white border-responsive shadow-responsive hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1">
+              <Button className="w-12 h-12 sm:w-16 sm:h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-responsive border-black">
+                <span className="text-xl sm:text-2xl">🔒</span>
               </Button>
-              <h3 className="text-xl font-bold mb-2">Aman & Terpercaya</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg sm:text-xl font-bold mb-2">Aman & Terpercaya</h3>
+              <p className="text-gray-600 text-sm sm:text-base">
                 Sistem keamanan berlapis untuk melindungi data dan transaksi Anda
               </p>
             </div>
 
-            <div className="text-center">
-              <Button className="w-16 h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="text-2xl">💼</span>
+            <div className="text-center content-padding bg-white border-responsive shadow-responsive hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1 md:col-span-2 lg:col-span-1">
+              <Button className="w-12 h-12 sm:w-16 sm:h-16 bg-main rounded-full flex items-center justify-center mx-auto mb-4 border-responsive border-black">
+                <span className="text-xl sm:text-2xl">💼</span>
               </Button>
-              <h3 className="text-xl font-bold mb-2">Lowongan Berkualitas</h3>
-              <p className="text-gray-600">
+              <h3 className="text-lg sm:text-xl font-bold mb-2">Lowongan Berkualitas</h3>
+              <p className="text-gray-600 text-sm sm:text-base">
                 Ribuan lowongan kerja dari perusahaan terpercaya di seluruh Indonesia
               </p>
             </div>
@@ -235,19 +226,19 @@ export default function BerandaPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-main border-t-4 border-b-4">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-black mb-6">
+      <section className="section-padding bg-main border-t-2 sm:border-t-4 border-b-2 sm:border-b-4 border-black">
+        <div className="container-responsive text-center">
+          <h2 className="font-black mb-4 sm:mb-6">
             Siap Memulai Perjalanan Anda?
           </h2>
-          <p className="text-xl mb-8">
+          <p className="text-responsive mb-6 sm:mb-8 px-4">
             Bergabunglah dengan ribuan pengguna yang telah merasakan kemudahan Barlink
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-white hover:bg-black hover:text-white">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Button asChild size="lg" className="bg-white hover:bg-black hover:text-white sm:text-md px-6 sm:px-8 py-3 h-auto touch-target w-full sm:w-auto">
               <Link href="/auth/signup">Daftar Sekarang</Link>
-              </Button>
-              <Button asChild size="lg" variant="default" className="border-white text-white hover:bg-black hover:text-white border-black">
+            </Button>
+            <Button asChild size="lg" variant="default" className="sm:text-md px-6 sm:px-8 py-3 h-auto touch-target w-full sm:w-auto">
               <Link href="/auth/signin">Masuk</Link>
             </Button>
           </div>

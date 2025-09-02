@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Menu } from 'lucide-react';
 import { useState } from 'react';
 
 export default function UpdatedNavbar() {
@@ -27,60 +28,60 @@ export default function UpdatedNavbar() {
   };
 
   return (
-    <nav className="bg-white border-b-4 border-black sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="bg-white border-b-2 sm:border-b-4 border-black sticky top-0 z-50">
+      <div className="container-responsive">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
-          <div className="flex items-center duration-300">
-            <Link href="/" className="flex items-center space-x-2">
+          <div className="flex items-center hover:scale-103 hover:rotate-1 duration-300">
+            <Link href="/" className="flex items-center space-x-1 sm:space-x-2">
               <Image
                 src="/logo.png"
                 alt="BarLink Logo"
-                width={50}
-                height={50}
-                className="hover:scale-103 hover:rotate-1"
+                width={40}
+                height={40}
+                className="sm:w-[50px] sm:h-[50px]"
               />
-              <span className="text-2xl font-black text-black hover:scale-103 duration-300">Barlink</span>
+              <span className="text-xl sm:text-2xl font-black text-black">Barlink</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             <Link
               href="/#beranda"
-              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300 text-sm xl:text-base"
             >
               Beranda
             </Link>
             <Link
               href="/#tentang-kami"
-              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300 text-sm xl:text-base"
             >
               Tentang Kami
             </Link>
             <Link
               href="/#bantuan"
-              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300 text-sm xl:text-base"
             >
               Bantuan
             </Link>
             <Link
               href="/job?type=seek"
-              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300"
+              className="text-black hover:text-main font-semibold hover:-translate-y-1 duration-300 text-sm xl:text-base"
             >
               Lowongan Kerja
             </Link>
           </div>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
             {session ? (
               <DropdownMenu open={isProfileDropdownOpen} onOpenChange={setIsProfileDropdownOpen}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="noShadow" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10 border-2 border-black">
+                  <Button variant="noShadow" className="relative h-8 w-8 xl:h-10 xl:w-10 rounded-full touch-target">
+                    <Avatar className="h-8 w-8 xl:h-10 xl:w-10">
                       <AvatarImage src={session.user.image || ''} alt={session.user.name || 'User'} />
-                      <AvatarFallback>{session.user.name ? session.user.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+                      <AvatarFallback className="text-xs xl:text-sm">{session.user.name ? session.user.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
@@ -114,153 +115,128 @@ export default function UpdatedNavbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Button asChild variant="noShadow" size="sm">
+              <div className="flex items-center space-x-2 xl:space-x-4">
+                <Button asChild variant="noShadow" size="sm" className="text-xs xl:text-sm px-3 xl:px-4 touch-target">
                   <Link href="/auth/signin">Masuk</Link>
                 </Button>
-                <Button asChild size="sm">
+                <Button asChild size="sm" className="text-xs xl:text-sm px-3 xl:px-4 touch-target">
                   <Link href="/auth/signup">Daftar</Link>
                 </Button>
               </div>
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-black hover:text-main focus:outline-none"
+          {/* Mobile Navigation Menu using DropdownMenu */}
+          <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="noShadow"
+              size="icon"
+              className="lg:hidden touch-target"
+              aria-label="Toggle menu"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                {isMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden border-t-2 border-black bg-white">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link
-                href="/#beranda"
-                className="block w-full text-left px-3 py-2 text-black hover:text-main font-semibold"
-                onClick={() => setIsMenuOpen(false)}
-              >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            align="end" 
+            className="w-64 mt-2 max-h-[calc(100vh-5rem)] overflow-y-auto"
+          >
+            {/* Navigation Links */}
+            <DropdownMenuItem asChild>
+              <Link href="/#beranda" onClick={() => setIsMenuOpen(false)}>
                 Beranda
               </Link>
-              <Link
-                href="/#tentang-kami"
-                className="block w-full text-left px-3 py-2 text-black hover:text-main font-semibold"
-                onClick={() => setIsMenuOpen(false)}
-              >
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/#tentang-kami" onClick={() => setIsMenuOpen(false)}>
                 Tentang Kami
               </Link>
-              <Link
-                href="/#bantuan"
-                className="block w-full text-left px-3 py-2 text-black hover:text-main font-semibold"
-                onClick={() => setIsMenuOpen(false)}
-              >
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/#bantuan" onClick={() => setIsMenuOpen(false)}>
                 Bantuan
               </Link>
-              <Link
-                href="/job"
-                className="block px-3 py-2 text-black hover:text-main font-semibold"
-                onClick={() => setIsMenuOpen(false)}
-              >
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/job?type=seek" onClick={() => setIsMenuOpen(false)}>
                 Lowongan Kerja
               </Link>
-
-              {/* Mobile Auth Section */}
-              <div className="border-t-2 border-gray-200 pt-4 mt-4">
-                {session ? (
-                  <div className="space-y-2">
-                    <div className="px-3 py-2 text-sm text-gray-600">
-                      Halo, {session.user.name}
-                    </div>
-                    {session.user.role === 'pencari_kandidat' ? (
-                      <Link
-                        href="/dashboard"
-                        className="block px-3 py-2 text-black hover:text-main font-semibold"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Dashboard
-                      </Link>
-                    ) : session.user.role === 'pelamar_kerja' ? (
-                      <>
-                        <Link
-                          href="/dashboard/my-applications"
-                          className="block px-3 py-2 text-black hover:text-main font-semibold"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Lamaran Saya
-                        </Link>
-                        <Link
-                          href="/profile"
-                          className="block px-3 py-2 text-black hover:text-main font-semibold"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          Profil
-                        </Link>
-                      </>
-                    ) : (
-                      // Fallback for other roles
-                      <Link
-                        href="/profile"
-                        className="block px-3 py-2 text-black hover:text-main font-semibold"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Profil
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-3 py-2 text-red-600 hover:text-red-800 font-semibold"
-                    >
-                      Keluar
-                    </button>
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            {/* Auth Section */}
+            {session ? (
+              <>
+                {/* User Greeting */}
+                <div className="px-2 py-2 text-sm text-gray-600">
+                  <div className="flex items-center space-x-2">
+                    <Avatar className="h-6 w-6 border border-black">
+                      <AvatarImage src={session.user.image || ''} alt={session.user.name || 'User'} />
+                      <AvatarFallback className="text-xs">{session.user.name ? session.user.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+                    </Avatar>
+                    <span>Halo, {session.user.name}</span>
                   </div>
+                </div>
+                
+                <DropdownMenuSeparator />
+                
+                {/* Role-based Navigation */}
+                {session.user.role === 'pencari_kandidat' ? (
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                      📊 Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                ) : session.user.role === 'pelamar_kerja' ? (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard/my-applications" onClick={() => setIsMenuOpen(false)}>
+                        📋 Lamaran Saya
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
+                        👤 Profil
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
                 ) : (
-                  <div className="space-y-2">
-                    <Link
-                      href="/auth/signin"
-                      className="block px-3 py-2 text-black hover:text-main font-semibold"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Masuk
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" onClick={() => setIsMenuOpen(false)}>
+                      👤 Profil
                     </Link>
-                    <Link
-                      href="/auth/signup"
-                      className="block px-3 py-2 text-black hover:text-main font-semibold"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Daftar
-                    </Link>
-                  </div>
+                  </DropdownMenuItem>
                 )}
-              </div>
-            </div>
-          </div>
-        )}
+                
+                <DropdownMenuSeparator />
+                
+                {/* Logout Button */}
+                <DropdownMenuItem 
+                  onClick={handleLogout}
+                  className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                >
+                  🚪 Keluar
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href="/auth/signin" onClick={() => setIsMenuOpen(false)}>
+                    Masuk
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/auth/signup" onClick={() => setIsMenuOpen(false)}>
+                    Daftar
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            )}
+           </DropdownMenuContent>
+         </DropdownMenu>
+        </div>
       </div>
     </nav>
   );

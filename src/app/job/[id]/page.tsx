@@ -86,7 +86,7 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
             onChange={(e) => handleAnswerChange(questionId, e.target.value)}
             required={question.required}
             rows={4}
-            className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+            className="w-full p-3 border-responsive rounded focus:outline-none focus:ring-2 focus:ring-main text-sm sm:text-base touch-target"
             placeholder="Masukkan jawaban Anda..."
           />
         );
@@ -97,7 +97,7 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
             value={value}
             onChange={(e) => handleAnswerChange(questionId, e.target.value)}
             required={question.required}
-            className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+            className="w-full p-3 border-responsive rounded focus:outline-none focus:ring-2 focus:ring-main text-sm sm:text-base touch-target"
           >
             <option value="">Pilih jawaban</option>
             {question.options?.map((option, optionIndex) => (
@@ -112,7 +112,7 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
         return (
           <div className="space-y-2">
             {question.options?.map((option, optionIndex) => (
-              <label key={optionIndex} className="flex items-center space-x-2">
+              <label key={optionIndex} className="flex items-center space-x-2 touch-target">
                 <input
                   type="radio"
                   name={questionId}
@@ -120,9 +120,9 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
                   checked={value === option}
                   onChange={(e) => handleAnswerChange(questionId, e.target.value)}
                   required={question.required}
-                  className="w-4 h-4"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                 />
-                <span>{option}</span>
+                <span className="text-sm sm:text-base">{option}</span>
               </label>
             ))}
           </div>
@@ -132,7 +132,7 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
         return (
           <div className="space-y-2">
             {question.options?.map((option, optionIndex) => (
-              <label key={optionIndex} className="flex items-center space-x-2">
+              <label key={optionIndex} className="flex items-center space-x-2 touch-target">
                 <input
                   type="checkbox"
                   value={option}
@@ -145,9 +145,9 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
                       handleAnswerChange(questionId, currentValues.filter(v => v !== option));
                     }
                   }}
-                  className="w-4 h-4"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
                 />
-                <span>{option}</span>
+                <span className="text-sm sm:text-base">{option}</span>
               </label>
             ))}
           </div>
@@ -160,7 +160,7 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
             value={value}
             onChange={(e) => handleAnswerChange(questionId, e.target.value)}
             required={question.required}
-            className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+            className="w-full p-3 border-responsive rounded focus:outline-none focus:ring-2 focus:ring-main text-sm sm:text-base touch-target"
             placeholder="Masukkan jawaban Anda..."
           />
         );
@@ -168,31 +168,31 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-overlay z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-black">Lamar Pekerjaan</h2>
-            <Button onClick={onClose} variant="neutral" size="sm">
+    <div className="fixed inset-0 bg-overlay z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-white rounded-responsive border-responsive shadow-responsive w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+        <div className="content-padding">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-6 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-black">Lamar Pekerjaan</h2>
+            <Button onClick={onClose} variant="neutral" size="sm" className="touch-target w-full sm:w-auto">
               Tutup
             </Button>
           </div>
 
-          <div className="mb-6">
-            <h3 className="text-xl font-bold">{job.title}</h3>
-            <p className="text-gray-600">{job.company}</p>
-            {job.location && <p className="text-gray-600">📍 {job.location}</p>}
+          <div className="mb-4 sm:mb-6">
+            <h3 className="text-lg sm:text-xl font-bold">{job.title}</h3>
+            <p className="text-sm sm:text-base text-gray-600">{job.company}</p>
+            {job.location && <p className="text-sm sm:text-base text-gray-600">📍 {job.location}</p>}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {job.customQuestions.length > 0 ? (
               <>
-                <div className="border-t-2 border-gray-200 pt-6">
-                  <h4 className="text-lg font-bold mb-4">Pertanyaan Tambahan</h4>
-                  <div className="space-y-6">
+                <div className="border-t-responsive border-gray-200 pt-4 sm:pt-6">
+                  <h4 className="text-base sm:text-lg font-bold mb-3 sm:mb-4">Pertanyaan Tambahan</h4>
+                  <div className="space-y-4 sm:space-y-6">
                     {job.customQuestions.map((question, index) => (
                       <div key={question._id || index}>
-                        <label className="block text-lg font-bold mb-2">
+                        <label className="block text-sm sm:text-lg font-bold mb-2">
                           {question.question}
                           {question.required && <span className="text-red-500 ml-1">*</span>}
                         </label>
@@ -203,22 +203,24 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
                 </div>
               </>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p>Tidak ada pertanyaan tambahan untuk posisi ini.</p>
+              <div className="text-center py-6 sm:py-8 text-gray-500">
+                <p className="text-sm sm:text-base">Tidak ada pertanyaan tambahan untuk posisi ini.</p>
               </div>
             )}
 
-            <div className="flex justify-end space-x-4 pt-6 border-t-2 border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:justify-end gap-3 sm:gap-4 pt-4 sm:pt-6 border-t-responsive border-gray-200">
               <Button 
                 type="button"
                 onClick={onClose}
                 variant="neutral"
+                className="touch-target w-full sm:w-auto order-2 sm:order-1"
               >
                 Batal
               </Button>
               <Button 
                 type="submit"
                 disabled={loading}
+                className="touch-target w-full sm:w-auto order-1 sm:order-2"
               >
                 {loading ? 'Mengirim...' : 'Kirim Lamaran'}
               </Button>
@@ -282,9 +284,9 @@ const JobDetailPage = () => {
     return (
       <div className="min-h-screen bg-main">
         <Navbar />
-        <div className="p-8">
-          <div className="max-w-4xl mx-auto text-center py-12">
-            <div className="text-2xl font-bold">Loading...</div>
+        <div className="section-padding">
+          <div className="container-responsive text-center py-8 sm:py-12">
+            <div className="text-xl sm:text-2xl font-bold">Loading...</div>
           </div>
         </div>
       </div>
@@ -295,10 +297,10 @@ const JobDetailPage = () => {
     return (
       <div className="min-h-screen bg-main">
         <Navbar />
-        <div className="p-8">
-          <div className="max-w-4xl mx-auto text-center py-12">
-            <div className="text-2xl font-bold mb-4">Pekerjaan tidak ditemukan</div>
-            <Button onClick={() => router.push('/job?type=seek')}>Kembali ke Daftar Pekerjaan</Button>
+        <div className="section-padding">
+          <div className="container-responsive text-center py-8 sm:py-12">
+            <div className="text-xl sm:text-2xl font-bold mb-4">Pekerjaan tidak ditemukan</div>
+            <Button onClick={() => router.push('/job?type=seek')} className="touch-target">Kembali ke Daftar Pekerjaan</Button>
           </div>
         </div>
       </div>
@@ -309,48 +311,48 @@ const JobDetailPage = () => {
     <div className="min-h-screen bg-main">
       <Navbar />
       
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6">
+      <div className="section-padding">
+        <div className="container-responsive">
+          <div className="mb-4 sm:mb-6">
             <Button 
               onClick={() => router.push('/job?type=seek')}
               variant="neutral"
-              className="mb-4"
+              className="mb-4 touch-target text-sm sm:text-base"
             >
               ← Kembali ke Daftar Pekerjaan
             </Button>
           </div>
 
-          <div className="bg-white p-8 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <div className="mb-8">
-              <h1 className="text-4xl font-black mb-4">{job.title}</h1>
-              <div className="flex flex-wrap items-center gap-4 mb-6">
-                <p className="text-2xl text-blue-600 font-bold">{job.company}</p>
-                {job.location && <p className="text-lg text-gray-600">📍 {job.location}</p>}
-                {job.salary && <p className="text-lg text-green-600 font-semibold">💰 {job.salary}</p>}
+          <div className="bg-white content-padding rounded-responsive border-responsive shadow-responsive">
+            <div className="mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-3 sm:mb-4">{job.title}</h1>
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+                <p className="text-lg sm:text-xl lg:text-2xl text-blue-600 font-bold">{job.company}</p>
+                {job.location && <p className="text-sm sm:text-base lg:text-lg text-gray-600">📍 {job.location}</p>}
+                {job.salary && <p className="text-sm sm:text-base lg:text-lg text-green-600 font-semibold">💰 {job.salary}</p>}
               </div>
               
-              <div className="flex items-center gap-6 text-sm text-gray-500 mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">
                 <p>Diposting: {new Date(job.createdAt).toLocaleDateString('id-ID')}</p>
                 <p>{job.applicationsCount} pelamar</p>
               </div>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">Deskripsi Pekerjaan</h2>
+            <div className="mb-6 sm:mb-8">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4">Deskripsi Pekerjaan</h2>
               <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{job.description}</p>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">{job.description}</p>
               </div>
             </div>
 
             {job.customQuestions.length > 0 && (
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold mb-4">Pertanyaan Tambahan</h2>
-                <div className="bg-gray-50 p-4 rounded border-2 border-gray-200">
-                  <p className="text-gray-600 mb-2">Posisi ini memiliki {job.customQuestions.length} pertanyaan tambahan yang perlu dijawab saat melamar:</p>
+              <div className="mb-6 sm:mb-8">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4">Pertanyaan Tambahan</h2>
+                <div className="bg-gray-50 content-padding rounded-responsive border-responsive">
+                  <p className="text-sm sm:text-base text-gray-600 mb-2">Posisi ini memiliki {job.customQuestions.length} pertanyaan tambahan yang perlu dijawab saat melamar:</p>
                   <ul className="list-disc list-inside space-y-1">
                     {job.customQuestions.map((question, index) => (
-                      <li key={question._id || index} className="text-gray-700">
+                      <li key={question._id || index} className="text-xs sm:text-sm text-gray-700">
                         {question.question}
                         {question.required && <span className="text-red-500 ml-1">*</span>}
                       </li>
@@ -360,10 +362,10 @@ const JobDetailPage = () => {
               </div>
             )}
 
-            <div className="flex justify-center pt-6 border-t-2 border-gray-200">
+            <div className="flex justify-center pt-4 sm:pt-6 border-t-responsive border-gray-200">
               <Button 
                 onClick={() => handleApply(job)}
-                className="px-8 py-3 text-lg"
+                className="px-6 sm:px-8 py-3 text-base sm:text-lg touch-target w-full sm:w-auto"
                 size="lg"
               >
                 Lamar Sekarang

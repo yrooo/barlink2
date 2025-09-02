@@ -170,29 +170,29 @@ const JobPageContent = () => {
         <Navbar />
       </div>
       
-      <div className="p-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-black mb-8 text-black bg-white p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow[12px_12px_0px_0px_rgba(0,0,0,1)] duration-300 border-2 border-black inline-block">
+      <div className="section-padding">
+        <div className="container-responsive">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 sm:mb-8 text-black bg-white content-padding shadow-responsive hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-300 border-responsive inline-block">
             Cari Pekerjaan Impianmu
           </h1>
 
-          <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <div className="flex gap-4 mb-4">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-white content-padding border-responsive shadow-responsive">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+                  className="flex-1 p-3 border-responsive rounded focus:outline-none focus:ring-2 focus:ring-main text-sm sm:text-base"
                   placeholder="Cari berdasarkan posisi, perusahaan, atau deskripsi..."
                 />
                 <Button 
                   onClick={() => setShowFilters(!showFilters)}
                   variant="default"
-                  className="flex items-center gap-2 px-4 py-3 border-4 border-black rounded hover:bg-gray-50"
+                  className="flex items-center justify-center gap-2 px-4 py-3 border-responsive rounded hover:bg-gray-50 touch-target w-full sm:w-auto text-sm sm:text-base"
                 >
                   <Filter className="w-4 h-4" />
-                  Filter
+                  <span className="hidden sm:inline">Filter</span>
                   {hasActiveFilters && (
                     <span className="bg-main text-white text-xs rounded-full px-2 py-1">
                       {Object.values(filters).filter(f => f !== '').length}
@@ -204,30 +204,30 @@ const JobPageContent = () => {
 
               {/* Filter Panel */}
               {showFilters && (
-                <div className="bg-gray-50 p-6 rounded-lg border-2 border-black">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-black">Filter Pekerjaan</h3>
+                <div className="bg-gray-50 content-padding border-responsive">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4 mb-4">
+                    <h3 className="text-base sm:text-lg font-bold text-black">Filter Pekerjaan</h3>
                     {hasActiveFilters && (
                       <Button
                         onClick={clearFilters}
                         variant="default"
-                        className="text-sm text-gray-600 hover:text-gray-900"
+                        className="text-sm text-gray-600 hover:text-gray-900 touch-target w-full sm:w-auto"
                       >
                         Hapus Semua
                       </Button>
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     {/* Location Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                         Lokasi
                       </label>
                       <select
                         value={filters.location}
                         onChange={(e) => handleFilterChange('location', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-black rounded focus:ring-2 focus:ring-main focus:border-transparent"
+                        className="w-full px-3 py-2 border-responsive rounded focus:ring-2 focus:ring-main focus:border-transparent text-sm touch-target"
                       >
                         <option value="">Semua Lokasi</option>
                         {filterOptions.locations.map(option => (
@@ -240,13 +240,13 @@ const JobPageContent = () => {
 
                     {/* Company Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                         Perusahaan
                       </label>
                       <select
                         value={filters.company}
                         onChange={(e) => handleFilterChange('company', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-black rounded focus:ring-2 focus:ring-main focus:border-transparent"
+                        className="w-full px-3 py-2 border-responsive rounded focus:ring-2 focus:ring-main focus:border-transparent text-sm touch-target"
                       >
                         <option value="">Semua Perusahaan</option>
                         {filterOptions.companies.map(option => (
@@ -259,13 +259,13 @@ const JobPageContent = () => {
 
                     {/* Salary Range Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                         Rentang Gaji
                       </label>
                       <select
                         value={filters.salaryRange}
                         onChange={(e) => handleFilterChange('salaryRange', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-black rounded focus:ring-2 focus:ring-main focus:border-transparent"
+                        className="w-full px-3 py-2 border-responsive rounded focus:ring-2 focus:ring-main focus:border-transparent text-sm touch-target"
                       >
                         <option value="">Semua Gaji</option>
                         {filterOptions.salaryRanges.map(option => (
@@ -278,13 +278,13 @@ const JobPageContent = () => {
 
                     {/* Date Posted Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
                         Tanggal Posting
                       </label>
                       <select
                         value={filters.datePosted}
                         onChange={(e) => handleFilterChange('datePosted', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-black rounded focus:ring-2 focus:ring-main focus:border-transparent"
+                        className="w-full px-3 py-2 border-responsive rounded focus:ring-2 focus:ring-main focus:border-transparent text-sm touch-target"
                       >
                         <option value="">Kapan Saja</option>
                         {filterOptions.datePosted.map(option => (
@@ -334,7 +334,7 @@ const JobPageContent = () => {
               )}
 
               {/* Results Summary */}
-              <div className="flex justify-between items-center text-sm text-gray-600 mt-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-xs sm:text-sm text-gray-600 mt-4">
                 <span>
                   Menampilkan {filteredJobs.length} dari {jobs.length} pekerjaan
                   {hasActiveFilters && ' (terfilter)'}
@@ -342,7 +342,7 @@ const JobPageContent = () => {
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className="text-main hover:text-blue-800 underline"
+                    className="text-main hover:text-blue-800 underline text-left sm:text-right touch-target"
                   >
                     Hapus semua filter
                   </button>
@@ -357,23 +357,23 @@ const JobPageContent = () => {
             ) : (
               <div>
                 {filteredJobs.length === 0 ? (
-                  <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center">
-                    <div className="text-6xl mb-4">🔍</div>
-                    <p className="text-xl text-gray-600">
+                  <div className="bg-white content-padding border-responsive shadow-responsive text-center">
+                    <div className="text-4xl sm:text-6xl mb-4">🔍</div>
+                    <p className="text-lg sm:text-xl text-gray-600">
                       {searchTerm ? 'Tidak ada lowongan yang sesuai dengan pencarian Anda' : 'Belum ada lowongan tersedia'}
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {filteredJobs.map((job) => (
-                      <div key={job._id} className="bg-white p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:transform hover:translate-y-[-4px] transition-transform">
+                      <div key={job._id} className="bg-white content-padding border-responsive shadow-responsive  hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1">
                         <div className="flex flex-col h-full">
                           <div className="flex-1">
-                            <h2 className="text-xl font-bold mb-2">{job.title}</h2>
-                            <p className="text-lg mb-2 text-blue-600">{job.company}</p>
-                            {job.location && <p className="text-sm mb-2 text-gray-600">📍 {job.location}</p>}
-                            {job.salary && <p className="text-sm mb-2 text-green-600">💰 {job.salary}</p>}
-                            <p className="text-sm mb-4 text-gray-700">
+                            <h2 className="text-lg sm:text-xl font-bold mb-2">{job.title}</h2>
+                            <p className="text-base sm:text-lg mb-2 text-blue-600">{job.company}</p>
+                            {job.location && <p className="text-xs sm:text-sm mb-2 text-gray-600">📍 {job.location}</p>}
+                            {job.salary && <p className="text-xs sm:text-sm mb-2 text-green-600">💰 {job.salary}</p>}
+                            <p className="text-xs sm:text-sm mb-4 text-gray-700">
                               {job.description.length > 80 
                                 ? `${job.description.substring(0, 80)}...` 
                                 : job.description
@@ -401,7 +401,7 @@ const JobPageContent = () => {
                           <div className="mt-auto">
                             <Button 
                               onClick={() => window.open(`/job/${job._id}`, '_blank')}
-                              className="w-full px-4 py-2 text-sm"
+                              className="w-full px-4 py-2 text-sm touch-target"
                             >
                               Lihat Detail
                             </Button>

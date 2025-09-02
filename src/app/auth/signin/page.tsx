@@ -5,6 +5,7 @@ import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ChevronLeft } from 'lucide-react';
 
 export default function SignIn() {
@@ -49,16 +50,16 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen bg-main flex items-center justify-center p-8 relative">
-      <Link href="/" className="absolute top-4 left-4">
-        <Button variant="default" size="icon" className="bg-white text-black">
-          <ChevronLeft className="h-6 w-6" />
+    <div className="min-h-screen bg-main flex items-center justify-center p-4 sm:p-8 relative">
+      <Link href="/" className="absolute top-4 left-4 z-10">
+        <Button variant="default" size="icon" className="bg-white text-black touch-target">
+          <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
         </Button>
       </Link>
-      <div className="bg-white p-8 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-black mb-2">Masuk ke Barlink</h1>
-          <p className="text-gray-600">Masuk ke akun Anda untuk melanjutkan</p>
+      <div className="bg-white content-padding rounded-responsive border-responsive border-black shadow-responsive w-full max-w-md mx-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-black mb-2">Masuk ke Barlink</h1>
+          <p className="text-sm sm:text-base text-gray-600">Masuk ke akun Anda untuk melanjutkan</p>
         </div>
 
         {error && (
@@ -67,27 +68,27 @@ export default function SignIn() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div>
-            <label className="block text-lg font-bold mb-2">Email</label>
-            <input
+            <label className="block text-base sm:text-lg font-bold mb-2">Email</label>
+            <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+              className="touch-target"
               placeholder="masukkan@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-lg font-bold mb-2">Kata Sandi</label>
-            <input
+            <label className="block text-base sm:text-lg font-bold mb-2">Kata Sandi</label>
+            <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+              className="touch-target"
               placeholder="Masukkan kata sandi"
             />
           </div>
@@ -95,7 +96,7 @@ export default function SignIn() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full text-lg py-3"
+            className="w-full text-base sm:text-lg py-3 sm:py-4 touch-target"
           >
             {loading ? 'Masuk...' : 'Masuk'}
           </Button>
