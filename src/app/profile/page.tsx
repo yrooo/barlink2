@@ -56,7 +56,7 @@ export default function ProfilePage() {
     if (session.user.role === 'pelamar_kerja' && session.user.profile?.cvFileName) {
       setCurrentCv({
         fileName: session.user.profile.cvFileName,
-        uploadedAt: session.user.profile.cvUploadedAt || '',
+        uploadedAt: session.user.profile.cvUploadedAt?.toString() || '',
         url: session.user.profile.cvUrl || '',
       });
     }
