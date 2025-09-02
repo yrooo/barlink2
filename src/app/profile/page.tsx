@@ -19,6 +19,14 @@ export default function ProfilePage() {
     location: '',
     phone: '',
   });
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [cvUploading, setCvUploading] = useState(false);
+  const [cvDeleting, setCvDeleting] = useState(false);
+  const [currentCv, setCurrentCv] = useState<{
+    fileName: string;
+    uploadedAt: string;
+    url: string;
+  } | null>(null);
 
   useEffect(() => {
     if (status === 'loading') {
@@ -44,6 +52,15 @@ export default function ProfilePage() {
     };
     setFormData(initialFormData);
 
+    // Initialize CV data for job seekers
+    if (session.user.role === 'pelamar_kerja' && session.user.profile?.cvFileName) {
+      setCurrentCv({
+        fileName: session.user.profile.cvFileName,
+        uploadedAt: session.user.profile.cvUploadedAt || '',
+        url: session.user.profile.cvUrl || '',
+      });
+    }
+
   }, [session, status, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -52,6 +69,85 @@ export default function ProfilePage() {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleCvFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Hanya file PDF, DOC, dan DOCX yang diperbolehkan.');
+        return;
+      }
+      
+      // Validate file size (5MB max)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert('Ukuran file terlalu besar. Maksimal 5MB.');
+        return;
+      }
+      
+      setCvFile(file);
+    }
+  };
+
+  const handleCvUpload = async () => {
+    if (!cvFile) return;
+    
+    setCvUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('cv', cvFile);
+      
+      const response = await fetch('/api/users/cv', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        setCurrentCv({
+          fileName: result.fileName,
+          uploadedAt: new Date().toISOString(),
+          url: result.cvUrl,
+        });
+        setCvFile(null);
+        alert('CV berhasil diunggah!');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Gagal mengunggah CV');
+      }
+    } catch (error) {
+      console.error('Error uploading CV:', error);
+      alert('Terjadi kesalahan saat mengunggah CV');
+    } finally {
+      setCvUploading(false);
+    }
+  };
+
+  const handleCvDelete = async () => {
+    if (!confirm('Apakah Anda yakin ingin menghapus CV?')) return;
+    
+    setCvDeleting(true);
+    try {
+      const response = await fetch('/api/users/cv', {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        setCurrentCv(null);
+        alert('CV berhasil dihapus!');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Gagal menghapus CV');
+      }
+    } catch (error) {
+      console.error('Error deleting CV:', error);
+      alert('Terjadi kesalahan saat menghapus CV');
+    } finally {
+      setCvDeleting(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,6 +264,81 @@ export default function ProfilePage() {
                 </div>
               </div>
 
+              {/* CV Section for job seekers */}
+              {session.user.role === 'pelamar_kerja' && (
+                <div className="space-y-4 pt-4">
+                  <h2 className="text-2xl font-bold border-b-2 border-black pb-2">Curriculum Vitae (CV)</h2>
+                  
+                  {currentCv ? (
+                    <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-green-600">✓ CV Sudah Diunggah</p>
+                          <p className="text-sm text-gray-600">File: {currentCv.fileName}</p>
+                          {currentCv.uploadedAt && (
+                            <p className="text-xs text-gray-500">
+                              Diunggah: {new Date(currentCv.uploadedAt).toLocaleDateString('id-ID')}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            type="button"
+                            variant="neutral"
+                            size="sm"
+                            onClick={() => window.open(currentCv.url, '_blank')}
+                          >
+                            Lihat CV
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="noShadow"
+                            size="sm"
+                            onClick={handleCvDelete}
+                            disabled={cvDeleting}
+                          >
+                            {cvDeleting ? 'Menghapus...' : 'Hapus'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-bold mb-2">
+                          Unggah CV *
+                        </label>
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={handleCvFileChange}
+                          className="w-full p-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-main"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Format yang didukung: PDF, DOC, DOCX (Maksimal 5MB)
+                        </p>
+                      </div>
+                      
+                      {cvFile && (
+                        <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                          <p className="text-sm font-bold text-blue-600">File dipilih: {cvFile.name}</p>
+                          <p className="text-xs text-blue-500">Ukuran: {(cvFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                          <Button
+                            type="button"
+                            onClick={handleCvUpload}
+                            disabled={cvUploading}
+                            className="mt-2"
+                            size="sm"
+                          >
+                            {cvUploading ? 'Mengunggah...' : 'Unggah CV'}
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Fields for 'pencari_kandidat' role */}
               {session.user.role === 'pencari_kandidat' && (
                 <>
@@ -274,10 +445,8 @@ export default function ProfilePage() {
                 Ubah Password
               </Button>
             </div>
-
-
+            </div>
           </div>
-        </div>
       </div>
     </div>
   );

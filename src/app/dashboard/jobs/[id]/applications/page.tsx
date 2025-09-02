@@ -163,6 +163,11 @@ export default function JobApplications() {
                     <div>
                       <h3 className="text-lg font-bold">{(application.applicantId as User)?.name}</h3>
                       <p className="text-gray-600 text-sm">{(application.applicantId as User)?.email}</p>
+                      {(application.applicantId as User)?.profile?.cvUrl && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                          📄 CV Tersedia
+                        </span>
+                      )}
                     </div>
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.status)}`}>
                       {getStatusText(application.status)}
@@ -187,6 +192,35 @@ export default function JobApplications() {
                             <p className="text-gray-600 text-sm mt-1">{(application.applicantId as User).email}</p>
                           )}
                         </DialogHeader>
+
+                        {/* CV Section */}
+                        {(application.applicantId as User)?.profile?.cvUrl && (
+                          <div className="border-t-2 border-gray-200 pt-6">
+                            <h3 className="text-xl font-bold mb-4">Curriculum Vitae</h3>
+                            <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-bold text-green-600">✓ CV Tersedia</p>
+                                  <p className="text-sm text-gray-600">
+                                    File: {(application.applicantId as User)?.profile?.cvFileName || 'CV.pdf'}
+                                  </p>
+                                  {(application.applicantId as User)?.profile?.cvUploadedAt && (
+                                    <p className="text-xs text-gray-500">
+                                      Diunggah: {new Date((application.applicantId as User).profile!.cvUploadedAt!).toLocaleDateString('id-ID')}
+                                    </p>
+                                  )}
+                                </div>
+                                <Button
+                                  size="sm"
+                                  onClick={() => window.open((application.applicantId as User)?.profile?.cvUrl, '_blank')}
+                                  className="bg-blue-500 hover:bg-blue-600"
+                                >
+                                  Lihat CV
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="border-t-2 border-gray-200 pt-6">
                            <h3 className="text-xl font-bold mb-4">Jawaban Pelamar</h3>

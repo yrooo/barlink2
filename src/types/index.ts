@@ -6,7 +6,16 @@ declare module 'next-auth' {
       id: string;
       role: 'pelamar_kerja' | 'pencari_kandidat';
       company?: string;
-      profile?: { phone?: string; description?: string; website?: string; location?: string; };
+      profile?: { 
+        phone?: string; 
+        description?: string; 
+        website?: string; 
+        location?: string;
+        cvUrl?: string;
+        cvPath?: string;
+        cvFileName?: string;
+        cvUploadedAt?: Date;
+      };
     } & DefaultSession['user'];
   }
 
@@ -118,6 +127,12 @@ export interface User {
     phone?: string;
     address?: string;
     website?: string;
+    description?: string;
+    location?: string;
+    cvUrl?: string;
+    cvPath?: string;
+    cvFileName?: string;
+    cvUploadedAt?: Date;
   };
   createdAt: string;
   updatedAt: string;

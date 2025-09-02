@@ -51,6 +51,12 @@ const UserSchema = new mongoose.Schema({
     phone: String,
     address: String,
     website: String,
+    description: String,
+    location: String,
+    cvUrl: String,
+    cvPath: String,
+    cvFileName: String,
+    cvUploadedAt: Date,
   },
   phone: {
     type: String,
