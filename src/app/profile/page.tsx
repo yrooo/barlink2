@@ -5,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useUserData } from '@/hooks/useUserData';
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
+  const { userData, loading: userDataLoading, refetch } = useUserData();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isFormInitialized, setIsFormInitialized] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -29,8 +32,8 @@ export default function ProfilePage() {
   } | null>(null);
 
   useEffect(() => {
-    if (status === 'loading') {
-      // Still loading session information
+    if (status === 'loading' || userDataLoading) {
+      // Still loading session or user data
       return;
     }
     
@@ -40,28 +43,36 @@ export default function ProfilePage() {
       return;
     }
 
-    // Session exists, initialize form data for any role
-    const initialFormData = {
-      name: session.user.name || '',
-      email: session.user.email || '',
-      phone: session.user.profile?.phone || '',
-      company: session.user.company || '',
-      description: session.user.profile?.description || '',
-      website: session.user.profile?.website || '',
-      location: session.user.profile?.location || '',
-    };
-    setFormData(initialFormData);
+    if (!userData) {
+      // No user data available
+      return;
+    }
+
+    // Only initialize form data once when user data first loads
+    if (!isFormInitialized) {
+      const initialFormData = {
+        name: userData.name || '',
+        email: userData.email || '',
+        phone: userData.profile?.phone || '',
+        company: userData.company || '',
+        description: userData.profile?.description || '',
+        website: userData.profile?.website || '',
+        location: userData.profile?.location || '',
+      };
+      setFormData(initialFormData);
+      setIsFormInitialized(true);
+    }
 
     // Initialize CV data for job seekers
-    if (session.user.role === 'pelamar_kerja' && session.user.profile?.cvFileName) {
+    if (userData.role === 'pelamar_kerja' && userData.profile?.cvFileName) {
       setCurrentCv({
-        fileName: session.user.profile.cvFileName,
-        uploadedAt: session.user.profile.cvUploadedAt?.toString() || '',
-        url: session.user.profile.cvUrl || '',
+        fileName: userData.profile.cvFileName,
+        uploadedAt: userData.profile.cvUploadedAt?.toString() || '',
+        url: userData.profile.cvUrl || '',
       });
     }
 
-  }, [session, status, router]);
+  }, [userData, userDataLoading, status, router, isFormInitialized]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -164,6 +175,8 @@ export default function ProfilePage() {
       });
 
       if (response.ok) {
+        // Refetch user data from database to get latest changes
+        await refetch();
         alert('Profil berhasil diperbarui!');
       } else {
         alert('Gagal memperbarui profil');
@@ -176,7 +189,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (status === 'loading') {
+  if (status === 'loading' || userDataLoading) {
     return (
       <div className="min-h-screen bg-main flex items-center justify-center">
         <div className="text-2xl font-bold">Loading...</div>
@@ -184,7 +197,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (!session) { // If no session (after loading), render nothing or a message.
+  if (!session || !userData) { // If no session or user data (after loading), render nothing or a message.
     return null; // Or a message like <p>Please sign in to view your profile.</p>
   }
 
@@ -198,7 +211,7 @@ export default function ProfilePage() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button asChild variant="neutral">
-              {session.user.role === 'pencari_kandidat' ? (
+              {userData.role === 'pencari_kandidat' ? (
                 <Link href="/dashboard">← Kembali ke Dashboard</Link>
               ) : (
                 <Link href="/">← Kembali ke Beranda</Link>
@@ -265,7 +278,7 @@ export default function ProfilePage() {
               </div>
 
               {/* CV Section for job seekers */}
-              {session.user.role === 'pelamar_kerja' && (
+              {userData.role === 'pelamar_kerja' && (
                 <div className="space-y-4 pt-4">
                   <h2 className="text-2xl font-bold border-b-2 border-black pb-2">Curriculum Vitae (CV)</h2>
                   
@@ -340,7 +353,7 @@ export default function ProfilePage() {
               )}
 
               {/* Fields for 'pencari_kandidat' role */}
-              {session.user.role === 'pencari_kandidat' && (
+              {userData.role === 'pencari_kandidat' && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -421,7 +434,7 @@ export default function ProfilePage() {
                 asChild
                 className="flex-1"
               >
-                {session.user.role === 'pencari_kandidat' ? (
+                {userData.role === 'pencari_kandidat' ? (
                   <Link href="/dashboard">Batal</Link>
                 ) : (
                   <Link href="/">Batal</Link>

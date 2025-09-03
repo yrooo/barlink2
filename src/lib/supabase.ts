@@ -2,21 +2,28 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 
+// Client-side Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Storage bucket name for CVs
-export const CV_BUCKET_NAME = 'cvs';
+// Server-side Supabase client with service role
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
 
-// Helper function to upload CV file
+// Use supabaseAdmin for server-side file operations
 export async function uploadCV(file: File, userId: string): Promise<{ url: string; path: string } | null> {
   try {
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}-${Date.now()}.${fileExt}`;
     const filePath = `cvs/${fileName}`;
 
-    const { error } = await supabase.storage
-      .from(CV_BUCKET_NAME)
+    const { error } = await supabaseAdmin.storage
+      .from('cvs')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true
@@ -27,9 +34,8 @@ export async function uploadCV(file: File, userId: string): Promise<{ url: strin
       return null;
     }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from(CV_BUCKET_NAME)
+    const { data: { publicUrl } } = supabaseAdmin.storage
+      .from('cvs')
       .getPublicUrl(filePath);
 
     return {
@@ -46,7 +52,7 @@ export async function uploadCV(file: File, userId: string): Promise<{ url: strin
 export async function deleteCV(filePath: string): Promise<boolean> {
   try {
     const { error } = await supabase.storage
-      .from(CV_BUCKET_NAME)
+      .from('cvs')
       .remove([filePath]);
 
     if (error) {
@@ -65,7 +71,7 @@ export async function deleteCV(filePath: string): Promise<boolean> {
 export async function getCVDownloadUrl(filePath: string): Promise<string | null> {
   try {
     const { data, error } = await supabase.storage
-      .from(CV_BUCKET_NAME)
+      .from('cvs')
       .createSignedUrl(filePath, 3600); // 1 hour expiry
 
     if (error) {

@@ -18,24 +18,44 @@ export async function PUT(request: NextRequest) {
     await dbConnect();
     const body = await request.json();
     
-    const { name, company, description, website, location } = body;
+    const { name, company, description, website, location, phone } = body;
     
-    if (!name || !company) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Name and company are required' },
+        { error: 'Name is required' },
         { status: 400 }
       );
     }
 
+    // Prepare update object based on user role
+    const updateData: any = {
+      name,
+      updatedAt: new Date(),
+    };
+
+    // Add role-specific fields
+    if (session.user.role === 'pencari_kandidat') {
+      if (!company) {
+        return NextResponse.json(
+          { error: 'Company is required for employers' },
+          { status: 400 }
+        );
+      }
+      updateData.company = company;
+      updateData.description = description;
+      updateData.website = website;
+      updateData.location = location;
+    } else {
+      // For job seekers, update profile nested object
+      updateData['profile.phone'] = phone;
+      updateData['profile.description'] = description;
+      updateData['profile.website'] = website;
+      updateData['profile.location'] = location;
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       session.user.id,
-      {
-        name,
-        company,
-        description,
-        website,
-        location,
-      },
+      updateData,
       { new: true }
     );
 
@@ -52,10 +72,12 @@ export async function PUT(request: NextRequest) {
         id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
+        role: updatedUser.role,
         company: updatedUser.company,
         description: updatedUser.description,
         website: updatedUser.website,
         location: updatedUser.location,
+        profile: updatedUser.profile,
       }
     });
   } catch (error) {
