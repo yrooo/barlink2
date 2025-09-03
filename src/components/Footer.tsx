@@ -8,19 +8,25 @@ const Footer = () => {
         {/* Legal Links Section */}
         <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-6 pb-6 border-b-2 border-black">
           <Link 
-            href="/legal/user-agreement" 
+            href="/legal" 
+            className="text-black hover:text-white touch-target text-sm sm:text-base font-medium transition-colors duration-200 hover:underline"
+          >
+            Legal Information
+          </Link>
+          <Link 
+            href="/legal#user-agreement" 
             className="text-black hover:text-white touch-target text-sm sm:text-base font-medium transition-colors duration-200 hover:underline"
           >
             Perjanjian Pengguna
           </Link>
           <Link 
-            href="/legal/privacy-policy" 
+            href="/legal#privacy-policy" 
             className="text-black hover:text-white touch-target text-sm sm:text-base font-medium transition-colors duration-200 hover:underline"
           >
             Kebijakan Privasi
           </Link>
           <Link 
-            href="/legal/terms-conditions" 
+            href="/legal#terms-conditions" 
             className="text-black hover:text-white touch-target text-sm sm:text-base font-medium transition-colors duration-200 hover:underline"
           >
             Syarat & Ketentuan
