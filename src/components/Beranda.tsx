@@ -93,7 +93,7 @@ export default function BerandaPage() {
                 <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">Anda</span>
               </h1>
               
-              <p className="text-sm sm:text-md lg:text-lg text-gray-800 max-w-md leading-relaxed text-center lg:text-left mx-auto lg:mx-0">
+              <p className="text-sm sm:text-md lg:text-lg max-w-md leading-relaxed text-center lg:text-left mx-auto lg:mx-0">
                 Platform terpercaya untuk mencari lowongan kerja dan menemukan talenta terbaik di Indonesia.
               </p>
             </div>
@@ -104,9 +104,11 @@ export default function BerandaPage() {
                 <Button asChild className="bg-white px-8 py-4 rounded-md font-semibold text-lg w-full sm:w-auto">
                   <Link href="/auth/signin">🚀 Mulai Sekarang</Link>
                 </Button>
-                <Button variant="noShadow" className="px-6 py-4 rounded-md font-medium w-full sm:w-auto hover:bg-white transition-all duration-200">
-                  <Link href="/job?type=seek">📋 Lihat Lowongan</Link>
-                </Button>
+                <div className="pt-2">
+                  <Button variant="noShadow" className="px-6 py-4 rounded-md font-medium w-full sm:w-auto hover:bg-white transition-all duration-200">
+                    <Link href="/job?type=seek">📋 Lihat Lowongan</Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
