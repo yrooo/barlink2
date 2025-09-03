@@ -87,7 +87,7 @@ export default function BerandaPage() {
             
             {/* Main Heading */}
             <div className="space-y-4 sm:space-y-6">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-center lg:text-left">
+              <h1 className="text-5xl sm:text-4xl md:text-5xl lg:text-7xl font-black leading-tight text-center lg:text-left">
                 <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">Temukan</span>
                 <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">karir impian</span>
                 <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">Anda</span>
@@ -101,11 +101,11 @@ export default function BerandaPage() {
             {/* CTA Section */}
             <div className="space-y-4 flex flex-col items-center lg:items-start">
               <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-                <Button className="bg-white px-8 py-4 rounded-md font-semibold text-lg w-full sm:w-auto">
-                  🚀 Mulai Sekarang
+                <Button asChild className="bg-white px-8 py-4 rounded-md font-semibold text-lg w-full sm:w-auto">
+                  <Link href="/auth/signin">🚀 Mulai Sekarang</Link>
                 </Button>
                 <Button variant="noShadow" className="px-6 py-4 rounded-md font-medium w-full sm:w-auto hover:bg-white transition-all duration-200">
-                  📋 Lihat Lowongan
+                  <Link href="/job?type=seek">📋 Lihat Lowongan</Link>
                 </Button>
               </div>
             </div>
