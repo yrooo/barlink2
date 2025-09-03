@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 
 interface UserProfile {
@@ -36,7 +36,7 @@ export function useUserData(): UseUserDataReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!session?.user?.id) {
       setLoading(false);
       return;
@@ -65,7 +65,7 @@ export function useUserData(): UseUserDataReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (status === 'loading') {
@@ -77,7 +77,7 @@ export function useUserData(): UseUserDataReturn {
     } else {
       setLoading(false);
     }
-  }, [session?.user?.id, status]);
+  }, [session?.user?.id, status, fetchUserData]);
 
   const refetch = async () => {
     await fetchUserData();

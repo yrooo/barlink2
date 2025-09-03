@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Job {
   _id: string;
@@ -79,22 +80,49 @@ export default function BerandaPage() {
   return (
     <div id="beranda" className="min-h-screen bg-main">
       {/* Hero Section */}
-      <section className="bg-main border-b-2 sm:border-b-4 section-padding bg-[linear-gradient(to_right,#80808012_3px,transparent_1px),linear-gradient(to_bottom,#80808012_3px,transparent_1px)] bg-[size:32px_32px] sm:bg-[size:64px_64px]">
-        <div className="container-responsive text-center">
-          <h1 className="font-black mb-6 sm:mb-8 text-black bg-white content-padding shadow-responsive border-responsive inline-block duration-300 hover:scale-102 hover:shake">
-            Selamat Datang di Barlink! 👋
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl mb-8 sm:mb-12 max-w-3xl mx-auto px-4">
-            Coming Soon!!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              asChild 
-              size="lg" 
-              className="bg-white text-base sm:text-lg md:text-xl px-6 sm:px-8 py-3 sm:py-4 h-auto border-responsive touch-target w-full sm:w-auto"
-            >
-              <Link href="/job?type=seek">🔍 Cari Lowongan Kerja</Link>
-            </Button>
+      <section className="bg-gradient-to-br from-primary-50 to-primary-100 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 border-b-4">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
+          {/* Left Content */}
+          <div className="text-left space-y-6 sm:space-y-8 order-2 lg:order-1">
+            
+            {/* Main Heading */}
+            <div className="space-y-4 sm:space-y-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-center lg:text-left">
+                <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">Temukan</span>
+                <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">karir impian</span>
+                <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">Anda</span>
+              </h1>
+              
+              <p className="text-sm sm:text-md lg:text-lg text-gray-800 max-w-md leading-relaxed text-center lg:text-left mx-auto lg:mx-0">
+                Platform terpercaya untuk mencari lowongan kerja dan menemukan talenta terbaik di Indonesia.
+              </p>
+            </div>
+            
+            {/* CTA Section */}
+            <div className="space-y-4 flex flex-col items-center lg:items-start">
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                <Button className="bg-white px-8 py-4 rounded-md font-semibold text-lg w-full sm:w-auto">
+                  🚀 Mulai Sekarang
+                </Button>
+                <Button variant="noShadow" className="px-6 py-4 rounded-md font-medium w-full sm:w-auto hover:bg-white transition-all duration-200">
+                  📋 Lihat Lowongan
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Right Illustration - Hidden on mobile */}
+          <div className="hidden lg:flex justify-center lg:justify-end w-full order-1 lg:order-2">
+            <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-full h-64 sm:h-80 lg:h-full">
+              <Image 
+                src="/barlinkhero.png" 
+                alt="Hero illustration" 
+                width={600}
+                height={400}
+                className="w-full h-full object-contain transform hover:scale-102 transition-transform duration-500 drop-shadow-2xl"
+                priority
+              />
+            </div>
           </div>
         </div>
       </section>

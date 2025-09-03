@@ -4,6 +4,19 @@ import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import User from '@/lib/models/User';
 
+interface UpdateData {
+  name: string;
+  updatedAt: Date;
+  company?: string;
+  description?: string;
+  website?: string;
+  location?: string;
+  'profile.phone'?: string;
+  'profile.description'?: string;
+  'profile.website'?: string;
+  'profile.location'?: string;
+}
+
 export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -28,7 +41,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare update object based on user role
-    const updateData: any = {
+    const updateData: UpdateData = {
       name,
       updatedAt: new Date(),
     };
