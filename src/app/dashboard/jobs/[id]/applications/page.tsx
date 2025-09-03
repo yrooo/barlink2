@@ -9,6 +9,7 @@ import Link from 'next/link';
 import InterviewScheduler from '@/components/InterviewScheduler';
 import { Calendar, Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 export default function JobApplications() {
   const { data: session, status } = useSession();
@@ -76,11 +77,11 @@ export default function JobApplications() {
         // Refresh applications
         fetchJobAndApplications();
       } else {
-        alert('Gagal mengupdate status lamaran');
+        toast.error('Gagal mengupdate status lamaran');
       }
     } catch (error) {
       console.error('Error updating application:', error);
-      alert('Terjadi kesalahan saat mengupdate status');
+      toast.error('Terjadi kesalahan saat mengupdate status');
     }
   };
 

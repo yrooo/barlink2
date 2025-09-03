@@ -79,7 +79,7 @@ export interface Interview {
   location?: string;
   meetingLink?: string;
   notes?: string;
-  googleCalendarEventId?: string;
+  emailSent?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

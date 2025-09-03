@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Job, CustomQuestion } from '@/types';
+import { toast } from 'sonner';
 
 interface JobApplicationProps {
   job: Job;
@@ -28,12 +29,12 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
     e.preventDefault();
     
     if (!session) {
-      alert('Silakan login terlebih dahulu');
+      toast.error('Silakan login terlebih dahulu');
       return;
     }
 
     if (session.user.role !== 'pelamar_kerja') {
-      alert('Hanya pelamar kerja yang dapat melamar pekerjaan');
+      toast.error('Hanya pelamar kerja yang dapat melamar pekerjaan');
       return;
     }
 
@@ -61,14 +62,14 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
       const data = await response.json();
 
       if (response.ok) {
-        alert('Lamaran berhasil dikirim!');
+        toast.success('Lamaran berhasil dikirim!');
         onClose();
       } else {
-        alert(data.error || 'Terjadi kesalahan saat mengirim lamaran');
+        toast.error(data.error || 'Terjadi kesalahan saat mengirim lamaran');
       }
     } catch (error) {
       console.error('Error submitting application:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi.');
+      toast.error('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }
@@ -273,7 +274,7 @@ const JobDetailPage = () => {
     }
 
     if (session.user.role !== 'pelamar_kerja') {
-      alert('Hanya pelamar kerja yang dapat melamar pekerjaan. Silakan daftar sebagai pelamar kerja.');
+      toast.error('Hanya pelamar kerja yang dapat melamar pekerjaan. Silakan daftar sebagai pelamar kerja.');
       return;
     }
 

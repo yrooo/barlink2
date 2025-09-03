@@ -6,7 +6,7 @@ import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 
 // import { Interview } from '@/types';
-import { createCalendarEvent } from '@/lib/googleCalendar';
+import { EmailService } from '@/lib/emailService';
 import InterviewModel from '@/lib/models/Interview';
 
 export async function POST(request: NextRequest) {
@@ -124,32 +124,30 @@ export async function POST(request: NextRequest) {
     const interviewDateTime = new Date(`${date}T${time}`);
     const endDateTime = new Date(interviewDateTime.getTime() + 60 * 60 * 1000); // 1 hour duration
 
-    // Create Google Calendar event
-    let googleCalendarEventId = null;
-    let meetingLinkFromCalendar = null;
-
+    // Send email notification to applicant
+    let emailSent = false;
+    
     try {
-      const calendarResult = await createCalendarEvent({
-        summary: `Interview: ${position} - ${candidateName}`,
-        description: `Interview for ${position} position at ${job.companyName || 'Company'}\n\nNotes: ${notes || 'No additional notes'}`,
-        startDateTime: interviewDateTime.toISOString(),
-        endDateTime: endDateTime.toISOString(),
-        attendeeEmails: [applicant.email, session.user.email],
+      const emailService = EmailService.getInstance();
+      emailSent = await emailService.sendInterviewScheduleEmail({
+        applicantName: candidateName,
+        applicantEmail: applicant.email,
+        jobTitle: position,
+        companyName: job.companyName || 'Company',
+        interviewDate: interviewDateTime.toLocaleDateString('id-ID', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }),
+        interviewTime: time,
+        interviewType: type,
         location: type === 'offline' ? location : undefined,
         meetingLink: type === 'online' ? location : undefined,
+        notes: notes || ''
       });
-
-      if (calendarResult.success) {
-        googleCalendarEventId = calendarResult.eventId;
-        if (type === 'online' && calendarResult.meetingLink) {
-          meetingLinkFromCalendar = calendarResult.meetingLink;
-        }
-      } else {
-        console.error('Failed to create Google Calendar event:', calendarResult.error);
-      }
     } catch (error) {
-      console.error('Error creating Google Calendar event:', error);
-      // Continue without Google Calendar integration
+      console.error('Error sending interview email:', error);
     }
 
     // Create interview object using Mongoose model
@@ -162,11 +160,11 @@ export async function POST(request: NextRequest) {
       scheduledTime: time,
       interviewType: type,
       ...(type === 'online' ? { 
-        meetingLink: meetingLinkFromCalendar || location 
+        meetingLink: location 
       } : { location }),
       notes: notes || '',
       status: 'scheduled',
-      googleCalendarEventId,
+      emailSent
     };
 
     // Save interview to database using Mongoose
@@ -187,9 +185,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: savedInterview.toObject(),
-      message: googleCalendarEventId ? 
-        'Interview scheduled successfully with Google Calendar event created' : 
-        'Interview scheduled successfully (Google Calendar integration unavailable)'
+      message: emailSent ? 
+        'Interview scheduled successfully and email notification sent to applicant' : 
+        'Interview scheduled successfully (email notification failed)'
     });
 
   } catch (error) {

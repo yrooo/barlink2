@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Job } from '@/types';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -73,11 +74,11 @@ export default function Dashboard() {
         setShowDeactivateModal(false);
         setSelectedJobId('');
       } else {
-        alert('Gagal mengubah status lowongan');
+        toast.error('Gagal mengubah status lowongan');
       }
     } catch (error) {
       console.error('Error toggling job status:', error);
-      alert('Terjadi kesalahan saat mengubah status');
+      toast.error('Terjadi kesalahan saat mengubah status');
     }
   };
 

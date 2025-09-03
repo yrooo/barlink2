@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Calendar, Clock, MapPin, Video, X } from 'lucide-react';
 import { InterviewFormData } from '@/types';
+import { toast } from 'sonner';
 
 interface InterviewSchedulerProps {
   applicationId: string;
@@ -107,14 +108,14 @@ export default function InterviewScheduler({
           notes: ''
         });
         onScheduled?.();
-        alert(result.message || 'Interview berhasil dijadwalkan!');
+        toast.success(result.message || 'Interview berhasil dijadwalkan!');
       } else {
         const error = await response.json();
-        alert(`Error: ${error.error || 'Gagal menjadwalkan interview'}`);
+        toast.error(`Error: ${error.error || 'Gagal menjadwalkan interview'}`);
       }
     } catch (error) {
       console.error('Error scheduling interview:', error);
-      alert('Terjadi kesalahan saat menjadwalkan interview');
+      toast.error('Terjadi kesalahan saat menjadwalkan interview');
     } finally {
       setLoading(false);
     }

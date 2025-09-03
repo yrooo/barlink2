@@ -80,7 +80,7 @@ export default function BerandaPage() {
   return (
     <div id="beranda" className="min-h-screen bg-main">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary-50 to-primary-100 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 border-b-4">
+      <section className="bg-gradient-to-br from-primary-50 to-primary-100 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 border-b-4 bg-[linear-gradient(to_right,#00000012_2px,transparent_1px),linear-gradient(to_bottom,#00000012_2px,transparent_1px)] bg-[size:32px_32px] sm:bg-[size:64px_64px]">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
           {/* Left Content */}
           <div className="text-left space-y-6 sm:space-y-8 order-2 lg:order-1">

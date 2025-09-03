@@ -12,6 +12,19 @@ export interface EmailNotificationData {
   notes?: string;
 }
 
+export interface InterviewScheduleEmailData {
+  applicantName: string;
+  applicantEmail: string;
+  jobTitle: string;
+  companyName: string;
+  interviewDate: string;
+  interviewTime: string;
+  interviewType: 'online' | 'offline';
+  location?: string;
+  meetingLink?: string;
+  notes: string;
+}
+
 export class EmailService {
   private static instance: EmailService;
   private fromEmail = 'Barlink ID <barlinkid@senze.id>';
@@ -474,6 +487,143 @@ export class EmailService {
           </div>
         </div>
       </body>
+      </html>
+    `;
+  }
+
+  /**
+   * Send interview schedule email
+   */
+  async sendInterviewScheduleEmail(data: InterviewScheduleEmailData): Promise<boolean> {
+    try {
+      const { error } = await resend.emails.send({
+        from: this.fromEmail,
+        to: data.applicantEmail,
+        subject: `Interview Scheduled - ${data.jobTitle} at ${data.companyName}`,
+        html: this.getInterviewScheduleEmailTemplate(data),
+      });
+
+      if (error) {
+        console.error('Interview schedule email sending error:', error);
+        return false;
+      }
+
+      console.log(`Interview schedule email sent successfully to ${data.applicantEmail}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to send interview schedule email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Email template for interview schedule
+   */
+  private getInterviewScheduleEmailTemplate(data: InterviewScheduleEmailData): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Interview Scheduled - Barlink ID</title>
+        </head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">Barlink ID</h1>
+            <p style="color: #f0f0f0; margin: 10px 0 0 0; font-size: 16px;">Platform Pencarian Kerja Terpercaya</p>
+          </div>
+          
+          <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e9ecef;">
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+              <h2 style="color: #155724; margin: 0 0 10px 0; font-size: 20px;">📅 Interview Dijadwalkan</h2>
+              <p style="color: #155724; margin: 0; font-size: 14px;">Selamat! Interview Anda telah dijadwalkan</p>
+            </div>
+            
+            <p style="font-size: 16px; margin-bottom: 20px;">Halo <strong>${data.applicantName}</strong>,</p>
+            
+            <p style="font-size: 16px; margin-bottom: 20px;">
+              Kami dengan senang hati memberitahukan bahwa interview Anda untuk posisi <strong>${data.jobTitle}</strong> di <strong>${data.companyName}</strong> telah dijadwalkan.
+            </p>
+            
+            <div style="background: #fff; border: 2px solid #007bff; border-radius: 8px; padding: 25px; margin: 25px 0;">
+              <h3 style="color: #007bff; margin: 0 0 20px 0; font-size: 18px;">📋 Detail Interview</h3>
+              
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #495057;">📅 Tanggal:</strong>
+                <span style="color: #007bff; font-weight: bold;">${data.interviewDate}</span>
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #495057;">🕐 Waktu:</strong>
+                <span style="color: #007bff; font-weight: bold;">${data.interviewTime} WIB</span>
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #495057;">💼 Posisi:</strong>
+                <span style="color: #007bff; font-weight: bold;">${data.jobTitle}</span>
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #495057;">🏢 Perusahaan:</strong>
+                <span style="color: #007bff; font-weight: bold;">${data.companyName}</span>
+              </div>
+              
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #495057;">${data.interviewType === 'online' ? '💻' : '📍'} Jenis Interview:</strong>
+                <span style="color: #007bff; font-weight: bold;">${data.interviewType === 'online' ? 'Online' : 'Offline'}</span>
+              </div>
+              
+              ${data.interviewType === 'online' && data.meetingLink ? `
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #495057;">🔗 Link Meeting:</strong><br>
+                <a href="${data.meetingLink}" style="color: #007bff; word-break: break-all;">${data.meetingLink}</a>
+              </div>
+              ` : ''}
+              
+              ${data.interviewType === 'offline' && data.location ? `
+              <div style="margin-bottom: 15px;">
+                <strong style="color: #495057;">📍 Lokasi:</strong>
+                <span style="color: #007bff;">${data.location}</span>
+              </div>
+              ` : ''}
+            </div>
+            
+            ${data.notes ? `
+            <div style="background: #e2e3e5; border-left: 4px solid #6c757d; padding: 15px; margin: 20px 0;">
+              <h4 style="color: #495057; margin: 0 0 10px 0; font-size: 16px;">💬 Catatan Tambahan:</h4>
+              <p style="color: #6c757d; margin: 0;">${data.notes}</p>
+            </div>
+            ` : ''}
+            
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 25px 0;">
+              <h4 style="color: #856404; margin: 0 0 15px 0; font-size: 16px;">💡 Tips Persiapan Interview</h4>
+              <ul style="color: #856404; margin: 0; padding-left: 20px;">
+                <li>Pelajari profil perusahaan dan posisi yang dilamar</li>
+                <li>Siapkan pertanyaan untuk pewawancara</li>
+                <li>Pastikan koneksi internet stabil (untuk interview online)</li>
+                <li>Berpakaian profesional dan datang tepat waktu</li>
+                <li>Bawa dokumen yang diperlukan (CV, portofolio, dll)</li>
+              </ul>
+            </div>
+            
+            <div style="border-top: 2px solid #e9ecef; padding-top: 20px; margin-top: 30px; text-align: center;">
+              <p style="color: #6c757d; font-size: 14px; margin: 0 0 10px 0;">
+                Semoga sukses dalam interview Anda! Jika ada pertanyaan, silakan hubungi perusahaan terkait.
+              </p>
+              <p style="color: #6c757d; font-size: 12px; margin: 0;">
+                Email ini dikirim secara otomatis, mohon tidak membalas email ini.
+              </p>
+            </div>
+          </div>
+          
+          <div style="text-align: center; padding: 20px; color: #6c757d; font-size: 12px;">
+            <p style="margin: 0;">&copy; 2024 Barlink ID. All rights reserved.</p>
+            <p style="margin: 5px 0 0 0;">
+              <a href="${process.env.NEXTAUTH_URL}" style="color: #667eea; text-decoration: none;">www.barlink.id</a>
+            </p>
+          </div>
+        </body>
       </html>
     `;
   }

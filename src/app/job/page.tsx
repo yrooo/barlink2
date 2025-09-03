@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Job, JobFilters } from '@/types';
 import { ChevronDown, Filter, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 const JobPageContent = () => {
   const searchParams = useSearchParams();
@@ -35,7 +36,7 @@ const JobPageContent = () => {
       } else if (session.user.role === 'pencari_kandidat') {
         router.push('/dashboard/jobs/create');
       } else {
-        alert('Hanya pencari kandidat yang dapat memposting lowongan');
+        toast.error('Hanya pencari kandidat yang dapat memposting lowongan');
         router.push('/');
       }
     }

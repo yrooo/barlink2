@@ -13,7 +13,7 @@ export interface IInterview extends Document {
   meetingLink?: string;
   notes?: string;
   status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled';
-  googleCalendarEventId?: string;
+  emailSent?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -73,9 +73,9 @@ const InterviewSchema = new Schema<IInterview>({
     enum: ['scheduled', 'completed', 'cancelled', 'rescheduled'],
     default: 'scheduled',
   },
-  googleCalendarEventId: {
-    type: String,
-    sparse: true, // Allow multiple documents without this field
+  emailSent: {
+    type: Boolean,
+    default: false,
   },
 }, {
   timestamps: true,

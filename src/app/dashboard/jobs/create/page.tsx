@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CustomQuestion } from '@/types';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 export default function CreateJob() {
   const { data: session, status } = useSession();
@@ -143,11 +144,11 @@ export default function CreateJob() {
         router.push('/dashboard');
       } else {
         const data = await response.json();
-        alert(data.error || 'Terjadi kesalahan saat membuat lowongan');
+        toast.error(data.error || 'Terjadi kesalahan saat membuat lowongan');
       }
     } catch (error) {
       console.error('Error creating job:', error);
-      alert('Terjadi kesalahan. Silakan coba lagi.');
+      toast.error('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
       setLoading(false);
     }

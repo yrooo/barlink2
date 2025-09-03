@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useUserData } from '@/hooks/useUserData';
+import { toast } from 'sonner';
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -88,14 +89,14 @@ export default function ProfilePage() {
       // Validate file type
       const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
       if (!allowedTypes.includes(file.type)) {
-        alert('Hanya file PDF, DOC, dan DOCX yang diperbolehkan.');
+        toast.error('Hanya file PDF, DOC, dan DOCX yang diperbolehkan.');
         return;
       }
       
       // Validate file size (5MB max)
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert('Ukuran file terlalu besar. Maksimal 5MB.');
+        toast.error('Ukuran file terlalu besar. Maksimal 5MB.');
         return;
       }
       
@@ -124,14 +125,14 @@ export default function ProfilePage() {
           url: result.cvUrl,
         });
         setCvFile(null);
-        alert('CV berhasil diunggah!');
+        toast.success('CV berhasil diunggah!');
       } else {
         const error = await response.json();
-        alert(error.error || 'Gagal mengunggah CV');
+        toast.error(error.error || 'Gagal mengunggah CV');
       }
     } catch (error) {
       console.error('Error uploading CV:', error);
-      alert('Terjadi kesalahan saat mengunggah CV');
+      toast.error('Terjadi kesalahan saat mengunggah CV');
     } finally {
       setCvUploading(false);
     }
@@ -148,14 +149,14 @@ export default function ProfilePage() {
       
       if (response.ok) {
         setCurrentCv(null);
-        alert('CV berhasil dihapus!');
+        toast.success('CV berhasil dihapus!');
       } else {
         const error = await response.json();
-        alert(error.error || 'Gagal menghapus CV');
+        toast.error(error.error || 'Gagal menghapus CV');
       }
     } catch (error) {
       console.error('Error deleting CV:', error);
-      alert('Terjadi kesalahan saat menghapus CV');
+      toast.error('Terjadi kesalahan saat menghapus CV');
     } finally {
       setCvDeleting(false);
     }
@@ -177,13 +178,13 @@ export default function ProfilePage() {
       if (response.ok) {
         // Refetch user data from database to get latest changes
         await refetch();
-        alert('Profil berhasil diperbarui!');
+        toast.success('Profil berhasil diperbarui!');
       } else {
-        alert('Gagal memperbarui profil');
+        toast.error('Gagal memperbarui profil');
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Terjadi kesalahan');
+      toast.error('Terjadi kesalahan');
     } finally {
       setLoading(false);
     }
