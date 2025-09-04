@@ -118,9 +118,11 @@ export default function UpdatedNavbar() {
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2 xl:space-x-4">
-                <Button asChild variant="noShadow" size="sm" className="text-xs xl:text-sm px-3 xl:px-4 touch-target">
-                  <Link href="/auth/signin">Masuk</Link>
-                </Button>
+                <div className="pt-2">
+                  <Button asChild variant="reverse" size="sm" className="text-xs xl:text-sm px-3 xl:px-4 touch-target">
+                    <Link href="/auth/signin">Masuk</Link>
+                  </Button>
+                </div>
                 <Button asChild size="sm" className="text-xs xl:text-sm px-3 xl:px-4 touch-target">
                   <Link href="/auth/signup">Daftar</Link>
                 </Button>
