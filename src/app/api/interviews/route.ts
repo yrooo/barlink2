@@ -157,6 +157,7 @@ export async function POST(request: NextRequest) {
       employerId: new mongoose.Types.ObjectId(session.user.id),
       applicantId: new ObjectId(application.applicantId),
       scheduledDate: interviewDateTime,
+      endDate: endDateTime,
       scheduledTime: time,
       interviewType: type,
       ...(type === 'online' ? { 
