@@ -7,14 +7,19 @@ module.exports = {
     watch: false, // Don't watch files in production
     max_memory_restart: '1G',
     env: {
-      NODE_ENV: 'production',
+      NODE_ENV: 'development',
       PORT: 3001,
-      ALLOWED_ORIGINS: 'https://barlink2.vercel.app/'
+      ALLOWED_ORIGINS: 'http://localhost:3000,https://barlink2.vercel.app/'
     },
     env_development: {
       NODE_ENV: 'development',
       PORT: 3001,
       ALLOWED_ORIGINS: 'http://localhost:3000,https://barlink2.vercel.app/'
+    },
+    env_production: {
+      NODE_ENV: 'production',
+      PORT: 3001,
+      ALLOWED_ORIGINS: 'https://barlink2.vercel.app/'
     },
     error_file: './logs/err.log',
     out_file: './logs/out.log',
