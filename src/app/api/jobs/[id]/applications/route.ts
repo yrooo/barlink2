@@ -37,7 +37,7 @@ export async function GET(
     }
     
     const applications = await Application.find({ jobId: id })
-      .populate('applicantId', 'name email')
+      .populate('applicantId', 'name email profile')
       .sort({ createdAt: -1 });
     
     return NextResponse.json(applications);

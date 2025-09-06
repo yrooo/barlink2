@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 
 interface UserProfile {
   phone?: string;
+  whatsappNumber?: string;
   description?: string;
   website?: string;
   location?: string;
@@ -20,6 +21,9 @@ interface UserData {
   role: string;
   company?: string;
   image?: string;
+  whatsappNumber?: string;
+  whatsappVerified?: boolean;
+  whatsappVerifiedAt?: Date;
   profile?: UserProfile;
 }
 

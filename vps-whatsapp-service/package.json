@@ -1,0 +1,48 @@
+{
+  "name": "barlink-whatsapp-vps-service",
+  "version": "1.0.0",
+  "description": "Standalone WhatsApp service for VPS deployment - handles OTP verification for Barlink platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop barlink-whatsapp",
+    "pm2:restart": "pm2 restart barlink-whatsapp",
+    "pm2:logs": "pm2 logs barlink-whatsapp",
+    "pm2:status": "pm2 status",
+    "install-deps": "npm install",
+    "health-check": "curl http://localhost:3001/health || echo 'Service not running'"
+  },
+  "keywords": [
+    "whatsapp",
+    "otp",
+    "verification",
+    "vps",
+    "nodejs",
+    "express"
+  ],
+  "author": "Barlink Platform",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "whatsapp-web.js": "^1.23.0",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yrooo/barlink2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yrooo/barlink2.git/issues"
+  },
+  "homepage": "https://github.com/yrooo/barlink2.git#readme"
+}

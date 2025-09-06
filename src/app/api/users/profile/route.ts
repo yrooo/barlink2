@@ -11,7 +11,9 @@ interface UpdateData {
   description?: string;
   website?: string;
   location?: string;
+  whatsappNumber?: string;
   'profile.phone'?: string;
+  'profile.whatsappNumber'?: string;
   'profile.description'?: string;
   'profile.website'?: string;
   'profile.location'?: string;
@@ -31,7 +33,7 @@ export async function PUT(request: NextRequest) {
     await dbConnect();
     const body = await request.json();
     
-    const { name, company, description, website, location, phone } = body;
+    const { name, company, description, website, location, phone, whatsappNumber } = body;
     
     if (!name) {
       return NextResponse.json(
@@ -58,9 +60,11 @@ export async function PUT(request: NextRequest) {
       updateData.description = description;
       updateData.website = website;
       updateData.location = location;
+      updateData.whatsappNumber = whatsappNumber;
     } else {
       // For job seekers, update profile nested object
       updateData['profile.phone'] = phone;
+      updateData['profile.whatsappNumber'] = whatsappNumber;
       updateData['profile.description'] = description;
       updateData['profile.website'] = website;
       updateData['profile.location'] = location;

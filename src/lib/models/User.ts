@@ -49,6 +49,7 @@ const UserSchema = new mongoose.Schema({
   profile: {
     bio: String,
     phone: String,
+    whatsappNumber: String,
     address: String,
     website: String,
     description: String,
@@ -61,6 +62,17 @@ const UserSchema = new mongoose.Schema({
   phone: {
     type: String,
     trim: true,
+  },
+  whatsappNumber: {
+    type: String,
+    trim: true,
+  },
+  whatsappVerified: {
+    type: Boolean,
+    default: false,
+  },
+  whatsappVerifiedAt: {
+    type: Date,
   },
   createdAt: {
     type: Date,

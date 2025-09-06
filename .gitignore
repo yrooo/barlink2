@@ -43,3 +43,8 @@ EMAIL_NOTIFICATION_SETUP.md
 /src/app/api/test
 src/lib/testEmailNotification.ts
 GOOGLE_CALENDAR_SETUP.md
+/.wwebjs_auth/
+/.wwebjs_cache/
+ENVIRONMENT_CONFIG.md
+VPS_SETUP_GUIDE.md
+WHATSAPP_DEPLOYMENT.md

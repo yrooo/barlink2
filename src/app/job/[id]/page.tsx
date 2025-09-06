@@ -15,6 +15,7 @@ interface JobApplicationProps {
 
 const JobApplication = ({ job, onClose }: JobApplicationProps) => {
   const { data: session } = useSession();
+  const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [loading, setLoading] = useState(false);
 
@@ -65,7 +66,13 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
         toast.success('Lamaran berhasil dikirim!');
         onClose();
       } else {
-        toast.error(data.error || 'Terjadi kesalahan saat mengirim lamaran');
+        if (data.error === 'CV_REQUIRED') {
+          toast.error(data.message || 'Tambahkan CV anda sebelum lamar pekerjaan');
+          onClose();
+          router.push('/profile');
+        } else {
+          toast.error(data.error || 'Terjadi kesalahan saat mengirim lamaran');
+        }
       }
     } catch (error) {
       console.error('Error submitting application:', error);
@@ -174,9 +181,6 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
         <div className="content-padding">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-6 mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-black">Lamar Pekerjaan</h2>
-            <Button onClick={onClose} variant="neutral" size="sm" className="touch-target w-full sm:w-auto">
-              Tutup
-            </Button>
           </div>
 
           <div className="mb-4 sm:mb-6">

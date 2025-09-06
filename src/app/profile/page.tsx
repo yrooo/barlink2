@@ -7,6 +7,15 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useUserData } from '@/hooks/useUserData';
 import { toast } from 'sonner';
+import { ChevronLeft } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
@@ -22,15 +31,23 @@ export default function ProfilePage() {
     website: '',
     location: '',
     phone: '',
+    whatsappNumber: '',
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [cvUploading, setCvUploading] = useState(false);
   const [cvDeleting, setCvDeleting] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [currentCv, setCurrentCv] = useState<{
     fileName: string;
     uploadedAt: string;
     url: string;
   } | null>(null);
+  
+  // WhatsApp OTP verification states
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
 
   useEffect(() => {
     if (status === 'loading' || userDataLoading) {
@@ -55,6 +72,7 @@ export default function ProfilePage() {
         name: userData.name || '',
         email: userData.email || '',
         phone: userData.profile?.phone || '',
+        whatsappNumber: userData.profile?.whatsappNumber || userData.whatsappNumber || '',
         company: userData.company || '',
         description: userData.profile?.description || '',
         website: userData.profile?.website || '',
@@ -138,9 +156,12 @@ export default function ProfilePage() {
     }
   };
 
-  const handleCvDelete = async () => {
-    if (!confirm('Apakah Anda yakin ingin menghapus CV?')) return;
-    
+  const handleCvDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmCvDelete = async () => {
+    setShowDeleteModal(false);
     setCvDeleting(true);
     try {
       const response = await fetch('/api/users/cv', {
@@ -190,6 +211,74 @@ export default function ProfilePage() {
     }
   };
 
+  // WhatsApp OTP verification functions
+  const handleSendOtp = async () => {
+    if (!formData.whatsappNumber) {
+      toast.error('Masukkan nomor WhatsApp terlebih dahulu');
+      return;
+    }
+
+    setOtpSending(true);
+    try {
+      const response = await fetch('/api/whatsapp/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phoneNumber: formData.whatsappNumber }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setOtpSent(true);
+        toast.success('Kode OTP telah dikirim ke WhatsApp Anda');
+      } else {
+        toast.error(data.error || 'Gagal mengirim OTP');
+      }
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      toast.error('Terjadi kesalahan saat mengirim OTP');
+    } finally {
+      setOtpSending(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpCode) {
+      toast.error('Masukkan kode OTP');
+      return;
+    }
+
+    setOtpVerifying(true);
+    try {
+      const response = await fetch('/api/whatsapp/verify-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          phoneNumber: formData.whatsappNumber, 
+          otpCode 
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setOtpSent(false);
+        setOtpCode('');
+        await refetch(); // Refresh user data to show verified status
+        toast.success('Nomor WhatsApp berhasil diverifikasi!');
+      } else {
+        toast.error(data.error || 'Kode OTP tidak valid');
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      toast.error('Terjadi kesalahan saat verifikasi OTP');
+    } finally {
+      setOtpVerifying(false);
+    }
+  };
+
   if (status === 'loading' || userDataLoading) {
     return (
       <div className="min-h-screen bg-main flex items-center justify-center">
@@ -209,15 +298,21 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-main">
       {/* Header */}
       <div className="bg-white border-b-4 border-black p-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button asChild variant="neutral">
               {userData.role === 'pencari_kandidat' ? (
-                <Link href="/dashboard">← Kembali ke Dashboard</Link>
+                <Link href="/dashboard" className="absolute top-4 left-4 z-10">
+                  <Button variant="default" size="icon" className="bg-white text-black touch-target">
+                    <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </Button>
+                </Link>
               ) : (
-                <Link href="/">← Kembali ke Beranda</Link>
+                <Link href="/" className="absolute top-4 left-4 z-10">
+                  <Button variant="default" size="icon" className="bg-white text-black touch-target">
+                    <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </Button>
+                </Link>
               )}
-            </Button>
             <h1 className="text-3xl font-black">Edit Profil</h1>
           </div>
         </div>
@@ -262,19 +357,69 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-4"> {/* Changed to 1 col for phone */}
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4"> {/* Changed to 1 col for whatsapp */}
                 <div>
                   <label className="block text-sm font-bold mb-2">
-                    Nomor Telepon
+                    Nomor WhatsApp
                   </label>
                   <input
                     type="tel"
-                    name="phone"
-                    value={formData.phone}
+                    name="whatsappNumber"
+                    value={formData.whatsappNumber}
                     onChange={handleInputChange}
                     placeholder="081234567890"
                     className="w-full p-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-main"
                   />
+                  {userData.whatsappVerified ? (
+                    <p className="text-xs text-green-600 mt-1">✓ Nomor WhatsApp terverifikasi</p>
+                  ) : (
+                    <div className="mt-2 space-y-2">
+                      <p className="text-xs text-orange-600">⚠ Nomor WhatsApp belum terverifikasi</p>
+                      
+                      {!otpSent ? (
+                        <Button
+                          type="button"
+                          onClick={handleSendOtp}
+                          disabled={otpSending || !formData.whatsappNumber}
+                          className="w-full bg-green-500 hover:bg-green-600 text-white"
+                        >
+                          {otpSending ? 'Mengirim...' : 'Kirim Kode Verifikasi'}
+                        </Button>
+                      ) : (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={otpCode}
+                            onChange={(e) => setOtpCode(e.target.value)}
+                            placeholder="Masukkan kode OTP"
+                            className="w-full p-2 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-main"
+                            maxLength={6}
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              onClick={handleVerifyOtp}
+                              disabled={otpVerifying || !otpCode}
+                              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+                            >
+                              {otpVerifying ? 'Memverifikasi...' : 'Verifikasi'}
+                            </Button>
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                setOtpSent(false);
+                                setOtpCode('');
+                              }}
+                              variant="noShadow"
+                              className="flex-1"
+                            >
+                              Batal
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -304,15 +449,17 @@ export default function ProfilePage() {
                           >
                             Lihat CV
                           </Button>
+                          <div className="pt-1">
                           <Button
                             type="button"
-                            variant="noShadow"
+                            variant="reverse"
                             size="sm"
                             onClick={handleCvDelete}
                             disabled={cvDeleting}
                           >
                             {cvDeleting ? 'Menghapus...' : 'Hapus'}
                           </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -329,7 +476,7 @@ export default function ProfilePage() {
                           className="w-full p-3 border-2 border-black rounded-lg focus:outline-none focus:ring-2 focus:ring-main"
                         />
                         <p className="text-xs text-gray-500 mt-1">
-                          Format yang didukung: PDF, DOC, DOCX (Maksimal 5MB)
+                          Format yang didukung: PDF (Maksimal 5MB)
                         </p>
                       </div>
                       
@@ -462,6 +609,35 @@ export default function ProfilePage() {
             </div>
           </div>
       </div>
+      
+      {/* CV Delete Confirmation Modal */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Konfirmasi Hapus CV</DialogTitle>
+          <DialogDescription>
+            Apakah Anda yakin ingin menghapus CV? Tindakan ini tidak dapat dibatalkan.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="neutral"
+            onClick={() => setShowDeleteModal(false)}
+            disabled={cvDeleting}
+          >
+            Batal
+          </Button>
+          <Button
+            variant="default"
+            className='bg-red-500 text-white'
+            onClick={confirmCvDelete}
+            disabled={cvDeleting}
+          >
+            {cvDeleting ? 'Menghapus...' : 'Hapus CV'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
     </div>
   );
 }

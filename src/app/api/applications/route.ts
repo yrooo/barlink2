@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import Application from '@/lib/models/Application';
 import Job from '@/lib/models/Job';
+import User from '@/lib/models/User';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +18,16 @@ export async function POST(request: NextRequest) {
     }
 
     await dbConnect();
+    
+    // Check if user has uploaded CV
+    const user = await User.findById(session.user.id);
+    if (!user || !user.profile?.cvUrl) {
+      return NextResponse.json(
+        { error: 'CV_REQUIRED', message: 'Tambahkan CV anda sebelum lamar pekerjaan' },
+        { status: 400 }
+      );
+    }
+    
     const body = await request.json();
     
     const { jobId, answers } = body;

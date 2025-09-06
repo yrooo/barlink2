@@ -6,8 +6,12 @@ declare module 'next-auth' {
       id: string;
       role: 'pelamar_kerja' | 'pencari_kandidat';
       company?: string;
+      whatsappNumber?: string;
+      whatsappVerified?: boolean;
+      whatsappVerifiedAt?: Date;
       profile?: { 
-        phone?: string; 
+        phone?: string;
+        whatsappNumber?: string;
         description?: string; 
         website?: string; 
         location?: string;
@@ -22,6 +26,9 @@ declare module 'next-auth' {
   interface User {
     role: 'pelamar_kerja' | 'pencari_kandidat';
     company?: string;
+    whatsappNumber?: string;
+    whatsappVerified?: boolean;
+    whatsappVerifiedAt?: Date;
   }
 }
 
@@ -29,6 +36,9 @@ declare module 'next-auth/jwt' {
   interface JWT {
     role: 'pelamar_kerja' | 'pencari_kandidat';
     company?: string;
+    whatsappNumber?: string;
+    whatsappVerified?: boolean;
+    whatsappVerifiedAt?: Date;
   }
 }
 
