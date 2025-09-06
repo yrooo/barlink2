@@ -9,12 +9,12 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PORT: 3001,
-      ALLOWED_ORIGINS: 'https://your-vercel-app.vercel.app,https://your-domain.com'
+      ALLOWED_ORIGINS: 'https://barlink2.vercel.app/'
     },
     env_development: {
       NODE_ENV: 'development',
       PORT: 3001,
-      ALLOWED_ORIGINS: 'http://localhost:3000,https://your-vercel-app.vercel.app'
+      ALLOWED_ORIGINS: 'http://localhost:3000,https://barlink2.vercel.app/'
     },
     error_file: './logs/err.log',
     out_file: './logs/out.log',
@@ -39,10 +39,10 @@ module.exports = {
 
   deploy: {
     production: {
-      user: 'root', // Change to your VPS user
-      host: 'YOUR_VPS_IP', // Replace with your VPS IP
+      user: 'barlink', // Change to your VPS user
+      host: '159.89.205.251', // Replace with your VPS IP
       ref: 'origin/main',
-      repo: 'YOUR_GITHUB_REPO_URL', // Replace with your GitHub repo
+      repo: 'https://github.com/yrooo/barlink2.git', // Replace with your GitHub repo
       path: '/var/www/barlink-whatsapp',
       'pre-deploy-local': '',
       'post-deploy': 'npm install && pm2 reload ecosystem.config.js --env production',
