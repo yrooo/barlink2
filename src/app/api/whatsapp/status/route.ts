@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { getWhatsAppService } from '@/lib/whatsappService';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Check authentication (only admin should access this)
     const session = await getServerSession(authOptions);

@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3001';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // In production, require authentication and admin access
     if (process.env.NODE_ENV === 'production') {

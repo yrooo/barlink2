@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
 export default function WhatsAppSetup() {
@@ -25,7 +26,7 @@ export default function WhatsAppSetup() {
     // Check if user is admin (you can adjust this logic based on your user model)
     const userEmail = session.user?.email;
     const isAdmin = userEmail === process.env.NEXT_PUBLIC_ADMIN_EMAIL || 
-                   (session.user as any)?.role === 'admin';
+                   (session.user as { role?: string })?.role === 'admin';
     
     if (!isAdmin) {
       router.push('/dashboard');
@@ -48,7 +49,7 @@ export default function WhatsAppSetup() {
         setError(data.message || 'Failed to get QR code');
         setIsReady(data.isReady || false);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to fetch QR code');
     } finally {
       setLoading(false);
@@ -87,14 +88,14 @@ export default function WhatsAppSetup() {
   // Check admin access
   const userEmail = session.user?.email;
   const isAdmin = userEmail === process.env.NEXT_PUBLIC_ADMIN_EMAIL || 
-                 (session.user as any)?.role === 'admin';
+                 (session.user as { role?: string })?.role === 'admin';
   
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
-          <p className="text-gray-600 mb-4">You don't have permission to access this page.</p>
+          <p className="text-gray-600 mb-4">You don&apos;t have permission to access this page.</p>
           <Button onClick={() => router.push('/dashboard')}>Go to Dashboard</Button>
         </div>
       </div>
@@ -137,17 +138,18 @@ export default function WhatsAppSetup() {
                     Scan this QR code with your WhatsApp mobile app:
                   </p>
                   <div className="flex justify-center mb-4">
-                    <img 
+                    <Image 
                       src={qrCode} 
                       alt="WhatsApp QR Code" 
+                      width={256}
+                      height={256}
                       className="border-4 border-gray-300 rounded-lg"
-                      style={{ maxWidth: '256px', maxHeight: '256px' }}
                     />
                   </div>
                   <div className="text-sm text-gray-500">
                     <p>1. Open WhatsApp on your phone</p>
                     <p>2. Go to Settings → Linked Devices</p>
-                    <p>3. Tap "Link a Device"</p>
+                    <p>3. Tap &ldquo;Link a Device&rdquo;</p>
                     <p>4. Scan this QR code</p>
                   </div>
                 </div>
