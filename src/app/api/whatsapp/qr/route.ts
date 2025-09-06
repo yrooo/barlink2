@@ -10,7 +10,17 @@ export async function GET() {
     if (process.env.NODE_ENV === 'production') {
       const session = await getServerSession(authOptions);
       
+      // Debug logging
+      console.log('=== QR Route Debug Info ===');
+      console.log('NODE_ENV:', process.env.NODE_ENV);
+      console.log('Session exists:', !!session);
+      console.log('Session user:', session?.user);
+      console.log('ADMIN_EMAIL from env:', process.env.ADMIN_EMAIL);
+      console.log('User email:', session?.user?.email);
+      console.log('User role:', session?.user?.role);
+      
       if (!session) {
+        console.log('❌ No session found');
         return NextResponse.json(
           { success: false, error: 'Authentication required' },
           { status: 401 }
@@ -18,15 +28,23 @@ export async function GET() {
       }
 
       // Check if user is admin (either by email or role)
-      const isAdmin = session.user?.email === process.env.ADMIN_EMAIL || 
-      (session.user?.role as string) === 'admin';
+      const emailMatch = session.user?.email === process.env.ADMIN_EMAIL;
+      const roleMatch = (session.user?.role as string) === 'admin';
+      const isAdmin = emailMatch || roleMatch;
+      
+      console.log('Email match:', emailMatch);
+      console.log('Role match:', roleMatch);
+      console.log('Is admin:', isAdmin);
       
       if (!isAdmin) {
+        console.log('❌ Admin access denied');
         return NextResponse.json(
           { success: false, error: 'Admin access required' },
           { status: 403 }
         );
       }
+      
+      console.log('✅ Admin access granted');
     }
 
     // Proxy request to VPS WhatsApp service
