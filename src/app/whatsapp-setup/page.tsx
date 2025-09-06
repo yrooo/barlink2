@@ -25,7 +25,7 @@ export default function WhatsAppSetup() {
 
     // Check if user is admin (you can adjust this logic based on your user model)
     const userEmail = session.user?.email;
-    const isAdmin = userEmail === process.env.NEXT_PUBLIC_ADMIN_EMAIL || 
+    const isAdmin = userEmail === process.env.ADMIN_EMAIL || 
                    (session.user as { role?: string })?.role === 'admin';
     
     if (!isAdmin) {
@@ -87,7 +87,7 @@ export default function WhatsAppSetup() {
 
   // Check admin access
   const userEmail = session.user?.email;
-  const isAdmin = userEmail === process.env.NEXT_PUBLIC_ADMIN_EMAIL || 
+  const isAdmin = userEmail === process.env.ADMIN_EMAIL || 
                  (session.user as { role?: string })?.role === 'admin';
   
   if (!isAdmin) {

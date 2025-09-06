@@ -17,6 +17,7 @@ const fs = require('fs');
 // Configuration
 const PORT = process.env.PORT || 3001;
 const SESSION_PATH = path.join(__dirname, '.wwebjs_auth');
+const API_KEY = process.env.VPS_API_KEY; // Required API key for authentication
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS ? 
   process.env.ALLOWED_ORIGINS.split(',') : 
   ['http://localhost:3000', 'https://your-vercel-app.vercel.app'];
@@ -43,6 +44,40 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// API Key Authentication Middleware
+const authenticateAPIKey = (req, res, next) => {
+  // Skip authentication for health check
+  if (req.path === '/health') {
+    return next();
+  }
+
+  const apiKey = req.headers['x-api-key'] || req.headers['authorization']?.replace('Bearer ', '');
+  
+  if (!API_KEY) {
+    console.warn('⚠️ VPS_API_KEY not set in environment variables');
+    return next(); // Allow requests if no API key is configured (development mode)
+  }
+
+  if (!apiKey) {
+    return res.status(401).json({
+      success: false,
+      error: 'API key required. Include X-API-Key header or Authorization Bearer token.'
+    });
+  }
+
+  if (apiKey !== API_KEY) {
+    return res.status(403).json({
+      success: false,
+      error: 'Invalid API key'
+    });
+  }
+
+  next();
+};
+
+// Apply API key authentication to all routes except health
+app.use(authenticateAPIKey);
 
 // WhatsApp Service Class
 class VPSWhatsAppService {

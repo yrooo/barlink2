@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3001';
+const VPS_API_KEY = process.env.VPS_API_KEY;
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,11 +17,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Proxy request to VPS WhatsApp service
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add API key if configured
+    if (VPS_API_KEY) {
+      headers['X-API-Key'] = VPS_API_KEY;
+    }
+
     const response = await fetch(`${WHATSAPP_SERVICE_URL}/api/whatsapp/verify-otp`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
     });
 
