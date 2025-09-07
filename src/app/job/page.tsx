@@ -8,6 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Job, JobFilters } from '@/types';
 import { ChevronDown, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 const JobPageContent = () => {
   const searchParams = useSearchParams();
@@ -19,12 +28,15 @@ const JobPageContent = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState<JobFilters>({
     location: '',
     salaryRange: '',
     company: '',
     datePosted: ''
   });
+
+  const JOBS_PER_PAGE = 15;
 
   useEffect(() => {
     if (type === 'seek') {
@@ -148,6 +160,7 @@ const JobPageContent = () => {
       ...prev,
       [filterType]: value
     }));
+    setCurrentPage(1); // Reset to first page when filters change
   };
 
   const clearFilters = () => {
@@ -157,9 +170,21 @@ const JobPageContent = () => {
       company: '',
       datePosted: ''
     });
+    setCurrentPage(1); // Reset to first page when filters are cleared
   };
 
   const hasActiveFilters = Object.values(filters).some(filter => filter !== '');
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
+  const startIndex = (currentPage - 1) * JOBS_PER_PAGE;
+  const endIndex = startIndex + JOBS_PER_PAGE;
+  const currentJobs = filteredJobs.slice(startIndex, endIndex);
+
+  // Reset to first page when search term changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   if (type !== 'seek') {
     return null;
@@ -337,7 +362,7 @@ const JobPageContent = () => {
               {/* Results Summary */}
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-xs sm:text-sm text-gray-600 mt-4">
                 <span>
-                  Menampilkan {filteredJobs.length} dari {jobs.length} pekerjaan
+                  Menampilkan {startIndex + 1}-{Math.min(endIndex, filteredJobs.length)} dari {filteredJobs.length} pekerjaan
                   {hasActiveFilters && ' (terfilter)'}
                 </span>
                 {hasActiveFilters && (
@@ -366,7 +391,7 @@ const JobPageContent = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {filteredJobs.map((job) => (
+                    {currentJobs.map((job) => (
                       <div key={job._id} className="bg-white content-padding border-responsive shadow-responsive  hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1">
                         <div className="flex flex-col h-full">
                           <div className="flex-1">
@@ -411,14 +436,110 @@ const JobPageContent = () => {
                       </div>
                     ))}
                   </div>
-                )}
+                  )}
+                  {totalPages > 1 && (
+                    <div className="mt-8 flex justify-center">
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage > 1) {
+                                  setCurrentPage(currentPage - 1);
+                                }
+                              }}
+                              className={currentPage <= 1 ? 'pointer-events-none opacity-50' : ''}
+                            />
+                          </PaginationItem>
+                          
+                          {/* First page */}
+                          {currentPage > 3 && (
+                            <>
+                              <PaginationItem>
+                                <PaginationLink
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(1);
+                                  }}
+                                >
+                                  1
+                                </PaginationLink>
+                              </PaginationItem>
+                              {currentPage > 4 && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+                            </>
+                          )}
+                          
+                          {/* Page numbers around current page */}
+                          {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter(page => {
+                              return page >= currentPage - 2 && page <= currentPage + 2;
+                            })
+                            .map(page => (
+                              <PaginationItem key={page}>
+                                <PaginationLink
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(page);
+                                  }}
+                                  isActive={currentPage === page}
+                                >
+                                  {page}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))
+                          }
+                          
+                          {/* Last page */}
+                          {currentPage < totalPages - 2 && (
+                            <>
+                              {currentPage < totalPages - 3 && (
+                                <PaginationItem>
+                                  <PaginationEllipsis />
+                                </PaginationItem>
+                              )}
+                              <PaginationItem>
+                                <PaginationLink
+                                  href="#"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(totalPages);
+                                  }}
+                                >
+                                  {totalPages}
+                                </PaginationLink>
+                              </PaginationItem>
+                            </>
+                          )}
+                          
+                          <PaginationItem>
+                            <PaginationNext 
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage < totalPages) {
+                                  setCurrentPage(currentPage + 1);
+                                }
+                              }}
+                              className={currentPage >= totalPages ? 'pointer-events-none opacity-50' : ''}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
               </div>
             )}
           </div>
         </div>
       </div>
-
-
     </div>
   );
 };
