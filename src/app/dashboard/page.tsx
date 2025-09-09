@@ -259,7 +259,7 @@ export default function Dashboard() {
             <div className="bg-white p-4 sm:p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
               <h2 className="text-xl sm:text-2xl font-black mb-4 sm:mb-6">Pelamar Terbaru</h2>
               <div className="text-center py-6 sm:py-8 text-gray-500">
-                <div className="text-3xl sm:text-4xl mb-2">👥</div>
+                <div className="text-3xl sm:text-4xl mb-2">�</div>
                 <p className="text-sm sm:text-base px-4">They can check the applicants profile, like their name, CV&apos;s, or other things depends on the application form.</p>
               </div>
             </div>

@@ -314,6 +314,88 @@ class VPSWhatsAppService {
       console.error('❌ Error destroying WhatsApp client:', error);
     }
   }
+
+  async sendApplicationNotification(data) {
+    try {
+      if (!this.isClientReady()) {
+        return { success: false, message: 'WhatsApp service is not ready' };
+      }
+
+      const { phoneNumber, applicantName, jobTitle, companyName, status, notes } = data;
+      let message = '';
+
+      if (status === 'accepted') {
+        message = `🎉 *Selamat ${applicantName}!*\n\nLamaran Anda untuk posisi *${jobTitle}* di *${companyName}* telah *DITERIMA*!\n\n`;
+        message += `Tim HR akan segera menghubungi Anda untuk tahap selanjutnya.\n\n`;
+      } else {
+        message = `📋 *Update Lamaran - ${companyName}*\n\n`;
+        message += `Halo ${applicantName},\n\n`;
+        message += `Terima kasih atas minat Anda pada posisi *${jobTitle}*. Setelah evaluasi, kami informasikan bahwa lamaran Anda belum dapat kami proses lebih lanjut.\n\n`;
+        message += `Jangan menyerah! Anda masih bisa mencoba peluang lain yang sesuai dengan keahlian Anda.\n\n`;
+      }
+
+      if (notes) {
+        message += `💬 *Pesan:*\n${notes}\n\n`;
+      }
+
+      message += '— *Barlink ID*';
+
+      const chatId = phoneNumber.replace('+', '') + '@c.us';
+      await this.client.sendMessage(chatId, message);
+
+      return { success: true, message: 'Notification sent successfully' };
+    } catch (error) {
+      console.error('Error sending application notification:', error);
+      return { success: false, message: 'Failed to send notification' };
+    }
+  }
+
+  async sendInterviewNotification(data) {
+    try {
+      if (!this.isClientReady()) {
+        return { success: false, message: 'WhatsApp service is not ready' };
+      }
+
+      const { phoneNumber, applicantName, jobTitle, companyName, interviewDate, 
+              interviewTime, interviewType, location, meetingLink, notes } = data;
+
+      let message = `📅 *Interview Dijadwalkan*\n\n`;
+      message += `Halo *${applicantName}*,\n\n`;
+      message += `Interview Anda untuk posisi *${jobTitle}* di *${companyName}* telah dijadwalkan.\n\n`;
+      message += `*Detail Interview:*\n`;
+      message += `📆 Tanggal: ${interviewDate}\n`;
+      message += `⏰ Waktu: ${interviewTime} WIB\n`;
+      message += `📍 Jenis: ${interviewType === 'online' ? 'Online' : 'Offline'}\n`;
+
+      if (interviewType === 'online' && meetingLink) {
+        message += `🔗 Link Meeting: ${meetingLink}\n`;
+      }
+
+      if (interviewType === 'offline' && location) {
+        message += `📍 Lokasi: ${location}\n`;
+      }
+
+      if (notes) {
+        message += `\n💬 *Catatan:*\n${notes}\n`;
+      }
+
+      message += '\n*Tips Persiapan:*\n';
+      message += '• Pelajari profil perusahaan\n';
+      message += '• Siapkan dokumen yang diperlukan\n';
+      message += '• Datang tepat waktu\n';
+      message += interviewType === 'online' ? '• Pastikan koneksi internet stabil\n' : '';
+
+      message += '\n— *Barlink ID*';
+
+      const chatId = phoneNumber.replace('+', '') + '@c.us';
+      await this.client.sendMessage(chatId, message);
+
+      return { success: true, message: 'Interview notification sent successfully' };
+    } catch (error) {
+      console.error('Error sending interview notification:', error);
+      return { success: false, message: 'Failed to send interview notification' };
+    }
+  }
 }
 
 // Initialize WhatsApp service
@@ -443,6 +525,34 @@ app.post('/api/whatsapp/verify-otp', (req, res) => {
       success: false,
       error: 'Internal server error'
     });
+  }
+});
+
+app.post('/api/whatsapp/send-application-notification', async (req, res) => {
+  try {
+    const result = await whatsappService.sendApplicationNotification(req.body);
+    if (result.success) {
+      res.json({ success: true, message: result.message });
+    } else {
+      res.status(400).json({ success: false, error: result.message });
+    }
+  } catch (error) {
+    console.error('Error in send-application-notification API:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
+app.post('/api/whatsapp/send-interview-notification', async (req, res) => {
+  try {
+    const result = await whatsappService.sendInterviewNotification(req.body);
+    if (result.success) {
+      res.json({ success: true, message: result.message });
+    } else {
+      res.status(400).json({ success: false, error: result.message });
+    }
+  } catch (error) {
+    console.error('Error in send-interview-notification API:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
