@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import Application from '@/lib/models/Application';
 import EmailService from '@/lib/emailService';
+import whatsappService from '@/lib/whatsappService';
+import User from '@/lib/models/User'; // Import User model
 
 export async function PATCH(
   request: NextRequest,
@@ -43,17 +45,34 @@ export async function PATCH(
       id,
       { status, notes },
       { new: true }
-    ).populate('applicantId', 'name email')
+    ).populate('applicantId', 'name email phone') // Include phone number
      .populate('jobId', 'title company');
     
-    // Send email notification for accepted/rejected applications
+    // Send email and WhatsApp notification for accepted/rejected applications
     if (status === 'accepted' || status === 'rejected') {
+      // Send Email
       try {
         await EmailService.sendNotificationFromApplication(updatedApplication);
         console.log(`Email notification sent for application ${id} with status ${status}`);
       } catch (emailError) {
         console.error('Failed to send email notification:', emailError);
-        // Don't fail the API call if email fails
+      }
+
+      // Send WhatsApp Notification
+      if (updatedApplication.applicantId.phone) {
+        try {
+          await whatsappService.sendApplicationNotification({
+            phoneNumber: updatedApplication.applicantId.phone,
+            applicantName: updatedApplication.applicantId.name,
+            jobTitle: updatedApplication.jobId.title,
+            companyName: updatedApplication.jobId.company,
+            status: status,
+            notes: notes,
+          });
+          console.log(`WhatsApp notification sent for application ${id}`);
+        } catch (whatsappError) {
+          console.error('Failed to send WhatsApp notification:', whatsappError);
+        }
       }
     }
     

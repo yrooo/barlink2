@@ -8,6 +8,7 @@ import { ObjectId } from 'mongodb';
 // import { Interview } from '@/types';
 import { EmailService } from '@/lib/emailService';
 import InterviewModel from '@/lib/models/Interview';
+import whatsappService from '@/lib/whatsappService';
 
 export async function POST(request: NextRequest) {
   try {
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
         applicantName: candidateName,
         applicantEmail: applicant.email,
         jobTitle: position,
-        companyName: job.companyName || 'Company',
+        companyName: job.company || 'Company',
         interviewDate: interviewDateTime.toLocaleDateString('id-ID', {
           weekday: 'long',
           year: 'numeric',
@@ -148,6 +149,31 @@ export async function POST(request: NextRequest) {
       });
     } catch (error) {
       console.error('Error sending interview email:', error);
+    }
+
+    // Send WhatsApp notification if phone number is available
+    if (applicant.phone) {
+      try {
+        await whatsappService.sendInterviewNotification({
+          phoneNumber: applicant.phone,
+          applicantName: candidateName,
+          jobTitle: position,
+          companyName: job.company || 'Company',
+          interviewDate: interviewDateTime.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }),
+          interviewTime: time,
+          interviewType: type,
+          location: type === 'offline' ? location : undefined,
+          meetingLink: type === 'online' ? location : undefined,
+          notes: notes || ''
+        });
+        console.log(`WhatsApp notification sent for interview scheduling to ${applicant.phone}`);
+      } catch (whatsappError) {
+        console.error('Error sending WhatsApp notification:', whatsappError);
+      }
     }
 
     // Create interview object using Mongoose model
