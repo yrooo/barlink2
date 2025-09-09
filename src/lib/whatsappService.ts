@@ -43,7 +43,7 @@ class WhatsAppService {
     }
   }
 
-  private async sendRequest(endpoint: string, data: any): Promise<{ success: boolean; message: string }> {
+  private async sendRequest(endpoint: string, data: any): Promise<any> {
     const url = `${this.serviceUrl}/api/whatsapp/${endpoint}`;
 
     try {
@@ -56,29 +56,61 @@ class WhatsAppService {
         body: JSON.stringify(data),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error(`Failed to send WhatsApp notification to ${endpoint}. Status: ${response.status}`, errorData);
-        return { success: false, message: errorData.error || 'Unknown error occurred' };
+        console.error(`Failed request to ${endpoint}. Status: ${response.status}`, result);
+        // Throw an error that can be caught by the calling function
+        throw new Error(result.error || 'Unknown error occurred');
       }
 
-      const result = await response.json();
-      console.log(`Successfully sent WhatsApp notification to ${endpoint}`);
-      return { success: true, message: result.message };
+      console.log(`Successful request to ${endpoint}`);
+      return result;
     } catch (error) {
       console.error(`Error sending request to WhatsApp service at ${endpoint}:`, error);
-      return { success: false, message: 'Failed to connect to WhatsApp service' };
+      // Re-throw the error to be handled by the caller
+      throw error;
+    }
+  }
+
+  public async sendOTP(phoneNumber: string): Promise<{ success: boolean; message: string; otpId: string }> {
+    console.log(`Attempting to send OTP to ${phoneNumber}`);
+    try {
+      const result = await this.sendRequest('send-otp', { phoneNumber });
+      return result;
+    } catch (error: any) {
+      return { success: false, message: error.message, otpId: '' };
+    }
+  }
+
+  public async verifyOTP(otpId: string, code: string): Promise<{ success: boolean; message: string; phoneNumber?: string }> {
+    console.log(`Attempting to verify OTP for otpId: ${otpId}`);
+    try {
+      const result = await this.sendRequest('verify-otp', { otpId, code });
+      return result;
+    } catch (error: any) {
+      return { success: false, message: error.message };
     }
   }
 
   public async sendApplicationNotification(data: ApplicationNotificationData): Promise<{ success: boolean; message: string }> {
     console.log(`Attempting to send application notification for ${data.applicantName} to ${data.phoneNumber}`);
-    return this.sendRequest('send-application-notification', data);
+    try {
+      await this.sendRequest('send-application-notification', data);
+      return { success: true, message: 'Application notification sent successfully.' };
+    } catch (error: any) {
+      return { success: false, message: error.message };
+    }
   }
 
   public async sendInterviewNotification(data: InterviewNotificationData): Promise<{ success: boolean; message: string }> {
     console.log(`Attempting to send interview notification for ${data.applicantName} to ${data.phoneNumber}`);
-    return this.sendRequest('send-interview-notification', data);
+    try {
+      await this.sendRequest('send-interview-notification', data);
+      return { success: true, message: 'Interview notification sent successfully.' };
+    } catch (error: any) {
+      return { success: false, message: error.message };
+    }
   }
 }
 
