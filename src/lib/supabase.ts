@@ -51,7 +51,7 @@ export async function uploadCV(file: File, userId: string): Promise<{ url: strin
 // Helper function to delete CV file
 export async function deleteCV(filePath: string): Promise<boolean> {
   try {
-    const { error } = await supabaseAdmin.storage
+    const { error } = await supabase.storage
       .from('cvs')
       .remove([filePath]);
 
@@ -70,7 +70,7 @@ export async function deleteCV(filePath: string): Promise<boolean> {
 // Helper function to get CV download URL
 export async function getCVDownloadUrl(filePath: string): Promise<string | null> {
   try {
-    const { data, error } = await supabaseAdmin.storage
+    const { data, error } = await supabase.storage
       .from('cvs')
       .createSignedUrl(filePath, 3600); // 1 hour expiry
 

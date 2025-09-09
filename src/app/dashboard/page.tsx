@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ChevronLeft } from 'lucide-react'; 
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -97,67 +98,70 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-main">
       {/* Header */}
-      <div className="bg-white border-b-4 border-black p-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-main rounded-full border-4 border-black flex items-center justify-center">
-              <span className="text-2xl font-black">{session.user.company?.[0] || 'C'}</span>
+      <div className="bg-white border-b-4 border-black p-4 sm:p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-main rounded-full border-4 border-black flex items-center justify-center flex-shrink-0">
+                <span className="text-lg sm:text-2xl font-black">{session.user.company?.[0] || 'C'}</span>
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black truncate">Welcome Back! 👋</h1>
+                <p className="text-gray-600 text-sm sm:text-base truncate">{session.user.company}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-black">Welcome Back! 👋</h1>
-              <p className="text-gray-600">{session.user.company}</p>
+            <div className="flex space-x-2 sm:space-x-4 w-full sm:w-auto">
+              <Button 
+                asChild
+                variant="neutral"
+                className="flex-1 sm:flex-none"
+              >
+                <Link href="/">Keluar</Link>
+              </Button>
             </div>
-          </div>
-          <div className="flex space-x-4">
-            {/* <Button asChild>
-              <Link href="/dashboard/profile">Edit Profil</Link>
-            </Button> */}
-            <Button 
-              onClick={() => signOut()}
-              variant="neutral"
-            >
-              Keluar
-            </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Left Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <Button 
-                asChild
-                className="w-full text-lg py-4"
-              >
-                <Link href="/dashboard/jobs/create">+ Buat Lowongan</Link>
-              </Button>
-            </div>
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+            {/* Mobile: Show buttons in a row, Desktop: Show stacked */}
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:gap-6">
+              <div className="bg-white p-4 sm:p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <Button 
+                  asChild
+                  className="w-full text-sm sm:text-lg py-3 sm:py-4"
+                >
+                  <Link href="/dashboard/jobs/create">+ Buat Lowongan</Link>
+                </Button>
+              </div>
 
-            <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <Button 
-                asChild
-                variant="neutral"
-                className="w-full text-lg py-4"
-              >
-                <Link href="/profile">Edit Profil</Link>
-              </Button>
+              <div className="bg-white p-4 sm:p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <Button 
+                  asChild
+                  variant="neutral"
+                  className="w-full text-sm sm:text-lg py-3 sm:py-4"
+                >
+                  <Link href="/profile">Edit Profil</Link>
+                </Button>
+              </div>
             </div>
 
             {/* Stats Box */}
-            <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <h3 className="text-xl font-bold mb-4">Statistik</h3>
+            <div className="bg-white p-4 sm:p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Statistik</h3>
               <div className="space-y-2">
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm sm:text-base">
                   <span>Total Lowongan:</span>
                   <span className="font-bold">{jobs.length}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm sm:text-base">
                   <span>Lowongan Aktif:</span>
                   <span className="font-bold">{jobs.filter(job => job.status === 'active').length}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm sm:text-base">
                   <span>Total Pelamar:</span>
                   <span className="font-bold">{jobs.reduce((sum, job) => sum + job.applicationsCount, 0)}</span>
                 </div>
@@ -166,22 +170,22 @@ export default function Dashboard() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Job Listings */}
-            <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-black">Lowonganmu</h2>
-                <Button asChild size="sm">
+            <div className="bg-white p-4 sm:p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+                <h2 className="text-xl sm:text-2xl font-black">Lowonganmu</h2>
+                <Button asChild size="sm" className="w-full sm:w-auto">
                   <Link href="/dashboard/jobs/create">+ Tambah</Link>
                 </Button>
               </div>
 
               {jobs.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">📝</div>
-                  <h3 className="text-xl font-bold mb-2">Belum ada lowongan</h3>
-                  <p className="text-gray-600 mb-4">Mulai dengan membuat lowongan pertamamu</p>
-                  <Button asChild>
+                <div className="text-center py-8 sm:py-12">
+                  <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">📝</div>
+                  <h3 className="text-lg sm:text-xl font-bold mb-2">Belum ada lowongan</h3>
+                  <p className="text-gray-600 mb-4 text-sm sm:text-base px-4">Mulai dengan membuat lowongan pertamamu</p>
+                  <Button asChild className="w-full sm:w-auto">
                     <Link href="/dashboard/jobs/create">Buat Lowongan</Link>
                   </Button>
                 </div>
@@ -190,36 +194,36 @@ export default function Dashboard() {
                   {jobs.map((job) => (
                     <div 
                       key={job._id}
-                      className="border-2 border-black rounded-lg p-4 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                      className="border-2 border-black rounded-sm p-3 sm:p-4 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-bold mb-2">{job.title}</h3>
-                          <p className="text-gray-600 mb-2">{job.location}</p>
-                          <p className="text-sm text-gray-500 mb-2">
-                            {job.description.length > 100 
-                              ? `${job.description.substring(0, 100)}...` 
+                      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between space-y-3 lg:space-y-0">
+                        <div className="flex-1 lg:pr-4">
+                          <h3 className="text-lg sm:text-xl font-bold mb-2">{job.title}</h3>
+                          <p className="text-gray-600 mb-2 text-sm sm:text-base">{job.location}</p>
+                          <p className="text-xs sm:text-sm text-gray-500 mb-3">
+                            {job.description.length > 80 
+                              ? `${job.description.substring(0, 80)}...` 
                               : job.description
                             }
                           </p>
-                          <div className="flex items-center space-x-4 text-sm">
-                            <span className={`px-2 py-1 rounded ${
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                            <span className={`px-2 py-1 rounded text-xs ${
                               job.status === 'active' 
                                 ? 'bg-green-100 text-green-800' 
                                 : 'bg-gray-100 text-gray-800'
                             }`}>
                               {job.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
                             </span>
-                            <span>{job.applicationsCount} pelamar</span>
-                            <span>{new Date(job.createdAt).toLocaleDateString('id-ID')}</span>
+                            <span className="whitespace-nowrap">{job.applicationsCount} pelamar</span>
+                            <span className="whitespace-nowrap">{new Date(job.createdAt).toLocaleDateString('id-ID')}</span>
                           </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 ml-4">
+                        <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-0 lg:space-y-2 xl:space-y-0 xl:space-x-2 lg:min-w-0 xl:min-w-max">
                           <Button 
                             onClick={() => handleToggleJobStatus(job._id, job.status)}
                             size="sm"
                             variant={job.status === 'active' ? 'neutral' : 'default'}
-                            className="w-full sm:w-auto"
+                            className="w-full sm:w-auto lg:w-full xl:w-auto text-xs sm:text-sm"
                             disabled={job.status === 'inactive'}
                           >
                             {job.status === 'active' ? 'Nonaktifkan' : 'Tidak Dapat Diaktifkan'}
@@ -228,7 +232,7 @@ export default function Dashboard() {
                             asChild
                             size="sm"
                             variant="neutral"
-                            className="w-full sm:w-auto"
+                            className="w-full sm:w-auto lg:w-full xl:w-auto text-xs sm:text-sm"
                           >
                             <Link href={`/dashboard/jobs/${job._id}/applications`}>
                               Lihat Pelamar
@@ -237,7 +241,7 @@ export default function Dashboard() {
                           <Button 
                             asChild
                             size="sm"
-                            className="w-full sm:w-auto"
+                            className="w-full sm:w-auto lg:w-full xl:w-auto text-xs sm:text-sm"
                           >
                             <Link href={`/dashboard/jobs/${job._id}/edit`}>
                               Edit
@@ -252,11 +256,11 @@ export default function Dashboard() {
             </div>
 
             {/* Recent Applications */}
-            <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <h2 className="text-2xl font-black mb-6">Pelamar Terbaru</h2>
-              <div className="text-center py-8 text-gray-500">
-                <div className="text-4xl mb-2">👥</div>
-                <p>They can check the applicants profile, like their name, CV&apos;s, or other things depends on the application form.</p>
+            <div className="bg-white p-4 sm:p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <h2 className="text-xl sm:text-2xl font-black mb-4 sm:mb-6">Pelamar Terbaru</h2>
+              <div className="text-center py-6 sm:py-8 text-gray-500">
+                <div className="text-3xl sm:text-4xl mb-2">👥</div>
+                <p className="text-sm sm:text-base px-4">They can check the applicants profile, like their name, CV&apos;s, or other things depends on the application form.</p>
               </div>
             </div>
           </div>

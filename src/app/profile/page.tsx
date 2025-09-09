@@ -302,13 +302,13 @@ export default function ProfilePage() {
           <div className="flex items-center space-x-4">
               {userData.role === 'pencari_kandidat' ? (
                 <Link href="/dashboard" className="absolute top-4 left-4 z-10">
-                  <Button variant="default" size="icon" className="bg-white text-black touch-target">
+                  <Button variant="default" size="icon" className="bg-main text-black touch-target">
                     <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                   </Button>
                 </Link>
               ) : (
                 <Link href="/" className="absolute top-4 left-4 z-10">
-                  <Button variant="default" size="icon" className="bg-white text-black touch-target">
+                  <Button variant="default" size="icon" className="bg-main text-black touch-target">
                     <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                   </Button>
                 </Link>

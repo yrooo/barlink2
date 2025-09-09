@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ChevronLeft } from 'lucide-react';
 
 export default function SignUp() {
@@ -15,6 +16,7 @@ export default function SignUp() {
     role: '',
     company: '',
   });
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -48,6 +50,13 @@ export default function SignUp() {
     // Validate company for employer role
     if (formData.role === 'pencari_kandidat' && !formData.company) {
       setError('Nama perusahaan wajib diisi untuk pencari kandidat');
+      setLoading(false);
+      return;
+    }
+
+    // Validate terms agreement
+    if (!agreeToTerms) {
+      setError('Anda harus menyetujui Syarat dan Ketentuan');
       setLoading(false);
       return;
     }
@@ -182,9 +191,25 @@ export default function SignUp() {
             />
           </div>
 
+          <div className="flex items-start space-x-3">
+            <Checkbox
+              id="terms"
+              checked={agreeToTerms}
+              onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
+              className="mt-1"
+            />
+            <label htmlFor="terms" className="text-sm sm:text-base text-gray-700 leading-relaxed cursor-pointer">
+              Saya menyetujui{' '}
+              <Link href="/legal/terms-conditions" className="text-main font-bold hover:underline">
+                Syarat dan Ketentuan
+              </Link>{' '}
+              yang berlaku
+            </label>
+          </div>
+
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || !agreeToTerms}
             className="w-full text-sm sm:text-lg py-2 sm:py-3 touch-target"
           >
             {loading ? 'Mendaftar...' : 'Daftar'}

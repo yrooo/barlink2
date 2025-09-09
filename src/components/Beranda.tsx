@@ -89,7 +89,7 @@ export default function BerandaPage() {
             <div className="space-y-4 sm:space-y-6">
               <h1 className="text-5xl sm:text-4xl md:text-5xl lg:text-7xl font-black leading-tight text-center lg:text-left">
                 <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">Temukan</span>
-                <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">karir impian</span>
+                <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">Karir Impian</span>
                 <span className="block transform hover:scale-103 transition-transform duration-300 drop-shadow-xl">Anda</span>
               </h1>
               
