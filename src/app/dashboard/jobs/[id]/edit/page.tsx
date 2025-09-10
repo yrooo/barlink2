@@ -2,27 +2,70 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
-const EditJobPage = ({ params }: { params: { id: string } }) => {
-  const { id } = params;
+const EditJobPage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const [id, setId] = useState<string>('');
   const router = useRouter();
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm();
+  // Removed react-hook-form as we're using controlled components
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    location: '',
+    salary: '',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    if (name === 'salary') {
+      // Remove all non-digit characters except for the hyphen
+      let formattedValue = value.replace(/[^\d-]/g, '');
+
+      // Handle range input (e.g., "1000000 - 2000000")
+      const parts = formattedValue.split('-');
+      const formattedParts = parts.map(part => {
+        // Remove leading zeros unless the number is '0'
+        const num = part.replace(/^0+(?!$)/, '');
+        // Add thousands separator
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      });
+      formattedValue = formattedParts.join(' - ');
+
+      setFormData({
+        ...formData,
+        [name]: formattedValue,
+      });
+      // Value is already set in formData state
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+      // Value is already set in formData state
+    }
+  };
 
   useEffect(() => {
-    // Fetch job details to prefill the form
-    const fetchJobDetails = async () => {
+    // Get the id from params and fetch job details
+    const initializeComponent = async () => {
       try {
-        const response = await fetch(`/api/jobs/${id}`);
+        const resolvedParams = await params;
+        const jobId = resolvedParams.id;
+        setId(jobId);
+        
+        const response = await fetch(`/api/jobs/${jobId}`);
         if (response.ok) {
           const job = await response.json();
-          setValue('title', job.title);
-          setValue('description', job.description);
-          setValue('location', job.location);
-          setValue('salary', job.salary);
+          setFormData({
+            title: job.title,
+            description: job.description,
+            location: job.location,
+            salary: job.salary,
+          });
         } else {
           toast.error('Failed to fetch job details');
         }
@@ -32,10 +75,18 @@ const EditJobPage = ({ params }: { params: { id: string } }) => {
       }
     };
 
-    fetchJobDetails();
-  }, [id, setValue]);
+    initializeComponent();
+  }, [params]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Basic validation
+    if (!formData.title || !formData.description || !formData.location || !formData.salary) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
     setLoading(true);
     try {
       const response = await fetch(`/api/jobs/${id}`, {
@@ -43,7 +94,7 @@ const EditJobPage = ({ params }: { params: { id: string } }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
@@ -61,50 +112,123 @@ const EditJobPage = ({ params }: { params: { id: string } }) => {
   };
 
   return (
-    <div className='bg-main'>
-    <div className="container-responsive section-padding">
-      <h1 className="text-2xl font-bold mb-8 ">Edit Job</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="bg-secondary-background p-6 rounded-responsive border-2 border-border shadow-[var(--shadow)]">
-          {['title', 'description', 'location', 'salary'].map((field) => (
-            <div key={field} className="mb-6 last:mb-0">
-              <label htmlFor={field} className="block font-medium mb-2 font-bold capitalize">
-                {field}
-              </label>
-              {field === 'description' ? (
-                <textarea
-                  id={field}
-                  {...register(field, { required: `${field} is required` })}
-                  className="w-full border-2 border-border p-3 rounded-responsive bg-background hover:border-main focus:border-main focus:outline-none transition-colors min-h-[120px]"
-                />
-              ) : (
-                <input
-                  id={field}
-                  type={field === 'salary' ? 'number' : 'text'}
-                  {...register(field, { required: `${field} is required` })}
-                  className="w-full border-2 border-border p-3 rounded-responsive bg-background hover:border-main focus:border-main focus:outline-none transition-colors"
-                />
-              )}
-              {errors[field] && (
-                <p className="text-red-500 text-sm mt-2 font-bold">
-                  {String(errors[field]?.message)}
-                </p>
-              )}
-            </div>
-          ))}
-          
-          <Button 
-            type="submit" 
-            disabled={loading}
-            className="w-full mt-6 bg-main text-main-foreground border-2 border-border p-3 rounded-responsive shadow-[var(--shadow)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all active:bg-background"
-          >
-            <span className="font-bold">
-              {loading ? 'Saving...' : 'Save Changes'}
-            </span>
+    <div className="min-h-screen bg-main">
+      {/* Header */}
+      <div className="bg-white border-b-4 border-black p-6">
+        <div className="max-w-4xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-black">✏️ Edit Job Posting</h1>
+            <p className="text-gray-600">Update your job listing details</p>
+          </div>
+          <Button asChild variant="neutral">
+            <Link href="/dashboard">Kembali</Link>
           </Button>
         </div>
-      </form>
-    </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="bg-white p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <h2 className="text-2xl font-black mb-6">Job Information</h2>
+
+          <form onSubmit={onSubmit} className="space-y-6">
+            {/* Job Title */}
+            <div>
+              <label htmlFor="title" className="block text-lg font-bold mb-2">
+                📝 Job Title *
+              </label>
+              <input
+                 id="title"
+                 name="title"
+                 type="text"
+                 value={formData.title}
+                 onChange={handleInputChange}
+                 className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+                 placeholder="e.g. Senior Frontend Developer"
+                 required
+               />
+            </div>
+
+            {/* Job Description */}
+            <div>
+              <label htmlFor="description" className="block text-lg font-bold mb-2">
+                📄 Job Description *
+              </label>
+              <textarea
+                 id="description"
+                 name="description"
+                 value={formData.description}
+                 onChange={handleInputChange}
+                 rows={6}
+                 className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+                 placeholder="Describe the job responsibilities, requirements, and qualifications..."
+                 required
+               />
+            </div>
+
+            {/* Location */}
+            <div>
+              <label htmlFor="location" className="block text-lg font-bold mb-2">
+                📍 Location
+              </label>
+              <input
+                 id="location"
+                 name="location"
+                 type="text"
+                 value={formData.location}
+                 onChange={handleInputChange}
+                 className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+                 placeholder="e.g. Jakarta, Indonesia or Remote"
+               />
+            </div>
+
+            {/* Salary */}
+            <div>
+              <label htmlFor="salary" className="block text-lg font-bold mb-2">
+                💰 Salary
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg font-bold text-gray-700 z-10">
+                  Rp
+                </span>
+                <input
+                   id="salary"
+                   name="salary"
+                   type="text"
+                   value={formData.salary}
+                   onChange={handleInputChange}
+                   className="w-full p-3 pl-12 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+                   placeholder="10.000.000 - 15.000.000"
+                 />
+              </div>
+              <p className="text-sm text-gray-600 mt-1">Use "-" for salary range (example: 10.000.000 - 15.000.000)</p>
+            </div>
+
+          </form>
+        </div>
+
+        {/* Submit Actions */}
+        <div className="flex justify-end space-x-4 mt-8">
+          <Button 
+            type="button"
+            onClick={() => router.push('/dashboard')}
+            variant="neutral"
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit"
+            disabled={loading}
+            className="px-8"
+          >
+            {loading ? '💾 Saving Changes...' : '💾 Save Changes'}
+          </Button>
+          <Link href={`/job/${id}`}>
+            <Button variant="neutral" className="bg-blue-500 text-white border-blue-600">
+              View Applications
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };

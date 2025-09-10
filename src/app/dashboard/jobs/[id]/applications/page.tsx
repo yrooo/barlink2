@@ -206,7 +206,7 @@ export default function JobApplications() {
                                   </p>
                                   {(application.applicantId as User)?.profile?.cvUploadedAt && (
                                     <p className="text-xs text-gray-500">
-                                      Diunggah: {new Date((application.applicantId as User).profile!.cvUploadedAt!).toLocaleDateString('id-ID')}
+                                      Diunggah: {new Date((application.applicantId as User).profile.cvUploadedAt).toLocaleDateString('id-ID')}
                                     </p>
                                   )}
                                 </div>

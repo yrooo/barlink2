@@ -93,7 +93,7 @@ export async function GET() {
       // Employer: get applications for their jobs
       applications = await Application.find({ employerId: session.user.id })
         .populate('jobId', 'title')
-        .populate('applicantId', 'name email profile')
+        .populate('applicantId', 'name email')
         .sort({ createdAt: -1 });
     } else {
       // Job seeker: get their applications

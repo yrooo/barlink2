@@ -198,8 +198,8 @@ const JobPageContent = () => {
       
       <div className="section-padding">
         <div className="container-responsive">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 sm:mb-8 text-black bg-white content-padding shadow-responsive hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-300 border-responsive inline-block">
-            Cari Pekerjaan Impianmu
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-6 sm:mb-8 text-black bg-white content-padding shadow-responsive hover:-translate-y-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] duration-300 border-responsive inline-block">
+            Cari Pekerjaan Impianmu 🔎
           </h1>
 
           <div className="space-y-4 sm:space-y-6">

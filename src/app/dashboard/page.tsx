@@ -210,7 +210,7 @@ export default function Dashboard() {
                             <span className={`px-2 py-1 rounded text-xs ${
                               job.status === 'active' 
                                 ? 'bg-green-100 text-green-800' 
-                                : 'bg-gray-100 text-gray-800'
+                                : 'bg-red-100 text-red-800'
                             }`}>
                               {job.status === 'active' ? 'Aktif' : 'Tidak Aktif'}
                             </span>
@@ -219,15 +219,16 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-0 lg:space-y-2 xl:space-y-0 xl:space-x-2 lg:min-w-0 xl:min-w-max">
-                          <Button 
-                            onClick={() => handleToggleJobStatus(job._id, job.status)}
-                            size="sm"
-                            variant={job.status === 'active' ? 'neutral' : 'default'}
-                            className="w-full sm:w-auto lg:w-full xl:w-auto text-xs sm:text-sm"
-                            disabled={job.status === 'inactive'}
-                          >
-                            {job.status === 'active' ? 'Nonaktifkan' : 'Tidak Dapat Diaktifkan'}
-                          </Button>
+                          {job.status === 'active' && (
+                            <Button 
+                              onClick={() => handleToggleJobStatus(job._id, job.status)}
+                              size="sm"
+                              variant="neutral"
+                              className="w-full sm:w-auto lg:w-full xl:w-auto text-xs sm:text-sm"
+                            >
+                              Nonaktifkan
+                            </Button>
+                          )}
                           <Button 
                             asChild
                             size="sm"
