@@ -316,12 +316,25 @@ class VPSWhatsAppService {
   }
 
   async sendApplicationNotification(data) {
+    const timestamp = new Date().toISOString();
+    console.log(`\n📱 [${timestamp}] Starting application notification send...`);
+    console.log('📋 Request data:', JSON.stringify(data, null, 2));
+    
     try {
       if (!this.isClientReady()) {
+        console.log('❌ WhatsApp client is not ready');
         return { success: false, message: 'WhatsApp service is not ready' };
       }
+      console.log('✅ WhatsApp client is ready');
 
       const { phoneNumber, applicantName, jobTitle, companyName, status, notes } = data;
+      
+      // Validate required fields
+      if (!phoneNumber || !applicantName || !jobTitle || !companyName || !status) {
+        console.log('❌ Missing required fields:', { phoneNumber: !!phoneNumber, applicantName: !!applicantName, jobTitle: !!jobTitle, companyName: !!companyName, status: !!status });
+        return { success: false, message: 'Missing required fields' };
+      }
+      
       let message = '';
 
       if (status === 'accepted') {
@@ -341,23 +354,54 @@ class VPSWhatsAppService {
       message += '— *Barlink ID*';
 
       const chatId = phoneNumber.replace('+', '') + '@c.us';
-      await this.client.sendMessage(chatId, message);
+      console.log(`📞 Target phone: ${phoneNumber}`);
+      console.log(`💬 Chat ID: ${chatId}`);
+      console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
+      
+      console.log('🚀 Sending message via WhatsApp Web...');
+      const result = await this.client.sendMessage(chatId, message);
+      console.log('✅ Message sent successfully!');
+      console.log('📊 Send result:', result?.id || 'No message ID returned');
 
       return { success: true, message: 'Notification sent successfully' };
     } catch (error) {
-      console.error('Error sending application notification:', error);
-      return { success: false, message: 'Failed to send notification' };
+      console.error('❌ Error sending application notification:', error);
+      console.error('🔍 Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.split('\n').slice(0, 3).join('\n')
+      });
+      return { success: false, message: 'Failed to send notification', error: error.message };
     }
   }
 
   async sendInterviewNotification(data) {
+    const timestamp = new Date().toISOString();
+    console.log(`\n📅 [${timestamp}] Starting interview notification send...`);
+    console.log('📋 Request data:', JSON.stringify(data, null, 2));
+    
     try {
       if (!this.isClientReady()) {
+        console.log('❌ WhatsApp client is not ready');
         return { success: false, message: 'WhatsApp service is not ready' };
       }
+      console.log('✅ WhatsApp client is ready');
 
       const { phoneNumber, applicantName, jobTitle, companyName, interviewDate, 
               interviewTime, interviewType, location, meetingLink, notes } = data;
+      
+      // Validate required fields
+      if (!phoneNumber || !applicantName || !jobTitle || !companyName || !interviewDate || !interviewTime) {
+        console.log('❌ Missing required fields:', { 
+          phoneNumber: !!phoneNumber, 
+          applicantName: !!applicantName, 
+          jobTitle: !!jobTitle, 
+          companyName: !!companyName,
+          interviewDate: !!interviewDate,
+          interviewTime: !!interviewTime
+        });
+        return { success: false, message: 'Missing required fields' };
+      }
 
       let message = `📅 *Interview Dijadwalkan*\n\n`;
       message += `Halo *${applicantName}*,\n\n`;
@@ -389,12 +433,24 @@ class VPSWhatsAppService {
       message += '\n— *Barlink ID*';
 
       const chatId = phoneNumber.replace('+', '') + '@c.us';
-      await this.client.sendMessage(chatId, message);
+      console.log(`📞 Target phone: ${phoneNumber}`);
+      console.log(`💬 Chat ID: ${chatId}`);
+      console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
+      
+      console.log('🚀 Sending message via WhatsApp Web...');
+      const result = await this.client.sendMessage(chatId, message);
+      console.log('✅ Message sent successfully!');
+      console.log('📊 Send result:', result?.id || 'No message ID returned');
 
       return { success: true, message: 'Interview notification sent successfully' };
     } catch (error) {
-      console.error('Error sending interview notification:', error);
-      return { success: false, message: 'Failed to send interview notification' };
+      console.error('❌ Error sending interview notification:', error);
+      console.error('🔍 Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.split('\n').slice(0, 3).join('\n')
+      });
+      return { success: false, message: 'Failed to send interview notification', error: error.message };
     }
   }
 }
@@ -530,29 +586,49 @@ app.post('/api/whatsapp/verify-otp', (req, res) => {
 });
 
 app.post('/api/whatsapp/send-application-notification', async (req, res) => {
+  const timestamp = new Date().toISOString();
+  const requestId = Math.random().toString(36).substring(7);
+  
+  console.log(`\n🌐 [${timestamp}] API Request [${requestId}]: /api/whatsapp/send-application-notification`);
+  console.log('📨 Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('📦 Body:', JSON.stringify(req.body, null, 2));
+  
   try {
     const result = await whatsappService.sendApplicationNotification(req.body);
+    
+    console.log(`📤 [${requestId}] API Response:`, JSON.stringify(result, null, 2));
+    
     if (result.success) {
       res.json({ success: true, message: result.message });
     } else {
       res.status(400).json({ success: false, error: result.message });
     }
   } catch (error) {
-    console.error('Error in send-application-notification API:', error);
+    console.error(`❌ [${requestId}] Error in send-application-notification API:`, error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
 
 app.post('/api/whatsapp/send-interview-notification', async (req, res) => {
+  const timestamp = new Date().toISOString();
+  const requestId = Math.random().toString(36).substring(7);
+  
+  console.log(`\n🌐 [${timestamp}] API Request [${requestId}]: /api/whatsapp/send-interview-notification`);
+  console.log('📨 Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('📦 Body:', JSON.stringify(req.body, null, 2));
+  
   try {
     const result = await whatsappService.sendInterviewNotification(req.body);
+    
+    console.log(`📤 [${requestId}] API Response:`, JSON.stringify(result, null, 2));
+    
     if (result.success) {
       res.json({ success: true, message: result.message });
     } else {
       res.status(400).json({ success: false, error: result.message });
     }
   } catch (error) {
-    console.error('Error in send-interview-notification API:', error);
+    console.error(`❌ [${requestId}] Error in send-interview-notification API:`, error);
     res.status(500).json({ success: false, error: 'Internal server error' });
   }
 });
