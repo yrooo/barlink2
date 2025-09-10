@@ -326,12 +326,12 @@ class VPSWhatsAppService {
 
       if (status === 'accepted') {
         message = `🎉 *Selamat ${applicantName}!*\n\nLamaran Anda untuk posisi *${jobTitle}* di *${companyName}* telah *DITERIMA*!\n\n`;
-        message += `Tim HR akan segera menghubungi Anda untuk tahap selanjutnya.\n\n`;
+        message += `📧 Cek email Anda untuk informasi lebih lanjut.\n\n`;
       } else {
         message = `📋 *Update Lamaran - ${companyName}*\n\n`;
         message += `Halo ${applicantName},\n\n`;
         message += `Terima kasih atas minat Anda pada posisi *${jobTitle}*. Setelah evaluasi, kami informasikan bahwa lamaran Anda belum dapat kami proses lebih lanjut.\n\n`;
-        message += `Jangan menyerah! Anda masih bisa mencoba peluang lain yang sesuai dengan keahlian Anda.\n\n`;
+        message += `📧 Cek email Anda untuk informasi lebih lanjut.\n\n`;
       }
 
       if (notes) {
@@ -379,7 +379,8 @@ class VPSWhatsAppService {
         message += `\n💬 *Catatan:*\n${notes}\n`;
       }
 
-      message += '\n*Tips Persiapan:*\n';
+      message += '\n📧 Cek email Anda untuk informasi lebih lanjut.\n\n';
+      message += '*Tips Persiapan:*\n';
       message += '• Pelajari profil perusahaan\n';
       message += '• Siapkan dokumen yang diperlukan\n';
       message += '• Datang tepat waktu\n';
