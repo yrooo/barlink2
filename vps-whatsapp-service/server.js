@@ -315,6 +315,24 @@ class VPSWhatsAppService {
     }
   }
 
+  // Format phone number for WhatsApp (Indonesian format)
+  formatPhoneNumber(phone) {
+    // Remove all non-digit characters
+    phone = phone.replace(/\D/g, '');
+    
+    // Replace leading 0 with 62 (Indonesian country code)
+    if (phone.startsWith('0')) {
+      phone = '62' + phone.slice(1);
+    }
+    
+    // Ensure it starts with 62 if not already
+    if (!phone.startsWith('62')) {
+      phone = '62' + phone;
+    }
+    
+    return phone + '@c.us';
+  }
+
   async sendApplicationNotification(data) {
     const timestamp = new Date().toISOString();
     console.log(`\n📱 [${timestamp}] Starting application notification send...`);
@@ -335,6 +353,20 @@ class VPSWhatsAppService {
         return { success: false, message: 'Missing required fields' };
       }
       
+      // Format phone number properly
+      const chatId = this.formatPhoneNumber(phoneNumber);
+      console.log(`📞 Original phone: ${phoneNumber}`);
+      console.log(`💬 Formatted Chat ID: ${chatId}`);
+      
+      // Check if number is registered on WhatsApp
+      console.log('🔍 Checking if number is registered on WhatsApp...');
+      const isRegistered = await this.client.isRegisteredUser(chatId);
+      if (!isRegistered) {
+        console.error(`❌ Number is not registered on WhatsApp: ${chatId}`);
+        return { success: false, message: `Number ${phoneNumber} is not registered on WhatsApp` };
+      }
+      console.log('✅ Number is registered on WhatsApp');
+      
       let message = '';
 
       if (status === 'accepted') {
@@ -353,10 +385,11 @@ class VPSWhatsAppService {
 
       message += '— *Barlink ID*';
 
-      const chatId = phoneNumber.replace('+', '') + '@c.us';
-      console.log(`📞 Target phone: ${phoneNumber}`);
-      console.log(`💬 Chat ID: ${chatId}`);
       console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
+      
+      // Add small delay to avoid race conditions
+      console.log('⏳ Adding 2-second delay to avoid race conditions...');
+      await new Promise(r => setTimeout(r, 2000));
       
       console.log('🚀 Sending message via WhatsApp Web...');
       const result = await this.client.sendMessage(chatId, message);
@@ -403,6 +436,20 @@ class VPSWhatsAppService {
         return { success: false, message: 'Missing required fields' };
       }
 
+      // Format phone number properly
+      const chatId = this.formatPhoneNumber(phoneNumber);
+      console.log(`📞 Original phone: ${phoneNumber}`);
+      console.log(`💬 Formatted Chat ID: ${chatId}`);
+      
+      // Check if number is registered on WhatsApp
+      console.log('🔍 Checking if number is registered on WhatsApp...');
+      const isRegistered = await this.client.isRegisteredUser(chatId);
+      if (!isRegistered) {
+        console.error(`❌ Number is not registered on WhatsApp: ${chatId}`);
+        return { success: false, message: `Number ${phoneNumber} is not registered on WhatsApp` };
+      }
+      console.log('✅ Number is registered on WhatsApp');
+
       let message = `📅 *Interview Dijadwalkan*\n\n`;
       message += `Halo *${applicantName}*,\n\n`;
       message += `Interview Anda untuk posisi *${jobTitle}* di *${companyName}* telah dijadwalkan.\n\n`;
@@ -432,10 +479,11 @@ class VPSWhatsAppService {
 
       message += '\n— *Barlink ID*';
 
-      const chatId = phoneNumber.replace('+', '') + '@c.us';
-      console.log(`📞 Target phone: ${phoneNumber}`);
-      console.log(`💬 Chat ID: ${chatId}`);
       console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
+      
+      // Add small delay to avoid race conditions
+      console.log('⏳ Adding 2-second delay to avoid race conditions...');
+      await new Promise(r => setTimeout(r, 2000));
       
       console.log('🚀 Sending message via WhatsApp Web...');
       const result = await this.client.sendMessage(chatId, message);
