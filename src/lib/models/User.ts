@@ -62,6 +62,17 @@ const UserSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  whatsappNumber: {
+    type: String,
+    trim: true,
+  },
+  whatsappVerified: {
+    type: Boolean,
+    default: false,
+  },
+  whatsappVerifiedAt: {
+    type: Date,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

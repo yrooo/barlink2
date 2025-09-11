@@ -55,6 +55,36 @@ export async function PATCH(
         console.error('Failed to send email notification:', emailError);
         // Don't fail the API call if email fails
       }
+
+      // Send WhatsApp notification if applicant has verified WhatsApp number
+      if (updatedApplication.applicantId.whatsappNumber && updatedApplication.applicantId.whatsappVerified) {
+        try {
+          const whatsappResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/whatsapp/send-application-notification`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Cookie': request.headers.get('cookie') || ''
+            },
+            body: JSON.stringify({
+              phoneNumber: updatedApplication.applicantId.whatsappNumber,
+              applicantName: updatedApplication.applicantId.name,
+              jobTitle: updatedApplication.jobId.title,
+              companyName: updatedApplication.jobId.company,
+              status,
+              notes
+            })
+          });
+
+          if (whatsappResponse.ok) {
+            console.log(`WhatsApp notification sent for application ${id} with status ${status}`);
+          } else {
+            console.error('Failed to send WhatsApp notification:', await whatsappResponse.text());
+          }
+        } catch (whatsappError) {
+          console.error('Failed to send WhatsApp notification:', whatsappError);
+          // Don't fail the API call if WhatsApp notification fails
+        }
+      }
     }
     
     return NextResponse.json(updatedApplication);

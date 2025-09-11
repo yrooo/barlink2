@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import mongoose from 'mongoose';
-import { ObjectId } from 'mongodb';
+// import { ObjectId } from 'mongodb'; // Removed to avoid BSON version conflicts
 
 // import { Interview } from '@/types';
 import { EmailService } from '@/lib/emailService';
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if interview already exists for this application
-    const existingInterview = await db!.collection('interviews').findOne({
+    const existingInterview = await InterviewModel.findOne({
       applicationId: new mongoose.Types.ObjectId(applicationId)
     });
 
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
         applicantName: candidateName,
         applicantEmail: applicant.email,
         jobTitle: position,
-        companyName: job.companyName || 'Company',
+        companyName: session.user.company || 'Company',
         interviewDate: interviewDateTime.toLocaleDateString('id-ID', {
           weekday: 'long',
           year: 'numeric',
@@ -150,12 +150,47 @@ export async function POST(request: NextRequest) {
       console.error('Error sending interview email:', error);
     }
 
+    // Send WhatsApp notification if applicant has verified WhatsApp number
+    if (applicant.whatsappNumber && applicant.whatsappVerified && process.env.NEXTAUTH_URL) {
+      try {
+        const whatsappResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/whatsapp/send-interview-notification`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cookie': request.headers.get('cookie') || ''
+          },
+          body: JSON.stringify({
+            phoneNumber: applicant.whatsappNumber,
+            applicantName: candidateName,
+            jobTitle: position,
+            companyName: session.user.company || 'Company',
+            interviewDate: date,
+            interviewTime: time,
+            interviewType: type,
+            location: type === 'offline' ? location : undefined,
+            meetingLink: type === 'online' ? location : undefined,
+            notes: notes || undefined
+          }),
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        });
+
+        if (whatsappResponse.ok) {
+          console.log(`WhatsApp interview notification sent to ${applicant.whatsappNumber}`);
+        } else {
+          console.error('Failed to send WhatsApp interview notification:', await whatsappResponse.text());
+        }
+      } catch (whatsappError) {
+        console.error('Failed to send WhatsApp interview notification:', whatsappError);
+        // Don't fail the API call if WhatsApp notification fails
+      }
+    }
+
     // Create interview object using Mongoose model
     const interviewData = {
-      applicationId: new ObjectId(applicationId),
-      jobId: new ObjectId(application.jobId),
+      applicationId: new mongoose.Types.ObjectId(applicationId),
+      jobId: new mongoose.Types.ObjectId(application.jobId),
       employerId: new mongoose.Types.ObjectId(session.user.id),
-      applicantId: new ObjectId(application.applicantId),
+      applicantId: new mongoose.Types.ObjectId(application.applicantId),
       scheduledDate: interviewDateTime,
       endDate: endDateTime,
       scheduledTime: time,
@@ -219,7 +254,7 @@ export async function GET(request: NextRequest) {
 
     let query = {};
     if (applicationId) {
-      query = { applicationId: new ObjectId(applicationId) };
+      query = { applicationId: new mongoose.Types.ObjectId(applicationId) };
     }
 
     // Get interviews for jobs owned by the current employer

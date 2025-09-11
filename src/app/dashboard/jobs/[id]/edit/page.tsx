@@ -200,7 +200,7 @@ const EditJobPage = ({ params }: { params: Promise<{ id: string }> }) => {
                    placeholder="10.000.000 - 15.000.000"
                  />
               </div>
-              <p className="text-sm text-gray-600 mt-1">Use "-" for salary range (example: 10.000.000 - 15.000.000)</p>
+              <p className="text-sm text-gray-600 mt-1">Use &quot;-&quot; for salary range (example: 10.000.000 - 15.000.000)</p>
             </div>
 
           </form>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3001';
-const VPS_API_KEY = process.env.VPS_API_KEY;
+const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
     };
 
     // Add API key if configured
-    if (VPS_API_KEY) {
-      headers['X-API-Key'] = VPS_API_KEY;
+    if (WHATSAPP_API_KEY) {
+      headers['X-API-Key'] = WHATSAPP_API_KEY;
     }
 
     const response = await fetch(`${WHATSAPP_SERVICE_URL}/api/whatsapp/send-otp`, {
