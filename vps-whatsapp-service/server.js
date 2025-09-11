@@ -315,24 +315,35 @@ class VPSWhatsAppService {
     }
   }
 
-  // Format phone number for WhatsApp (Indonesian format)
+  // ✅ Format nomor ke format WhatsApp (selalu 62xxx@c.us)
   formatPhoneNumber(phone) {
-    // Remove all non-digit characters
-    phone = phone.replace(/\D/g, '');
-    
-    // Replace leading 0 with 62 (Indonesian country code)
+    phone = phone.replace(/\D/g, ''); // buang karakter non-angka
     if (phone.startsWith('0')) {
       phone = '62' + phone.slice(1);
     }
-    
-    // Ensure it starts with 62 if not already
     if (!phone.startsWith('62')) {
       phone = '62' + phone;
     }
-    
     return phone + '@c.us';
   }
 
+  // ✅ Helper kirim pesan dengan retry (biar ga gampang error "Evaluation failed: b")
+  async safeSendMessage(chatId, message, retries = 3) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        console.log(`📤 Sending message (attempt ${i + 1}/${retries}) → ${chatId}`);
+        const result = await this.client.sendMessage(chatId, message);
+        console.log(`✅ Message sent to ${chatId}`);
+        return result;
+      } catch (err) {
+        console.error(`⚠️ sendMessage gagal (attempt ${i + 1}):`, err.message);
+        if (i === retries - 1) throw err; // habis retry → throw error
+        await new Promise(r => setTimeout(r, 2000)); // tunggu 2 detik sebelum retry
+      }
+    }
+  }
+
+  // ✅ Kirim notifikasi aplikasi
   async sendApplicationNotification(data) {
     const timestamp = new Date().toISOString();
     console.log(`\n📱 [${timestamp}] Starting application notification send...`);
@@ -353,7 +364,6 @@ class VPSWhatsAppService {
         return { success: false, message: 'Missing required fields' };
       }
       
-      // Format phone number properly
       const chatId = this.formatPhoneNumber(phoneNumber);
       console.log(`📞 Original phone: ${phoneNumber}`);
       console.log(`💬 Formatted Chat ID: ${chatId}`);
@@ -379,21 +389,12 @@ class VPSWhatsAppService {
         message += `📧 Cek email Anda untuk informasi lebih lanjut.\n\n`;
       }
 
-      if (notes) {
-        message += `💬 *Pesan:*\n${notes}\n\n`;
-      }
-
-      message += '— *Barlink ID*';
 
       console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
       
-      // Add small delay to avoid race conditions
-      console.log('⏳ Adding 2-second delay to avoid race conditions...');
-      await new Promise(r => setTimeout(r, 2000));
-      
-      console.log('🚀 Sending message via WhatsApp Web...');
-      const result = await this.client.sendMessage(chatId, message);
-      console.log('✅ Message sent successfully!');
+      console.log('🚀 Sending application notification via WhatsApp Web...');
+      const result = await this.safeSendMessage(chatId, message);
+      console.log('✅ Application notification sent successfully!');
       console.log('📊 Send result:', result?.id || 'No message ID returned');
 
       return { success: true, message: 'Notification sent successfully' };
@@ -408,6 +409,7 @@ class VPSWhatsAppService {
     }
   }
 
+  // ✅ Kirim notifikasi interview
   async sendInterviewNotification(data) {
     const timestamp = new Date().toISOString();
     console.log(`\n📅 [${timestamp}] Starting interview notification send...`);
@@ -436,7 +438,6 @@ class VPSWhatsAppService {
         return { success: false, message: 'Missing required fields' };
       }
 
-      // Format phone number properly
       const chatId = this.formatPhoneNumber(phoneNumber);
       console.log(`📞 Original phone: ${phoneNumber}`);
       console.log(`💬 Formatted Chat ID: ${chatId}`);
@@ -450,44 +451,26 @@ class VPSWhatsAppService {
       }
       console.log('✅ Number is registered on WhatsApp');
 
-      let message = `📅 *Interview Dijadwalkan*\n\n`;
-      message += `Halo *${applicantName}*,\n\n`;
-      message += `Interview Anda untuk posisi *${jobTitle}* di *${companyName}* telah dijadwalkan.\n\n`;
-      message += `*Detail Interview:*\n`;
-      message += `📆 Tanggal: ${interviewDate}\n`;
-      message += `⏰ Waktu: ${interviewTime} WIB\n`;
-      message += `📍 Jenis: ${interviewType === 'online' ? 'Online' : 'Offline'}\n`;
+      const message = 
+`📅 *Interview Dijadwalkan*
 
-      if (interviewType === 'online' && meetingLink) {
-        message += `🔗 Link Meeting: ${meetingLink}\n`;
-      }
+Halo *${applicantName}*,
+Interview Anda untuk posisi *${jobTitle}* di *${companyName}* telah dijadwalkan.
 
-      if (interviewType === 'offline' && location) {
-        message += `📍 Lokasi: ${location}\n`;
-      }
+📆 Tanggal: ${interviewDate}
+⏰ Waktu: ${interviewTime}
+📍 Tipe: ${interviewType}
+🏢 Lokasi: ${location || "-"}
+📝 Catatan: ${notes || "-"}
 
-      if (notes) {
-        message += `\n💬 *Catatan:*\n${notes}\n`;
-      }
-
-      message += '\n📧 Cek email Anda untuk informasi lebih lanjut.\n\n';
-      message += '*Tips Persiapan:*\n';
-      message += '• Pelajari profil perusahaan\n';
-      message += '• Siapkan dokumen yang diperlukan\n';
-      message += '• Datang tepat waktu\n';
-      message += interviewType === 'online' ? '• Pastikan koneksi internet stabil\n' : '';
-
-      message += '\n— *Barlink ID*';
+Mohon konfirmasi kehadiran Anda.
+Terima kasih 🙏`;
 
       console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
       
-      // Add small delay to avoid race conditions
-      console.log('⏳ Adding 2-second delay to avoid race conditions...');
-      await new Promise(r => setTimeout(r, 2000));
-      
-      console.log('🚀 Sending message via WhatsApp Web...');
-      const result = await this.client.sendMessage(chatId, message);
-      console.log('✅ Message sent successfully!');
+      console.log('🚀 Sending interview notification via WhatsApp Web...');
+      const result = await this.safeSendMessage(chatId, message);
+      console.log('✅ Interview notification sent successfully!');
       console.log('📊 Send result:', result?.id || 'No message ID returned');
 
       return { success: true, message: 'Interview notification sent successfully' };
