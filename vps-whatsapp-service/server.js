@@ -380,15 +380,26 @@ class VPSWhatsAppService {
       let message = '';
 
       if (status === 'accepted') {
-        message = `🎉 *Selamat ${applicantName}!*\n\nLamaran Anda untuk posisi *${jobTitle}* di *${companyName}* telah *DITERIMA*!\n\n`;
-        message += `📧 Cek email Anda untuk informasi lebih lanjut.\n\n`;
-      } else {
-        message = `📋 *Update Lamaran - ${companyName}*\n\n`;
-        message += `Halo ${applicantName},\n\n`;
-        message += `Terima kasih atas minat Anda pada posisi *${jobTitle}*. Setelah evaluasi, kami informasikan bahwa lamaran Anda belum dapat kami proses lebih lanjut.\n\n`;
-        message += `📧 Cek email Anda untuk informasi lebih lanjut.\n\n`;
-      }
+        message = 
+`🎉 *Selamat ${applicantName}!*
 
+Lamaran Anda untuk posisi *${jobTitle}* di *${companyName}* telah *DITERIMA*!
+
+📧 Cek email Anda untuk informasi lebih lanjut.
+
+Terima kasih 🙏`;
+      } else {
+        message = 
+`📋 *Update Lamaran - ${companyName}*
+
+Halo *${applicantName}*,
+
+Terima kasih atas minat Anda pada posisi *${jobTitle}*. Setelah evaluasi, kami informasikan bahwa lamaran Anda belum dapat kami proses lebih lanjut.
+
+📧 Cek email Anda untuk informasi lebih lanjut.
+
+Terima kasih 🙏`;
+      }
 
       console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
       
