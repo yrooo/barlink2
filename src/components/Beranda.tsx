@@ -146,7 +146,7 @@ export default function BerandaPage() {
               <div
                 key={job._id}
                 className="bg-white content-padding border-responsive shadow-responsive hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1 w-full flex flex-col h-full">
-                <h3 className="text-lg sm:text-xl font-bold text-black mb-2 line-clamp-2">{job.title}</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-black mb-2 line-clamp-2 bg-main px-2">{job.title}</h3>
                 <p className="text-main font-semibold mb-2 text-sm sm:text-base">{job.company}</p>
                 <p className="text-gray-600 mb-2 text-sm sm:text-base">📍 {job.location}</p>
                 <p className="text-green-600 font-bold mb-4 text-sm sm:text-base">💰 Rp {job.salary}</p>

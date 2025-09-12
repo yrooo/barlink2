@@ -43,7 +43,7 @@ export async function PATCH(
       id,
       { status, notes },
       { new: true }
-    ).populate('applicantId', 'name email')
+    ).populate('applicantId', 'name email whatsappNumber whatsappVerified')
      .populate('jobId', 'title company');
     
     // Send email notification for accepted/rejected applications

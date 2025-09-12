@@ -169,9 +169,16 @@ export default function JobApplications() {
                         </span>
                       )}
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.status)}`}>
-                      {getStatusText(application.status)}
-                    </span>
+                    <div className="flex gap-2">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(application.status)}`}>
+                        {getStatusText(application.status)}
+                      </span>
+                      {application.interviewScheduled && (
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
+                          📅 Interview sudah dijadwalkan
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="mt-4 flex gap-2">
                     <Dialog>
@@ -271,7 +278,7 @@ export default function JobApplications() {
                          </div>
                       </DialogContent>
                     </Dialog>
-                    {application.status === 'accepted' && (
+                    {application.status === 'accepted' && !application.interviewScheduled && (
                       <Button
                         size="sm"
                         className="bg-blue-500 hover:bg-blue-600 flex-1 text-xs"

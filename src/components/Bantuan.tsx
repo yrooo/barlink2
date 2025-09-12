@@ -166,7 +166,11 @@ export default function BantuanPage() {
             <Button size="lg" className="bg-main px-6 sm:px-8 py-3 touch-target text-sm sm:text-base">
               Hubungi Support
             </Button>
-            <Button size="lg" className="bg-white text-black px-6 sm:px-8 py-3 touch-target text-sm sm:text-base">
+            <Button 
+              size="lg" 
+              className="bg-white text-black px-6 sm:px-8 py-3 touch-target text-sm sm:text-base"
+              onClick={() => window.open('https://tally.so/r/wL8J22', '_blank')}
+            >
               Kirim Feedback
             </Button>
           </div>

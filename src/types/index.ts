@@ -106,6 +106,7 @@ export interface Application {
   }[];
   status: 'pending' | 'reviewed' | 'accepted' | 'rejected';
   notes?: string;
+  interviewScheduled?: boolean;
   createdAt: string;
   updatedAt: string;
 }

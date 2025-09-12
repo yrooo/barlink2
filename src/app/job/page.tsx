@@ -395,11 +395,11 @@ const JobPageContent = () => {
                       <div key={job._id} className="bg-white content-padding border-responsive shadow-responsive  hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1">
                         <div className="flex flex-col h-full">
                           <div className="flex-1">
-                            <h2 className="text-lg sm:text-xl font-bold px-2 bg-main">{job.title}</h2>
+                            <h2 className="text-lg sm:text-xl font-bold px-2 bg-main line-clamp-2">{job.title}</h2>
                             <p className="text-base sm:text-lg mb-2">{job.company}</p>
                             {job.location && <p className="text-xs sm:text-sm mb-2 text-gray-600">📍 {job.location}</p>}
                             {job.salary && <p className="text-xs sm:text-sm mb-2 text-green-600">💰 Rp {job.salary}</p>}
-                            <p className="text-xs sm:text-sm mb-4 text-gray-700">
+                            <p className="text-xs sm:text-sm mb-4 text-gray-700 line-clamp-3">
                               {job.description.length > 80 
                                 ? `${job.description.substring(0, 80)}...` 
                                 : job.description
