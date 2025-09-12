@@ -385,9 +385,7 @@ class VPSWhatsAppService {
 
 Lamaran Anda untuk posisi *${jobTitle}* di *${companyName}* telah *DITERIMA*!
 
-📧 Cek email Anda untuk informasi lebih lanjut.
-
-Terima kasih 🙏`;
+📧 Cek email Anda untuk informasi lebih lanjut.`;
       } else {
         message = 
 `📋 *Update Lamaran - ${companyName}*
@@ -396,9 +394,7 @@ Halo *${applicantName}*,
 
 Terima kasih atas minat Anda pada posisi *${jobTitle}*. Setelah evaluasi, kami informasikan bahwa lamaran Anda belum dapat kami proses lebih lanjut.
 
-📧 Cek email Anda untuk informasi lebih lanjut.
-
-Terima kasih 🙏`;
+📧 Cek email Anda untuk informasi lebih lanjut.`;
       }
 
       console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
@@ -462,20 +458,7 @@ Terima kasih 🙏`;
       }
       console.log('✅ Number is registered on WhatsApp');
 
-      const message = 
-`📅 *Interview Dijadwalkan*
-
-Halo *${applicantName}*,
-Interview Anda untuk posisi *${jobTitle}* di *${companyName}* telah dijadwalkan.
-
-📆 Tanggal: ${interviewDate}
-⏰ Waktu: ${interviewTime}
-📍 Tipe: ${interviewType}
-🏢 Lokasi: ${location || "-"}
-📝 Catatan: ${notes || "-"}
-
-Mohon konfirmasi kehadiran Anda.
-Terima kasih 🙏`;
+      const message = `Halo ${applicantName}, Interview Anda untuk posisi ${jobTitle} di ${companyName} telah dijadwalkan.`;
 
       console.log(`📝 Message preview: ${message.substring(0, 100)}...`);
       
