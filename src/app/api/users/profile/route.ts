@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import User from '@/lib/models/User';
+import { formatPhoneNumber } from '@/lib/utils';
 
 interface UpdateData {
   name: string;
@@ -60,11 +61,11 @@ export async function PUT(request: NextRequest) {
       updateData.description = description;
       updateData.website = website;
       updateData.location = location;
-      updateData.whatsappNumber = whatsappNumber;
+      updateData.whatsappNumber = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
     } else {
       // For job seekers, update profile nested object
-      updateData['profile.phone'] = phone;
-      updateData['profile.whatsappNumber'] = whatsappNumber;
+      updateData['profile.phone'] = phone ? formatPhoneNumber(phone) : phone;
+      updateData['profile.whatsappNumber'] = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
       updateData['profile.description'] = description;
       updateData['profile.website'] = website;
       updateData['profile.location'] = location;

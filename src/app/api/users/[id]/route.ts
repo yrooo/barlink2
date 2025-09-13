@@ -45,6 +45,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         role: user.role,
         company: user.company,
         image: user.image,
+        whatsappNumber: user.whatsappNumber,
+        whatsappVerified: user.whatsappVerified,
+        whatsappVerifiedAt: user.whatsappVerifiedAt,
         profile: user.profile
       }
     });

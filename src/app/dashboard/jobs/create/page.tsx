@@ -85,6 +85,10 @@ export default function CreateJob() {
   };
 
   const addCustomQuestion = () => {
+    if (customQuestions.length >= 5) {
+      alert('Maksimal 5 pertanyaan khusus yang dapat ditambahkan.');
+      return;
+    }
     setCustomQuestions([
       ...customQuestions,
       {
@@ -279,11 +283,16 @@ export default function CreateJob() {
           {/* Custom Questions */}
           <div className="bg-white p-6 rounded-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-black">Pertanyaan Khusus</h2>
+              <div>
+                <h2 className="text-2xl font-black">Pertanyaan Khusus</h2>
+                <p className="text-sm text-gray-600">{customQuestions.length}/5 pertanyaan</p>
+              </div>
               <Button 
                 type="button"
                 onClick={addCustomQuestion}
                 variant="default"
+                disabled={customQuestions.length >= 5}
+                className={customQuestions.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''}
               >
                 + Tambah Pertanyaan
               </Button>
@@ -394,21 +403,42 @@ export default function CreateJob() {
             )}
           </div>
 
-          {/* Media Upload Section */}
-          <div className="bg-white p-6 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <h2 className="text-2xl font-black mb-6">Upload Media</h2>
+          {/* CV Requirement Section */}
+          <div className="bg-white p-6 rounded-md border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <h2 className="text-2xl font-black mb-6">📄 CV Pelamar</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-lg font-bold mb-2">Upload CV (PDF, DOCX)</label>
-                <input
-                  type="file"
-                  name="cvUpload"
-                  accept=".pdf,.doc,.docx"
-                  className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
-                />
-                <p className="text-sm text-gray-500 mt-2">Max file size: 5MB</p>
+                <label className="block text-lg font-bold mb-3">Apakah Anda butuh CV pelamar?</label>
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800 mb-2">
+                    💡 <strong>Informasi:</strong> Pelamar wajib mengupload CV ke profil mereka sebelum melamar pekerjaan.
+                  </p>
+                  <p className="text-sm text-blue-700">
+                    Anda dapat melihat dan mengunduh CV pelamar nanti di dashboard aplikasi.
+                  </p>
+                </div>
+                <div className="mt-4 flex items-center space-x-4">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="requireCV"
+                      value="yes"
+                      defaultChecked
+                      className="w-4 h-4 text-main border-2 border-black focus:ring-main"
+                    />
+                    <span className="font-semibold">Ya, CV diperlukan</span>
+                  </label>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="requireCV"
+                      value="no"
+                      className="w-4 h-4 text-main border-2 border-black focus:ring-main"
+                    />
+                    <span className="font-semibold">Tidak perlu CV</span>
+                  </label>
+                </div>
               </div>
-              {/* You can add more file inputs here for other media types if needed */}
             </div>
           </div>
 

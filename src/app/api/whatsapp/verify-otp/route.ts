@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import dbConnect from '@/lib/mongodb';
 import User from '@/lib/models/User';
+import { formatPhoneNumber } from '@/lib/utils';
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3001';
 const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
         const updatedUser = await User.findByIdAndUpdate(
           session.user.id,
           {
-            whatsappNumber: phoneNumber,
+            whatsappNumber: formatPhoneNumber(phoneNumber),
             whatsappVerified: true,
             whatsappVerifiedAt: new Date()
           },
