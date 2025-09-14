@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
+import WhatsAppVerificationWrapper from "@/components/WhatsAppVerificationWrapper";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -40,6 +41,7 @@ export default function RootLayout({
           <div className="flex flex-col min-h-screen">
             {children}
           </div>
+          <WhatsAppVerificationWrapper />
           <Toaster position="top-right" richColors />
         </AuthProvider>
       </body>
