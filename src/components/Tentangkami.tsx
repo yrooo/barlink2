@@ -115,7 +115,7 @@ export default function TentangKamiPage() {
         </div>
 
         {/* Statistics Section */}
-        <div className="bg-main rounded-responsive content-padding text-white text-center border-responsive border-black shadow-responsive">
+        {/* <div className="bg-main rounded-responsive content-padding text-white text-center border-responsive border-black shadow-responsive">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Pencapaian Kami</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             <div>
@@ -135,7 +135,7 @@ export default function TentangKamiPage() {
               <p className="text-sm sm:text-base lg:text-lg">Kepuasan Pengguna</p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );
