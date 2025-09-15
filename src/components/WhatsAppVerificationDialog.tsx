@@ -74,7 +74,7 @@ const WhatsAppVerificationDialog: React.FC<WhatsAppVerificationDialogProps> = ({
         <DialogFooter className="flex flex-col sm:flex-row gap-3">
           <Button
             onClick={handleNoClick}
-            variant="outline"
+            variant="noShadow"
             className="w-full sm:w-auto border-2 border-black bg-white text-black hover:bg-gray-100 font-bold"
           >
             Tidak
