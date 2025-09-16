@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Job from '@/lib/models/Job';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { JobService } from '@/lib/services/jobService';
 
 export async function GET() {
   try {
-    await dbConnect();
-    const jobs = await Job.find({ status: 'active' })
-      .populate('employerId', 'name company')
-      .sort({ createdAt: -1 });
+    const jobs = await JobService.getActiveJobs();
     return NextResponse.json(jobs);
   } catch (error) {
     console.error('Error fetching jobs:', error);
@@ -22,16 +18,30 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session || session.user.role !== 'pencari_kandidat') {
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role, company')
+      .eq('id', user.id)
+      .single();
+    
+    if (!userProfile || userProfile.role !== 'pencari_kandidat') {
       return NextResponse.json(
         { error: 'Unauthorized. Only employers can create jobs.' },
         { status: 401 }
       );
     }
 
-    await dbConnect();
     const body = await request.json();
     
     const { title, description, location, salary, customQuestions } = body;
@@ -43,17 +53,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const job = new Job({
+    const job = await JobService.createJob({
       title,
-      company: session.user.company,
+      company: userProfile.company,
       description,
       location,
       salary,
-      employerId: session.user.id,
-      customQuestions: customQuestions || [],
-    });
+      employer_id: user.id,
+      status: 'active'
+    }, customQuestions || []);
 
-    await job.save();
+    if (!job) {
+      return NextResponse.json(
+        { error: 'Failed to create job' },
+        { status: 500 }
+      );
+    }
     
     return NextResponse.json(job, { status: 201 });
   } catch (error) {

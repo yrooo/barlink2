@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 
 interface UserProfile {
   phone?: string;
@@ -35,13 +35,13 @@ interface UseUserDataReturn {
 }
 
 export function useUserData(): UseUserDataReturn {
-  const { data: session, status } = useSession();
+  const { user, userProfile } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchUserData = useCallback(async () => {
-    if (!session?.user?.id) {
+    if (!user?.id) {
       setLoading(false);
       return;
     }
@@ -50,18 +50,28 @@ export function useUserData(): UseUserDataReturn {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/users/${session.user.id}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch user data');
-      }
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        setUserData(result.data);
-      } else {
-        throw new Error(result.error || 'Failed to fetch user data');
+      if (userProfile) {
+        setUserData({
+          id: user.id,
+          name: userProfile.name || '',
+          email: user.email || '',
+          role: userProfile.role || '',
+          company: userProfile.company,
+          image: userProfile.image,
+          whatsappNumber: userProfile.whatsappNumber,
+          whatsappVerified: userProfile.whatsappVerified,
+          whatsappVerifiedAt: userProfile.whatsappVerifiedAt ? new Date(userProfile.whatsappVerifiedAt) : undefined,
+          profile: {
+            phone: userProfile.phone,
+            whatsappNumber: userProfile.whatsappNumber,
+            description: userProfile.description,
+            website: userProfile.website,
+            location: userProfile.location,
+            cvFileName: userProfile.cvFileName,
+            cvUploadedAt: userProfile.cvUploadedAt,
+            cvUrl: userProfile.cvUrl,
+          }
+        });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -69,19 +79,15 @@ export function useUserData(): UseUserDataReturn {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id]);
+  }, [user?.id, user?.email, userProfile]);
 
   useEffect(() => {
-    if (status === 'loading') {
-      return;
-    }
-    
-    if (session?.user?.id) {
+    if (user?.id) {
       fetchUserData();
     } else {
       setLoading(false);
     }
-  }, [session?.user?.id, status, fetchUserData]);
+  }, [user?.id, fetchUserData]);
 
   const refetch = async () => {
     await fetchUserData();

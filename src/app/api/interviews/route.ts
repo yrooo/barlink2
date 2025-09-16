@@ -1,19 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import mongoose from 'mongoose';
-// import { ObjectId } from 'mongodb'; // Removed to avoid BSON version conflicts
-
-// import { Interview } from '@/types';
-import { EmailService } from '@/lib/emailService';
-import InterviewModel from '@/lib/models/Interview';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { InterviewService } from '@/lib/services/interviewService';
+import { ApplicationService } from '@/lib/services/applicationService';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session || session.user.role !== 'pencari_kandidat') {
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!userProfile || userProfile.role !== 'pencari_kandidat') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -21,210 +31,46 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      applicationId,
-      candidateName,
-      position,
-      date,
-      time,
-      type,
-      location,
-      notes
-    } = body;
-
-    // Validate required fields
-    if (!applicationId || !candidateName || !position || !date || !time || !type) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
-        { status: 400 }
-      );
-    }
-
-    // Validate date is not in the past
-    const interviewDate = new Date(`${date}T${time}`);
-    if (interviewDate < new Date()) {
-      return NextResponse.json(
-        { success: false, error: 'Interview date cannot be in the past' },
-        { status: 400 }
-      );
-    }
-
-    // Validate location/meeting link based on type
-    if (!location) {
-      return NextResponse.json(
-        { success: false, error: type === 'online' ? 'Meeting link is required' : 'Location is required' },
-        { status: 400 }
-      );
-    }
-
-    if (type === 'online') {
-      const urlPattern = /^(https?:\/\/)?(www\.)?(zoom\.us|meet\.google\.com|teams\.microsoft\.com)/i;
-      if (!urlPattern.test(location)) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid meeting link format' },
-          { status: 400 }
-        );
-      }
-    }
-
-    await dbConnect();
-    const db = mongoose.connection.db;
-
-    // Verify the application exists and belongs to the current employer
-    const application = await db!.collection('applications').findOne({
-      _id: new mongoose.Types.ObjectId(applicationId),
-      status: 'accepted' // Only allow scheduling for accepted applications
-    });
-
-    if (!application) {
-      return NextResponse.json(
-        { success: false, error: 'Application not found or not accepted' },
-        { status: 404 }
-      );
-    }
-
-    // Get the job to verify employer ownership
-    const job = await db!.collection('jobs').findOne({
-      _id: new mongoose.Types.ObjectId(application.jobId),
-      employerId: new mongoose.Types.ObjectId(session.user.id)
-    });
-
-    if (!job) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized to schedule interview for this application' },
-        { status: 403 }
-      );
-    }
-
-    // Check if interview already exists for this application
-    const existingInterview = await InterviewModel.findOne({
-      applicationId: new mongoose.Types.ObjectId(applicationId)
-    });
-
-    if (existingInterview) {
-      return NextResponse.json(
-        { success: false, error: 'Interview already scheduled for this application' },
-        { status: 409 }
-      );
-    }
-
-    // Get applicant details for calendar event
-    const applicant = await db!.collection('users').findOne({
-      _id: new mongoose.Types.ObjectId(application.applicantId)
-    });
-
-    if (!applicant) {
-      return NextResponse.json(
-        { success: false, error: 'Applicant not found' },
-        { status: 404 }
-      );
-    }
-
-    // Create interview date-time
-    const interviewDateTime = new Date(`${date}T${time}`);
-    const endDateTime = new Date(interviewDateTime.getTime() + 60 * 60 * 1000); // 1 hour duration
-
-    // Send email notification to applicant
-    let emailSent = false;
     
-    try {
-      const emailService = EmailService.getInstance();
-      emailSent = await emailService.sendInterviewScheduleEmail({
-        applicantName: candidateName,
-        applicantEmail: applicant.email,
-        jobTitle: position,
-        companyName: session.user.company || 'Company',
-        interviewDate: interviewDateTime.toLocaleDateString('id-ID', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }),
-        interviewTime: time,
-        interviewType: type,
-        location: type === 'offline' ? location : undefined,
-        meetingLink: type === 'online' ? location : undefined,
-        notes: notes || ''
-      });
-    } catch (error) {
-      console.error('Error sending interview email:', error);
+    const { applicationId, scheduledAt, type, notes } = body;
+    
+    if (!applicationId || !scheduledAt || !type) {
+      return NextResponse.json(
+        { error: 'Application ID, scheduled time, and type are required' },
+        { status: 400 }
+      );
     }
 
-    // Send WhatsApp notification if applicant has verified WhatsApp number
-    if (applicant.whatsappNumber && applicant.whatsappVerified && process.env.NEXTAUTH_URL) {
-      try {
-        const whatsappResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/whatsapp/send-interview-notification`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Cookie': request.headers.get('cookie') || ''
-          },
-          body: JSON.stringify({
-            phoneNumber: applicant.whatsappNumber,
-            applicantName: candidateName,
-            jobTitle: position,
-            companyName: session.user.company || 'Company',
-            interviewDate: date,
-            interviewTime: time,
-            interviewType: type,
-            location: type === 'offline' ? location : undefined,
-            meetingLink: type === 'online' ? location : undefined,
-            notes: notes || undefined
-          }),
-          signal: AbortSignal.timeout(5000) // 5 second timeout
-        });
+    // Verify application exists and belongs to the employer
+    const application = await ApplicationService.getApplicationById(applicationId);
 
-        if (whatsappResponse.ok) {
-          console.log(`WhatsApp interview notification sent to ${applicant.whatsappNumber}`);
-        } else {
-          console.error('Failed to send WhatsApp interview notification:', await whatsappResponse.text());
-        }
-      } catch (whatsappError) {
-        console.error('Failed to send WhatsApp interview notification:', whatsappError);
-        // Don't fail the API call if WhatsApp notification fails
-      }
+    if (!application || application.employer_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Application not found or unauthorized' },
+        { status: 404 }
+      );
     }
 
-    // Create interview object using Mongoose model
-    const interviewData = {
-      applicationId: new mongoose.Types.ObjectId(applicationId),
-      jobId: new mongoose.Types.ObjectId(application.jobId),
-      employerId: new mongoose.Types.ObjectId(session.user.id),
-      applicantId: new mongoose.Types.ObjectId(application.applicantId),
-      scheduledDate: interviewDateTime,
-      endDate: endDateTime,
-      scheduledTime: time,
-      interviewType: type,
-      ...(type === 'online' ? { 
-        meetingLink: location 
-      } : { location }),
-      notes: notes || '',
-      status: 'scheduled',
-      emailSent
-    };
-
-    // Save interview to database using Mongoose
-    const interview = new InterviewModel(interviewData);
-    const savedInterview = await interview.save();
-
-    // Update application status to indicate interview is scheduled
-    await db!.collection('applications').updateOne( 
-      { _id: new mongoose.Types.ObjectId(applicationId) },
-      { 
-        $set: { 
-          interviewScheduled: true,
-          updatedAt: new Date().toISOString()
-        }
-      }
-    );
-
-    return NextResponse.json({
-      success: true,
-      data: savedInterview.toObject(),
-      message: emailSent ? 
-        'Interview scheduled successfully and email notification sent to applicant' : 
-        'Interview scheduled successfully (email notification failed)'
+    const interview = await InterviewService.createInterview({
+      application_id: applicationId,
+      job_id: application.job_id,
+      employer_id: user.id,
+      applicant_id: application.applicant_id,
+      scheduled_date: new Date(scheduledAt).toISOString().split('T')[0],
+      scheduled_time: new Date(scheduledAt).toTimeString().split(' ')[0],
+      interview_type: type,
+      notes,
+      status: 'scheduled'
     });
+
+    if (!interview) {
+      return NextResponse.json(
+        { error: 'Failed to create interview' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(interview, { status: 201 });
 
   } catch (error) {
     console.error('Error creating interview:', error);
@@ -235,63 +81,43 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session || session.user.role !== 'pencari_kandidat') {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const applicationId = searchParams.get('applicationId');
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
 
-    await dbConnect();
-    const db = mongoose.connection.db;
-
-    let query = {};
-    if (applicationId) {
-      query = { applicationId: new mongoose.Types.ObjectId(applicationId) };
+    if (!userProfile || userProfile.role !== 'pencari_kandidat') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    // Get interviews for jobs owned by the current employer
-    const interviews = await db!.collection('interviews').aggregate([
-      { $match: query },
-      {
-        $lookup: {
-          from: 'applications',
-          localField: 'applicationId',
-          foreignField: '_id',
-          as: 'application'
-        }
-      },
-      { $unwind: '$application' },
-      {
-        $lookup: {
-          from: 'jobs',
-          localField: 'application.jobId',
-          foreignField: '_id',
-          as: 'job'
-        }
-      },
-      { $unwind: '$job' },
-      {
-        $match: {
-          'job.employerId': new mongoose.Types.ObjectId(session.user.id)
-        }
-      },
-      {
-        $sort: { createdAt: -1 }
-      }
-    ]).toArray();
-
-    return NextResponse.json({
-      success: true,
-      data: interviews
-    });
+    let interviews;
+    
+    if (userProfile.role === 'employer') {
+      // Get interviews for jobs posted by this employer
+      interviews = await InterviewService.getInterviewsByInterviewer(user.id);
+    } else {
+      // Get interviews for this candidate
+      interviews = await InterviewService.getUpcomingInterviews(user.id, 'applicant');
+    }
+    
+    return NextResponse.json(interviews);
 
   } catch (error) {
     console.error('Error fetching interviews:', error);

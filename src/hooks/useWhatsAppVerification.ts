@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 
 interface UseWhatsAppVerificationReturn {
   shouldShowDialog: boolean;
@@ -10,15 +10,15 @@ interface UseWhatsAppVerificationReturn {
 }
 
 export const useWhatsAppVerification = (): UseWhatsAppVerificationReturn => {
-  const { data: session, status } = useSession();
+  const { user, userProfile, loading } = useAuth();
   const [shouldShowDialog, setShouldShowDialog] = useState(false);
 
   useEffect(() => {
-    if (status === 'loading') return;
+    if (loading) return;
     
-    if (session?.user) {
+    if (user && userProfile) {
       // Check if user has WhatsApp number linked
-      const hasWhatsApp = session.user.whatsappNumber;
+      const hasWhatsApp = userProfile.whatsappNumber;
       
       // Check if user has opted to not show the dialog again
       const dontShowAgain = localStorage.getItem('whatsapp-verification-dismissed');
@@ -28,7 +28,7 @@ export const useWhatsAppVerification = (): UseWhatsAppVerificationReturn => {
         setShouldShowDialog(true);
       }
     }
-  }, [session, status]);
+  }, [user, userProfile, loading]);
 
   const hideDialog = () => {
     setShouldShowDialog(false);

@@ -1,36 +1,4 @@
-import { DefaultSession } from 'next-auth';
-
-declare module 'next-auth' {
-  interface Session {
-    user: {
-      id: string;
-      role: 'pelamar_kerja' | 'pencari_kandidat';
-      company?: string;
-      profile?: { 
-        phone?: string; 
-        description?: string; 
-        website?: string; 
-        location?: string;
-        cvUrl?: string;
-        cvPath?: string;
-        cvFileName?: string;
-        cvUploadedAt?: Date;
-      };
-    } & DefaultSession['user'];
-  }
-
-  interface User {
-    role: 'pelamar_kerja' | 'pencari_kandidat';
-    company?: string;
-  }
-}
-
-declare module 'next-auth/jwt' {
-  interface JWT {
-    role: 'pelamar_kerja' | 'pencari_kandidat';
-    company?: string;
-  }
-}
+// Core types for the job platform
 
 export interface CustomQuestion {
   _id?: string;
@@ -130,6 +98,7 @@ export interface User {
     website?: string;
     description?: string;
     location?: string;
+    image?: string;
     cvUrl?: string;
     cvPath?: string;
     cvFileName?: string;

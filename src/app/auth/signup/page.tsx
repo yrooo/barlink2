@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ChevronLeft } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -20,6 +21,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { signUp } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -62,26 +64,16 @@ export default function SignUp() {
     }
 
     try {
-      const response = await fetch('/api/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-          company: formData.company,
-        }),
+      const result = await signUp(formData.email, formData.password, {
+        name: formData.name,
+        role: formData.role,
+        company: formData.company,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        router.push('/auth/verify-email?message=Akun berhasil dibuat. Silakan cek email Anda untuk verifikasi.');
+      if (result.error) {
+        setError(result.error);
       } else {
-        setError(data.error || 'Terjadi kesalahan saat mendaftar');
+        router.push('/auth/verify-email?message=Akun berhasil dibuat. Silakan cek email Anda untuk verifikasi.');
       }
     } catch {
       setError('Terjadi kesalahan. Silakan coba lagi.');

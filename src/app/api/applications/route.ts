@@ -1,22 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Application from '@/lib/models/Application';
-import Job from '@/lib/models/Job';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { ApplicationService } from '@/lib/services/applicationService';
+import { JobService } from '@/lib/services/jobService';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session || session.user.role !== 'pelamar_kerja') {
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    
+    if (!userProfile || userProfile.role !== 'pelamar_kerja') {
       return NextResponse.json(
         { error: 'Unauthorized. Only job seekers can apply.' },
         { status: 401 }
       );
     }
 
-    await dbConnect();
     const body = await request.json();
     
     const { jobId, answers } = body;
@@ -29,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if job exists
-    const job = await Job.findById(jobId);
+    const job = await JobService.getJobById(jobId);
     if (!job) {
       return NextResponse.json(
         { error: 'Job not found' },
@@ -38,31 +51,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already applied
-    const existingApplication = await Application.findOne({
-      jobId,
-      applicantId: session.user.id,
-    });
-
-    if (existingApplication) {
+    const hasApplied = await ApplicationService.hasUserApplied(jobId, user.id);
+    if (hasApplied) {
       return NextResponse.json(
         { error: 'You have already applied to this job' },
         { status: 400 }
       );
     }
 
-    const application = new Application({
-      jobId,
-      applicantId: session.user.id,
-      employerId: job.employerId,
-      answers,
-    });
+    // Prepare answers for Supabase format
+    const formattedAnswers = answers.map((answer: { questionId: string; answer: string | string[] }) => ({
+      questionId: answer.questionId,
+      answer: answer.answer
+    }));
 
-    await application.save();
+    const application = await ApplicationService.createApplication(
+      {
+        job_id: jobId,
+        applicant_id: user.id,
+        employer_id: job.employer_id,
+        status: 'pending'
+      },
+      formattedAnswers
+    );
 
-    // Update job applications count
-    await Job.findByIdAndUpdate(jobId, {
-      $inc: { applicationsCount: 1 }
-    });
+    if (!application) {
+      return NextResponse.json(
+        { error: 'Failed to create application' },
+        { status: 500 }
+      );
+    }
     
     return NextResponse.json(application, { status: 201 });
   } catch (error) {
@@ -76,30 +94,31 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    await dbConnect();
-    
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
     let applications;
     
-    if (session.user.role === 'pencari_kandidat') {
+    if (userProfile?.role === 'pencari_kandidat') {
       // Employer: get applications for their jobs
-      applications = await Application.find({ employerId: session.user.id })
-        .populate('jobId', 'title')
-        .populate('applicantId', 'name email')
-        .sort({ createdAt: -1 });
+      applications = await ApplicationService.getApplicationsByEmployer(user.id);
     } else {
       // Job seeker: get their applications
-      applications = await Application.find({ applicantId: session.user.id })
-        .populate('jobId', 'title company')
-        .sort({ createdAt: -1 });
+      applications = await ApplicationService.getApplicationsByApplicant(user.id);
     }
     
     return NextResponse.json(applications);

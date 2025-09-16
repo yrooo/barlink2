@@ -1,26 +1,21 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function NotificationsPage() {
-  const { data: session, status } = useSession();
+  const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'loading') return;
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin');
       return;
     }
-  }, [session, status, router]);
+  }, [user, router]);
 
-  if (status === 'loading') {
-    return <div>Loading...</div>;
-  }
-
-  if (!session) {
+  if (!user) {
     return null;
   }
 

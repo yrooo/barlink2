@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -15,18 +15,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
-import { useUserData } from '@/hooks/useUserData';
 
 export default function UpdatedNavbar() {
-  const { data: session } = useSession();
-  const { userData } = useUserData();
+  const { user, userProfile, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
 
 
 
-  const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' });
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.href = '/';
   };
 
   return (
@@ -77,32 +76,32 @@ export default function UpdatedNavbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center space-x-3 xl:space-x-4">
-            {session ? (
+            {user ? (
               <DropdownMenu open={isProfileDropdownOpen} onOpenChange={setIsProfileDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="noShadow" className="relative h-8 w-8 xl:h-10 xl:w-10 rounded-full touch-target">
                     <Avatar className="h-8 w-8 xl:h-10 xl:w-10">
-                      <AvatarImage src={userData?.image || ''} alt={userData?.name || 'User'} />
-                      <AvatarFallback className="text-xs xl:text-sm">{userData?.name ? userData.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+                      <AvatarImage src={userProfile?.image || ''} alt={userProfile?.name || 'User'} />
+                      <AvatarFallback className="text-xs xl:text-sm">{userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{userData?.name}</p>
+                      <p className="text-sm font-medium leading-none">{userProfile?.name || user.email}</p>
                       <p className="text-xs leading-none text-muted-foreground">
-                        {userData?.email}
+                        {userProfile?.email || user.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {userData?.role === 'pencari_kandidat' && (
+                  {userProfile?.role === 'pencari_kandidat' && (
                     <DropdownMenuItem asChild isButton>
                       <Link href="/dashboard">Dashboard</Link>
                     </DropdownMenuItem>
                   )}
-                  {userData?.role === 'pelamar_kerja' && (
+                  {userProfile?.role === 'pelamar_kerja' && (
                     <DropdownMenuItem asChild isButton>
                       <Link href="/dashboard/my-applications">Lamaran Saya</Link>
                     </DropdownMenuItem>
@@ -111,7 +110,7 @@ export default function UpdatedNavbar() {
                     <Link href="/profile">Profil</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} isButton className="text-red-600 hover:text-red-700">
+                  <DropdownMenuItem onClick={handleSignOut} isButton className="text-red-600 hover:text-red-700">
                     Keluar
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -171,29 +170,29 @@ export default function UpdatedNavbar() {
             <DropdownMenuSeparator />
             
             {/* Auth Section */}
-            {session ? (
+            {user ? (
               <>
                 {/* User Greeting */}
                 <div className="px-2 py-2 text-sm text-gray-600">
                   <div className="flex items-center space-x-2">
                     <Avatar className="h-6 w-6 border border-black">
-                      <AvatarImage src={userData?.image || ''} alt={userData?.name || 'User'} />
-                      <AvatarFallback className="text-xs">{userData?.name ? userData.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
+                      <AvatarImage src={userProfile?.image || ''} alt={userProfile?.name || 'User'} />
+                      <AvatarFallback className="text-xs">{userProfile?.name ? userProfile.name.charAt(0).toUpperCase() : 'U'}</AvatarFallback>
                     </Avatar>
-                    <span>Halo, {userData?.name}</span>
+                    <span>Halo, {userProfile?.name || user.email}</span>
                   </div>
                 </div>
                 
                 <DropdownMenuSeparator />
                 
                 {/* Role-based Navigation */}
-                {userData?.role === 'pencari_kandidat' ? (
+                {userProfile?.role === 'pencari_kandidat' ? (
                   <DropdownMenuItem asChild>
                     <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
                       📊 Dashboard
                     </Link>
                   </DropdownMenuItem>
-                ) : userData?.role === 'pelamar_kerja' ? (
+                ) : userProfile?.role === 'pelamar_kerja' ? (
                   <>
                     <DropdownMenuItem asChild>
                       <Link href="/dashboard/my-applications" onClick={() => setIsMenuOpen(false)}>
@@ -218,7 +217,7 @@ export default function UpdatedNavbar() {
                 
                 {/* Logout Button */}
                 <DropdownMenuItem 
-                  onClick={handleLogout}
+                  onClick={handleSignOut}
                   className="text-red-600 hover:text-red-800 hover:bg-red-50"
                 >
                   🚪 Keluar

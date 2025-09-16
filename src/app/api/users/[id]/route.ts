@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import User from '@/lib/models/User';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { UserService } from '@/lib/services/userService';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session || !session.user) {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -18,18 +18,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
 
     // Users can only access their own data (or admin can access any)
-    if (session.user.id !== id) {
+    if (user.id !== id) {
       return NextResponse.json(
         { success: false, error: 'Forbidden' },
         { status: 403 }
       );
     }
 
-    await dbConnect();
-
-    const user = await User.findById(id).select('-password');
+    const userData = await UserService.getUserById(id);
     
-    if (!user) {
+    if (!userData) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
@@ -39,16 +37,18 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({
       success: true,
       data: {
-        id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        company: user.company,
-        image: user.image,
-        whatsappNumber: user.whatsappNumber,
-        whatsappVerified: user.whatsappVerified,
-        whatsappVerifiedAt: user.whatsappVerifiedAt,
-        profile: user.profile
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        company: userData.company,
+        whatsapp_number: userData.whatsapp_number,
+        whatsapp_verified: userData.whatsapp_verified,
+        whatsapp_verified_at: userData.whatsapp_verified_at,
+        phone: userData.phone,
+        website: userData.website,
+        location: userData.location,
+        description: userData.description
       }
     });
     

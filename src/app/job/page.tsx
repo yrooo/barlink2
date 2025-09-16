@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect, Suspense, useMemo } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Job, JobFilters } from '@/types';
@@ -21,7 +21,7 @@ import {
 const JobPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { user, userProfile } = useAuth();
   const type = searchParams.get('type');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
@@ -43,16 +43,16 @@ const JobPageContent = () => {
       fetchJobs();
     } else if (type === 'list') {
       // Redirect to appropriate page based on authentication
-      if (!session) {
+      if (!user) {
         router.push('/auth/signin');
-      } else if (session.user.role === 'pencari_kandidat') {
+      } else if (userProfile?.role === 'pencari_kandidat') {
         router.push('/dashboard/jobs/create');
       } else {
         toast.error('Hanya pencari kandidat yang dapat memposting lowongan');
         router.push('/');
       }
     }
-  }, [type, session, router]);
+  }, [type, router, user, userProfile]);
 
   const fetchJobs = async () => {
     setLoading(true);

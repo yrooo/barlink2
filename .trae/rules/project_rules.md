@@ -39,7 +39,7 @@ The AI (and developers) must always follow these guidelines when generating, rev
 
 - **Backend / API**:
   - Next.js API Routes or dedicated serverless functions on Vercel.
-  - MongoDB for data storage.
+  - Supabase for data storage.
   - API responses must always return standardized JSON `{ success, data, error }`.
 
 - **Hosting & Deployment**:

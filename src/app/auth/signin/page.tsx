@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft } from 'lucide-react';
+import { useAuth } from '@/components/AuthProvider';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -14,6 +14,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { signIn, userProfile } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,26 +22,23 @@ export default function SignIn() {
     setError('');
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
+      const result = await signIn(email, password);
 
-      if (result?.error) {
-        if (result.error === 'EmailNotVerified') {
+      if (result.error) {
+        if (result.error.includes('Email not confirmed')) {
           router.push('/auth/verify-email');
         } else {
           setError('Invalid email or password');
         }
       } else {
-        // Get session to check user role
-        const session = await getSession();
-        if (session?.user?.role === 'pencari_kandidat') {
-          router.push('/dashboard');
-        } else {
-          router.push('/job?type=seek');
-        }
+        // Wait a moment for userProfile to be set
+        setTimeout(() => {
+          if (userProfile?.role === 'pencari_kandidat') {
+            router.push('/dashboard');
+          } else {
+            router.push('/job?type=seek');
+          }
+        }, 500);
       }
     } catch {
       setError('An error occurred. Please try again.');

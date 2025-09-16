@@ -1,37 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import User from '@/lib/models/User';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { UserService } from '@/lib/services/userService';
 import { formatPhoneNumber } from '@/lib/utils';
 
 interface UpdateData {
   name: string;
-  updatedAt: Date;
   company?: string;
   description?: string;
   website?: string;
   location?: string;
   whatsappNumber?: string;
-  'profile.phone'?: string;
-  'profile.whatsappNumber'?: string;
-  'profile.description'?: string;
-  'profile.website'?: string;
-  'profile.location'?: string;
+  phone?: string;
+  bio?: string;
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    await dbConnect();
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
     const body = await request.json();
     
     const { name, company, description, website, location, phone, whatsappNumber } = body;
@@ -46,11 +48,10 @@ export async function PUT(request: NextRequest) {
     // Prepare update object based on user role
     const updateData: UpdateData = {
       name,
-      updatedAt: new Date(),
     };
 
     // Add role-specific fields
-    if (session.user.role === 'pencari_kandidat') {
+    if (userProfile?.role === 'pencari_kandidat') {
       if (!company) {
         return NextResponse.json(
           { error: 'Company is required for employers' },
@@ -63,19 +64,15 @@ export async function PUT(request: NextRequest) {
       updateData.location = location;
       updateData.whatsappNumber = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
     } else {
-      // For job seekers, update profile nested object
-      updateData['profile.phone'] = phone ? formatPhoneNumber(phone) : phone;
-      updateData['profile.whatsappNumber'] = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
-      updateData['profile.description'] = description;
-      updateData['profile.website'] = website;
-      updateData['profile.location'] = location;
+      // For job seekers, update profile fields
+      updateData.phone = phone ? formatPhoneNumber(phone) : phone;
+      updateData.whatsappNumber = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
+      updateData.bio = description;
+      updateData.website = website;
+      updateData.location = location;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      session.user.id,
-      updateData,
-      { new: true }
-    );
+    const updatedUser = await UserService.updateUser(user.id, updateData);
 
     if (!updatedUser) {
       return NextResponse.json(
@@ -87,7 +84,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({
       message: 'Profile updated successfully',
       user: {
-        id: updatedUser._id,
+        id: updatedUser.id,
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
@@ -95,7 +92,9 @@ export async function PUT(request: NextRequest) {
         description: updatedUser.description,
         website: updatedUser.website,
         location: updatedUser.location,
-        profile: updatedUser.profile,
+        phone: updatedUser.phone,
+        whatsapp_number: updatedUser.whatsapp_number,
+        whatsapp_verified: updatedUser.whatsapp_verified,
       }
     });
   } catch (error) {
@@ -109,27 +108,26 @@ export async function PUT(request: NextRequest) {
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    await dbConnect();
+    const userProfile = await UserService.getUserById(user.id);
     
-    const user = await User.findById(session.user.id).select('-password');
-    
-    if (!user) {
+    if (!userProfile) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json(userProfile);
   } catch (error) {
     console.error('Error fetching profile:', error);
     return NextResponse.json(

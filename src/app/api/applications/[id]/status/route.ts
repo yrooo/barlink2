@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Application from '@/lib/models/Application';
-// import Job from '@/lib/models/Job';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { ApplicationService } from '@/lib/services/applicationService';
 
 export async function PATCH(
   request: NextRequest,
@@ -11,16 +9,24 @@ export async function PATCH(
 ) {
   const { id: applicationId } = (await context.params);
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    if (session.user.role !== 'pencari_kandidat') {
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!userProfile || userProfile.role !== 'pencari_kandidat') {
       return NextResponse.json(
         { error: 'Forbidden - Only employers can update application status' },
         { status: 403 }
@@ -43,13 +49,8 @@ export async function PATCH(
       );
     }
 
-    await dbConnect();
-
-
-
-
-    // Find the application and populate job data to verify ownership
-    const application = await Application.findById(applicationId).populate('jobId');
+    // Find the application to verify ownership
+    const application = await ApplicationService.getApplicationById(applicationId);
     
     if (!application) {
       return NextResponse.json(
@@ -59,7 +60,7 @@ export async function PATCH(
     }
 
     // Verify that the job belongs to the current user
-    if (application.jobId.employerId.toString() !== session.user.id) {
+    if (application.employer_id !== user.id) {
       return NextResponse.json(
         { error: 'Forbidden - You can only update applications for your own jobs' },
         { status: 403 }
@@ -67,15 +68,22 @@ export async function PATCH(
     }
 
     // Update the application status
-    application.status = status;
-    application.updatedAt = new Date();
+    const updatedApplication = await ApplicationService.updateApplicationStatus(
+      applicationId,
+      status
+    );
 
-    await application.save();
+    if (!updatedApplication) {
+      return NextResponse.json(
+        { error: 'Failed to update application status' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Application status updated successfully',
-      application
+      application: updatedApplication
     });
   } catch (error) {
     console.error('Error updating application status:', error);

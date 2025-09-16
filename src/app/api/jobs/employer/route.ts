@@ -1,24 +1,35 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Job from '@/lib/models/Job';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { JobService } from '@/lib/services/jobService';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session || session.user.role !== 'pencari_kandidat') {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    await dbConnect();
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
     
-    const jobs = await Job.find({ employerId: session.user.id })
-      .sort({ createdAt: -1 });
+    if (!userProfile || userProfile.role !== 'pencari_kandidat') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const jobs = await JobService.getJobsByEmployer(user.id);
     
     return NextResponse.json(jobs);
   } catch (error) {

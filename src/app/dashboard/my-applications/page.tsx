@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
@@ -10,23 +10,19 @@ import Link from 'next/link';
 
 
 export default function MyApplicationsPage() {
-  const { data: session, status: sessionStatus } = useSession();
+  const { user, userProfile } = useAuth();
   const router = useRouter();
   const [applications, setApplications] = useState<ApplicationWithJobDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (sessionStatus === 'loading') {
-      return; // Wait for session to load
-    }
-
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin');
       return;
     }
 
-    if (session.user.role !== 'pelamar_kerja') {
+    if (userProfile?.role !== 'pelamar_kerja') {
       // Redirect to home or another appropriate page if not a job seeker
       router.push('/');
       return;
@@ -51,10 +47,10 @@ export default function MyApplicationsPage() {
       }
     };
 
-    if (session && session.user.role === 'pelamar_kerja') {
+    if (user && userProfile?.role === 'pelamar_kerja') {
       fetchUserApplications();
     }
-  }, [session, sessionStatus, router]);
+  }, [user, userProfile, router]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -86,7 +82,7 @@ export default function MyApplicationsPage() {
     }
   };
 
-  if (sessionStatus === 'loading' || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-main flex flex-col">
         <Navbar />
@@ -97,7 +93,7 @@ export default function MyApplicationsPage() {
     );
   }
 
-  if (!session || session.user.role !== 'pelamar_kerja') {
+  if (!user || userProfile?.role !== 'pelamar_kerja') {
     // This will likely be handled by the redirect, but as a fallback
     return null;
   }

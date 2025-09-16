@@ -2,7 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Job, CustomQuestion } from '@/types';
@@ -14,8 +14,8 @@ interface JobApplicationProps {
 }
 
 const JobApplication = ({ job, onClose }: JobApplicationProps) => {
-  const { data: session } = useSession();
   const router = useRouter();
+  const { user, userProfile } = useAuth();
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [loading, setLoading] = useState(false);
 
@@ -29,12 +29,12 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!session) {
+    if (!user) {
       toast.error('Silakan login terlebih dahulu');
       return;
     }
 
-    if (session.user.role !== 'pelamar_kerja') {
+    if (userProfile?.role !== 'pelamar_kerja') {
       toast.error('Hanya pelamar kerja yang dapat melamar pekerjaan');
       return;
     }
@@ -240,7 +240,7 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
 const JobDetailPage = () => {
   const params = useParams();
   const router = useRouter();
-  const { data: session } = useSession();
+  const { user, userProfile } = useAuth();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -272,12 +272,12 @@ const JobDetailPage = () => {
   }, [jobId]);
 
   const handleApply = (job: Job) => {
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin');
       return;
     }
 
-    if (session.user.role !== 'pelamar_kerja') {
+    if (userProfile?.role !== 'pelamar_kerja') {
       toast.error('Hanya pelamar kerja yang dapat melamar pekerjaan. Silakan daftar sebagai pelamar kerja.');
       return;
     }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { uploadCV, deleteCV } from '@/lib/supabase';
 import User from '@/lib/models/User';
 import dbConnect from '@/lib/mongodb';
@@ -8,17 +8,25 @@ import dbConnect from '@/lib/mongodb';
 // POST - Upload CV
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session || !session.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
     // Only job seekers can upload CVs
-    if (session.user.role !== 'pelamar_kerja') {
+    if (!userProfile || userProfile.role !== 'pelamar_kerja') {
       return NextResponse.json(
         { error: 'Only job seekers can upload CVs' },
         { status: 403 }
@@ -56,8 +64,8 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     // Get current user
-    const user = await User.findById(session.user.id);
-    if (!user) {
+    const userDoc = await User.findById(user.id);
+    if (!userDoc) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
@@ -65,12 +73,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete old CV if exists
-    if (user.profile?.cvPath) {
-      await deleteCV(user.profile.cvPath);
+    if (userDoc.profile?.cvPath) {
+      await deleteCV(userDoc.profile.cvPath);
     }
 
     // Upload new CV
-    const uploadResult = await uploadCV(file, session.user.id);
+    const uploadResult = await uploadCV(file, user.id);
     if (!uploadResult) {
       return NextResponse.json(
         { error: 'Failed to upload CV' },
@@ -79,15 +87,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user profile with CV information
-    user.profile = {
-      ...user.profile,
+    userDoc.profile = {
+      ...userDoc.profile,
       cvUrl: uploadResult.url,
       cvPath: uploadResult.path,
       cvFileName: file.name,
       cvUploadedAt: new Date(),
     };
 
-    await user.save();
+    await userDoc.save();
 
     return NextResponse.json({
       message: 'CV uploaded successfully',
@@ -107,16 +115,24 @@ export async function POST(request: NextRequest) {
 // DELETE - Delete CV
 export async function DELETE() {
   try {
-    const session = await getServerSession(authOptions);
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { user } } = await supabase.auth.getUser();
     
-    if (!session || !session.user) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    if (session.user.role !== 'pelamar_kerja') {
+    // Get user profile to check role
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!userProfile || userProfile.role !== 'pelamar_kerja') {
       return NextResponse.json(
         { error: 'Only job seekers can delete CVs' },
         { status: 403 }
@@ -125,15 +141,15 @@ export async function DELETE() {
 
     await dbConnect();
 
-    const user = await User.findById(session.user.id);
-    if (!user) {
+    const userDoc = await User.findById(user.id);
+    if (!userDoc) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    if (!user.profile?.cvPath) {
+    if (!userDoc.profile?.cvPath) {
       return NextResponse.json(
         { error: 'No CV found to delete' },
         { status: 404 }
@@ -141,7 +157,7 @@ export async function DELETE() {
     }
 
     // Delete from Supabase
-    const deleted = await deleteCV(user.profile.cvPath);
+    const deleted = await deleteCV(userDoc.profile.cvPath);
     if (!deleted) {
       return NextResponse.json(
         { error: 'Failed to delete CV from storage' },
@@ -150,12 +166,12 @@ export async function DELETE() {
     }
 
     // Remove CV info from user profile
-    user.profile.cvUrl = undefined;
-    user.profile.cvPath = undefined;
-    user.profile.cvFileName = undefined;
-    user.profile.cvUploadedAt = undefined;
+    userDoc.profile.cvUrl = undefined;
+    userDoc.profile.cvPath = undefined;
+    userDoc.profile.cvFileName = undefined;
+    userDoc.profile.cvUploadedAt = undefined;
 
-    await user.save();
+    await userDoc.save();
 
     return NextResponse.json({
       message: 'CV deleted successfully'
