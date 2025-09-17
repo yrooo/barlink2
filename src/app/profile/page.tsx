@@ -287,8 +287,49 @@ export default function ProfilePage() {
     );
   }
 
-  if (!user || !userData) { // If no user or user data (after loading), render nothing or a message.
-    return null; // Or a message like <p>Please sign in to view your profile.</p>
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-main flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
+          <p className="mb-4">Please sign in to view your profile.</p>
+          <Link href="/auth/signin">
+            <Button className="bg-main text-black border-2 border-black hover:bg-yellow-400">
+              Sign In
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-main flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+          <h2 className="text-2xl font-bold mb-4">Profile Not Found</h2>
+          <p className="mb-4">Unable to load your profile data. This might be due to:</p>
+          <ul className="list-disc list-inside mb-4 space-y-1">
+            <li>Network connectivity issues</li>
+            <li>Database connection problems</li>
+            <li>Profile not yet created</li>
+          </ul>
+          <div className="space-x-4">
+            <Button 
+              onClick={() => refetch()} 
+              className="bg-main text-black border-2 border-black hover:bg-yellow-400"
+            >
+              Retry
+            </Button>
+            <Link href="/">
+              <Button variant="outline" className="border-2 border-black">
+                Go Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // All logged-in users can see the profile page.

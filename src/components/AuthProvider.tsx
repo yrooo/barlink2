@@ -60,12 +60,30 @@ export default function AuthProvider({
       
       if (session?.user) {
         // Fetch user profile from our users table
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('users')
           .select('*')
           .eq('id', session.user.id)
           .single();
-        setUserProfile(profile);
+        
+        if (error) {
+          console.error('Error fetching user profile:', error);
+          setUserProfile(null);
+        } else if (profile) {
+          // Map snake_case database fields to camelCase for consistency
+          const mappedProfile = {
+            ...profile,
+            whatsappNumber: profile.whatsapp_number,
+            whatsappVerified: profile.whatsapp_verified,
+            whatsappVerifiedAt: profile.whatsapp_verified_at,
+            emailVerified: profile.email_verified,
+            createdAt: profile.created_at,
+            updatedAt: profile.updated_at,
+          };
+          setUserProfile(mappedProfile as any);
+        } else {
+          setUserProfile(null);
+        }
       }
       
       setLoading(false);
@@ -79,12 +97,30 @@ export default function AuthProvider({
         
         if (session?.user) {
           // Fetch user profile from our users table
-          const { data: profile } = await supabase
+          const { data: profile, error } = await supabase
             .from('users')
             .select('*')
             .eq('id', session.user.id)
             .single();
-          setUserProfile(profile);
+          
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            setUserProfile(null);
+          } else if (profile) {
+            // Map snake_case database fields to camelCase for consistency
+            const mappedProfile = {
+              ...profile,
+              whatsappNumber: profile.whatsapp_number,
+              whatsappVerified: profile.whatsapp_verified,
+              whatsappVerifiedAt: profile.whatsapp_verified_at,
+              emailVerified: profile.email_verified,
+              createdAt: profile.created_at,
+              updatedAt: profile.updated_at,
+            };
+            setUserProfile(mappedProfile as any);
+          } else {
+            setUserProfile(null);
+          }
         } else {
           setUserProfile(null);
         }
@@ -104,12 +140,14 @@ export default function AuthProvider({
       });
       
       if (error) {
+        console.error('Supabase auth signin error:', error);
         return { error: error.message };
       }
       
       return {};
-    } catch {
-      return { error: 'An unexpected error occurred' };
+    } catch (error) {
+      console.error('Unexpected signin error:', error);
+      return { error: 'An unexpected error occurred during signin' };
     }
   };
 
@@ -128,31 +166,19 @@ export default function AuthProvider({
       });
       
       if (error) {
+        console.error('Supabase auth signup error:', error);
         return { error: error.message };
       }
       
-      // Create user profile in our users table
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email: email,
-            name: userData.name,
-            role: userData.role,
-            company: userData.company,
-            password_hash: '', // Supabase handles password
-            email_verified: false,
-          });
-        
-        if (profileError) {
-          console.error('Error creating user profile:', profileError);
-        }
-      }
+      // User profile will be created automatically by database trigger
+      // The trigger reads user metadata and creates the profile
+      console.log('User signed up successfully:', data.user?.id);
+      console.log('Profile will be created automatically by database trigger');
       
       return {};
-    } catch {
-      return { error: 'An unexpected error occurred' };
+    } catch (error) {
+      console.error('Unexpected signup error:', error);
+      return { error: 'An unexpected error occurred during signup' };
     }
   };
 
@@ -166,9 +192,16 @@ export default function AuthProvider({
         return { error: 'No user logged in' };
       }
       
+      // Map camelCase fields to snake_case for database
+      const dbData: any = { ...data };
+      if (data.whatsappNumber !== undefined) {
+        dbData.whatsapp_number = data.whatsappNumber;
+        delete dbData.whatsappNumber;
+      }
+      
       const { error } = await supabase
         .from('users')
-        .update(data)
+        .update(dbData)
         .eq('id', user.id);
       
       if (error) {
@@ -176,16 +209,32 @@ export default function AuthProvider({
       }
       
       // Refresh user profile
-      const { data: profile } = await supabase
+      const { data: profile, error: fetchError } = await supabase
         .from('users')
         .select('*')
         .eq('id', user.id)
         .single();
-      setUserProfile(profile);
+      
+      if (fetchError) {
+        console.error('Error fetching updated profile:', fetchError);
+      } else if (profile) {
+        // Map snake_case database fields to camelCase for consistency
+        const mappedProfile = {
+          ...profile,
+          whatsappNumber: profile.whatsapp_number,
+          whatsappVerified: profile.whatsapp_verified,
+          whatsappVerifiedAt: profile.whatsapp_verified_at,
+          emailVerified: profile.email_verified,
+          createdAt: profile.created_at,
+          updatedAt: profile.updated_at,
+        };
+        setUserProfile(mappedProfile as any);
+      }
       
       return {};
-    } catch {
-      return { error: 'An unexpected error occurred' };
+    } catch (error) {
+      console.error('Unexpected updateProfile error:', error);
+      return { error: 'An unexpected error occurred during profile update' };
     }
   };
 

@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "whatsapp:qr": "node scripts/whatsapp-qr.js"
+    "whatsapp:qr": "node scripts/whatsapp-qr.js",
+    "db:setup": "node setup-database.js",
+    "db:verify": "node verify-database.js",
+    "db:migrate": "node scripts/migrate-data.js"
   },
   "dependencies": {
     "@next-auth/mongodb-adapter": "^1.1.3",

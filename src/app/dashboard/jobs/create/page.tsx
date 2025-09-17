@@ -21,6 +21,7 @@ export default function CreateJob() {
     gender: '',
     age: '',
     degree: '',
+    status: 'active',
   });
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([
     {
@@ -156,7 +157,7 @@ export default function CreateJob() {
     }
   };
 
-  if (status === 'loading') {
+  if (loading) {
     return (
       <div className="min-h-screen bg-main flex items-center justify-center">
         <div className="text-2xl font-bold">Loading...</div>

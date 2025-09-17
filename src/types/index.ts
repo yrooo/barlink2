@@ -44,12 +44,19 @@ export interface Interview {
   date: string;
   time: string;
   type: 'online' | 'offline';
+  status?: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show';
   location?: string;
   meetingLink?: string;
   notes?: string;
   googleCalendarEventId?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface InterviewUpdate {
+  status?: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show';
+  notes?: string;
+  updated_at?: string;
 }
 
 export interface InterviewFormData {

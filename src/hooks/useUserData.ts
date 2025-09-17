@@ -43,6 +43,7 @@ export function useUserData(): UseUserDataReturn {
   const fetchUserData = useCallback(async () => {
     if (!user?.id) {
       setLoading(false);
+      setUserData(null);
       return;
     }
 
@@ -51,6 +52,7 @@ export function useUserData(): UseUserDataReturn {
       setError(null);
       
       if (userProfile) {
+        console.log('Setting user data from userProfile:', userProfile);
         setUserData({
           id: user.id,
           name: userProfile.name || '',
@@ -72,10 +74,14 @@ export function useUserData(): UseUserDataReturn {
             cvUrl: userProfile.cvUrl,
           }
         });
+      } else {
+        console.log('No userProfile available, user:', user);
+        setUserData(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       console.error('Error fetching user data:', err);
+      setUserData(null);
     } finally {
       setLoading(false);
     }

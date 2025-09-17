@@ -191,12 +191,12 @@ export class InterviewService {
    */
   static async updateInterviewStatus(
     id: string,
-    status: 'scheduled' | 'completed' | 'cancelled' | 'no_show',
+    status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show',
     notes?: string
   ): Promise<Interview | null> {
     try {
       const updates: InterviewUpdate = {
-        status,
+        status: status as 'scheduled' | 'completed' | 'cancelled' | 'rescheduled',
         updated_at: new Date().toISOString()
       }
       
@@ -325,7 +325,7 @@ export class InterviewService {
   /**
    * Get interview statistics for employer
    */
-  static async getInterviewStats(employerId: string): Promise<{ total: number; scheduled: number; completed: number; cancelled: number }> {
+  static async getInterviewStats(employerId: string): Promise<{ total: number; scheduled: number; completed: number; cancelled: number; no_show: number }> {
     try {
       // Get interviews through applications
       const { data: interviews, error } = await supabaseAdmin

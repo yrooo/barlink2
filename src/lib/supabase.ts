@@ -245,7 +245,8 @@ export type Database = {
           location?: string
           meeting_link?: string
           notes?: string
-          status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled'
+          duration?: number
+          status: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show'
           email_sent: boolean
           created_at: string
           updated_at: string
@@ -262,7 +263,8 @@ export type Database = {
           location?: string
           meeting_link?: string
           notes?: string
-          status?: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled'
+          duration?: number
+          status?: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show'
           email_sent?: boolean
           created_at?: string
           updated_at?: string
@@ -279,7 +281,8 @@ export type Database = {
           location?: string
           meeting_link?: string
           notes?: string
-          status?: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled'
+          duration?: number
+          status?: 'scheduled' | 'completed' | 'cancelled' | 'rescheduled' | 'no_show'
           email_sent?: boolean
           created_at?: string
           updated_at?: string

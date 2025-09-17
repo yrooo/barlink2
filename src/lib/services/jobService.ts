@@ -5,6 +5,7 @@ interface CustomQuestion {
   question: string;
   type?: string;
   required?: boolean;
+  options?: string[];
 }
 
 interface JobStats {
@@ -344,10 +345,10 @@ export class JobService {
     } catch (error) {
       console.error('Error in getJobStats:', error)
       return {
-        total: 0,
-        active: 0,
-        inactive: 0,
-        closed: 0,
+        totalJobs: 0,
+        activeJobs: 0,
+        draftJobs: 0,
+        closedJobs: 0,
         totalApplications: 0
       }
     }
