@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
 import crypto from 'crypto';
-import dbConnect from '@/lib/mongodb';
-import User from '@/lib/models/User';
+import { supabaseAdmin } from '@/lib/supabase';
+import type { UserInsert } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    await dbConnect();
-    
     const body = await request.json();
     const { name, email, password, role, company } = body;
 
@@ -37,7 +35,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+    
     if (existingUser) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
@@ -48,23 +51,35 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
-    const user = new User({
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+
+    // Create user data
+    const userData: UserInsert = {
       name,
       email,
       password: hashedPassword,
       role,
       company: role === 'pencari_kandidat' ? company : undefined,
-    });
+      email_verified: false,
+      whatsapp_verified: false
+    };
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+    // Insert user into Supabase
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
+      .insert(userData)
+      .select()
+      .single();
 
-    user.verificationToken = verificationToken;
-    user.verificationTokenExpiry = verificationTokenExpiry;
-
-    await user.save();
+    if (userError) {
+      console.error('Error creating user:', userError);
+      return NextResponse.json(
+        { error: 'Failed to create user' },
+        { status: 500 }
+      );
+    }
 
     // Send verification email
     const resend = new Resend(process.env.RESEND_API_KEY);
@@ -91,9 +106,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Return user without password
-    const userObject = user.toObject();
-    delete userObject.password;
-    const userWithoutPassword = userObject;  return NextResponse.json(
+    const { password: _, ...userWithoutPassword } = user;
+    
+    return NextResponse.json(
       { 
         message: 'User created successfully. Please check your email to verify your account.',
         user: userWithoutPassword 

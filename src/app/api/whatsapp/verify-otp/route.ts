@@ -10,7 +10,8 @@ const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {

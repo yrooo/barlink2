@@ -1,8 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import dbConnect from '@/lib/mongodb';
-import User from '@/lib/models/User';
+import { supabaseAdmin } from '@/lib/supabase';
 
 // Extend the built-in session types
 declare module 'next-auth' {
@@ -45,11 +44,13 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          await dbConnect();
+          const { data: user, error } = await supabaseAdmin
+            .from('users')
+            .select('id, email, name, password, role, company, email_verified')
+            .eq('email', credentials.email)
+            .single();
           
-          const user = await User.findOne({ email: credentials.email });
-          
-          if (!user) {
+          if (error || !user) {
             return null;
           }
 
@@ -59,12 +60,12 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
-          if (!user.emailVerified) {
+          if (!user.email_verified) {
             throw new Error('EmailNotVerified');
           }
 
           return {
-            id: user._id.toString(),
+            id: user.id,
             email: user.email,
             name: user.name,
             role: user.role,

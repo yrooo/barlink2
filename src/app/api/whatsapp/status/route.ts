@@ -6,7 +6,8 @@ import { getWhatsAppService } from '@/lib/whatsappService';
 export async function GET() {
   try {
     // Check authentication (only admin should access this)
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {

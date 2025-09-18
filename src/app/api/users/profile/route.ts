@@ -10,14 +10,14 @@ interface UpdateData {
   description?: string;
   website?: string;
   location?: string;
-  whatsappNumber?: string;
+  whatsapp_number?: string;
   phone?: string;
-  bio?: string;
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -62,12 +62,12 @@ export async function PUT(request: NextRequest) {
       updateData.description = description;
       updateData.website = website;
       updateData.location = location;
-      updateData.whatsappNumber = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
+      updateData.whatsapp_number = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
     } else {
       // For job seekers, update profile fields
       updateData.phone = phone ? formatPhoneNumber(phone) : phone;
-      updateData.whatsappNumber = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
-      updateData.bio = description;
+      updateData.whatsapp_number = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
+      updateData.description = description;
       updateData.website = website;
       updateData.location = location;
     }
@@ -108,7 +108,8 @@ export async function PUT(request: NextRequest) {
 
 export async function GET() {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const cookieStore = cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {

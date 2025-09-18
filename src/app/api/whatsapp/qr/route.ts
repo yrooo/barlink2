@@ -9,7 +9,8 @@ export async function GET() {
   try {
     // In production, require authentication and admin access
     if (process.env.NODE_ENV === 'production') {
-      const supabase = createRouteHandlerClient({ cookies });
+      const cookieStore = cookies();
+      const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
