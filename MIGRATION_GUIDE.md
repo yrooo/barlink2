@@ -1,6 +1,19 @@
-# MongoDB to Supabase Migration Guide
+# Migration Guide: MongoDB to Supabase
 
-This guide provides step-by-step instructions for migrating your Next.js job board application from MongoDB to Supabase with PostgreSQL.
+## Overview
+This guide helps you migrate from MongoDB with manual email verification to Supabase with built-in authentication and PostgreSQL database.
+
+## Current Status
+
+### ✅ Completed
+- Fixed API routes to use correct table names (`users` instead of `profiles`)
+- Updated authentication provider structure
+- Environment variables configured
+- Development server running at http://localhost:3000
+
+### 🚨 **CRITICAL: Database Setup Required**
+
+Your Supabase database tables are **not yet created**. You must complete this step first before testing any functionality:
 
 ## 📋 Migration Overview
 

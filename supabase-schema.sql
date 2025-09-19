@@ -1,12 +1,19 @@
--- Supabase PostgreSQL Schema for Job Board Application
--- Migration from MongoDB to PostgreSQL
+-- =============================
+-- 🔥 RESET PUBLIC SCHEMA
+-- =============================
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
 
--- Enable UUID extension
+-- Re-enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table (equivalent to MongoDB User collection)
+-- =============================
+-- 📦 TABLES
+-- =============================
+
+-- Users
 CREATE TABLE users (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY, -- handled by Supabase Auth
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -28,7 +35,7 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- User profiles table (nested profile object from MongoDB)
+-- User Profiles
 CREATE TABLE user_profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -47,7 +54,7 @@ CREATE TABLE user_profiles (
     UNIQUE(user_id)
 );
 
--- Jobs table (equivalent to MongoDB Job collection)
+-- Jobs
 CREATE TABLE jobs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     title VARCHAR(255) NOT NULL,
@@ -62,7 +69,7 @@ CREATE TABLE jobs (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Custom questions table (nested customQuestions array from MongoDB)
+-- Custom Questions
 CREATE TABLE custom_questions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     job_id UUID REFERENCES jobs(id) ON DELETE CASCADE,
@@ -72,7 +79,7 @@ CREATE TABLE custom_questions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Custom question options table (options array from MongoDB)
+-- Question Options
 CREATE TABLE custom_question_options (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     question_id UUID REFERENCES custom_questions(id) ON DELETE CASCADE,
@@ -80,7 +87,7 @@ CREATE TABLE custom_question_options (
     sort_order INTEGER DEFAULT 0
 );
 
--- Applications table (equivalent to MongoDB Application collection)
+-- Applications
 CREATE TABLE applications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     job_id UUID REFERENCES jobs(id) ON DELETE CASCADE,
@@ -94,17 +101,17 @@ CREATE TABLE applications (
     UNIQUE(job_id, applicant_id)
 );
 
--- Application answers table (nested answers array from MongoDB)
+-- Application Answers
 CREATE TABLE application_answers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     application_id UUID REFERENCES applications(id) ON DELETE CASCADE,
     question_id UUID REFERENCES custom_questions(id) ON DELETE CASCADE,
     question TEXT NOT NULL,
-    answer JSONB NOT NULL, -- Using JSONB to handle mixed types (string, array, etc.)
+    answer JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Interviews table (equivalent to MongoDB Interview collection)
+-- Interviews
 CREATE TABLE interviews (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     application_id UUID REFERENCES applications(id) ON DELETE CASCADE,
@@ -115,8 +122,8 @@ CREATE TABLE interviews (
     end_date TIMESTAMP WITH TIME ZONE,
     scheduled_time VARCHAR(50) NOT NULL,
     interview_type VARCHAR(50) NOT NULL CHECK (interview_type IN ('online', 'offline')),
-    location VARCHAR(500), -- Required for offline interviews
-    meeting_link VARCHAR(500), -- Required for online interviews
+    location VARCHAR(500),
+    meeting_link VARCHAR(500),
     notes TEXT,
     status VARCHAR(50) DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'cancelled', 'rescheduled')),
     email_sent BOOLEAN DEFAULT FALSE,
@@ -124,60 +131,40 @@ CREATE TABLE interviews (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Indexes for better performance
+-- =============================
+-- ⚡ INDEXES
+-- =============================
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
-CREATE INDEX idx_users_whatsapp_verified ON users(whatsapp_verified);
-
 CREATE INDEX idx_jobs_employer_id ON jobs(employer_id);
 CREATE INDEX idx_jobs_status ON jobs(status);
 CREATE INDEX idx_jobs_created_at ON jobs(created_at DESC);
 
-CREATE INDEX idx_custom_questions_job_id ON custom_questions(job_id);
-
-CREATE INDEX idx_applications_job_id ON applications(job_id);
-CREATE INDEX idx_applications_applicant_id ON applications(applicant_id);
-CREATE INDEX idx_applications_employer_id ON applications(employer_id);
-CREATE INDEX idx_applications_status ON applications(status);
-CREATE INDEX idx_applications_created_at ON applications(created_at DESC);
-
-CREATE INDEX idx_application_answers_application_id ON application_answers(application_id);
-CREATE INDEX idx_application_answers_question_id ON application_answers(question_id);
-
-CREATE INDEX idx_interviews_application_id ON interviews(application_id);
-CREATE INDEX idx_interviews_job_id ON interviews(job_id);
-CREATE INDEX idx_interviews_employer_id ON interviews(employer_id);
-CREATE INDEX idx_interviews_applicant_id ON interviews(applicant_id);
-CREATE INDEX idx_interviews_scheduled_date ON interviews(scheduled_date);
-CREATE INDEX idx_interviews_status ON interviews(status);
-CREATE INDEX idx_interviews_employer_scheduled_date ON interviews(employer_id, scheduled_date);
-CREATE INDEX idx_interviews_applicant_scheduled_date ON interviews(applicant_id, scheduled_date);
-
--- Triggers to automatically update updated_at timestamps
+-- =============================
+-- 🔄 TRIGGERS
+-- =============================
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
+  NEW.updated_at = NOW();
+  RETURN NEW;
 END;
 $$ language 'plpgsql';
 
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON user_profiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER update_jobs_updated_at BEFORE UPDATE ON jobs
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER update_applications_updated_at BEFORE UPDATE ON applications
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER update_interviews_updated_at BEFORE UPDATE ON interviews
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Row Level Security (RLS) policies for Supabase
+-- =============================
+-- 🔒 RLS (Row Level Security)
+-- =============================
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE jobs ENABLE ROW LEVEL SECURITY;
@@ -187,49 +174,43 @@ ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE application_answers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE interviews ENABLE ROW LEVEL SECURITY;
 
--- Basic RLS policies (can be customized based on requirements)
--- Users can read their own data
+-- Users RLS
 CREATE POLICY "Users can view own profile" ON users
     FOR SELECT USING (auth.uid() = id);
-
 CREATE POLICY "Users can update own profile" ON users
     FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Service role can insert users" ON users
+    FOR INSERT WITH CHECK (true);
 
--- User profiles policies
+-- User Profiles
 CREATE POLICY "Users can view own user profile" ON user_profiles
     FOR SELECT USING (auth.uid() = user_id);
-
 CREATE POLICY "Users can update own user profile" ON user_profiles
     FOR UPDATE USING (auth.uid() = user_id);
-
 CREATE POLICY "Users can insert own user profile" ON user_profiles
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Jobs policies
+-- Jobs
 CREATE POLICY "Anyone can view active jobs" ON jobs
     FOR SELECT USING (status = 'active');
-
 CREATE POLICY "Employers can manage their jobs" ON jobs
     FOR ALL USING (auth.uid() = employer_id);
 
--- Applications policies
+-- Applications
 CREATE POLICY "Users can view their applications" ON applications
     FOR SELECT USING (auth.uid() = applicant_id OR auth.uid() = employer_id);
-
 CREATE POLICY "Job seekers can create applications" ON applications
     FOR INSERT WITH CHECK (auth.uid() = applicant_id);
-
 CREATE POLICY "Employers can update application status" ON applications
     FOR UPDATE USING (auth.uid() = employer_id);
 
--- Interviews policies
+-- Interviews
 CREATE POLICY "Users can view their interviews" ON interviews
     FOR SELECT USING (auth.uid() = applicant_id OR auth.uid() = employer_id);
-
 CREATE POLICY "Employers can manage interviews" ON interviews
     FOR ALL USING (auth.uid() = employer_id);
 
--- Custom questions policies
+-- Custom Questions
 CREATE POLICY "Anyone can view custom questions for active jobs" ON custom_questions
     FOR SELECT USING (
         EXISTS (
@@ -238,7 +219,6 @@ CREATE POLICY "Anyone can view custom questions for active jobs" ON custom_quest
             AND jobs.status = 'active'
         )
     );
-
 CREATE POLICY "Employers can manage their job questions" ON custom_questions
     FOR ALL USING (
         EXISTS (
@@ -248,7 +228,7 @@ CREATE POLICY "Employers can manage their job questions" ON custom_questions
         )
     );
 
--- Custom question options policies
+-- Custom Question Options
 CREATE POLICY "Anyone can view question options" ON custom_question_options
     FOR SELECT USING (
         EXISTS (
@@ -259,7 +239,7 @@ CREATE POLICY "Anyone can view question options" ON custom_question_options
         )
     );
 
--- Application answers policies
+-- Application Answers
 CREATE POLICY "Users can view their application answers" ON application_answers
     FOR SELECT USING (
         EXISTS (
@@ -268,7 +248,6 @@ CREATE POLICY "Users can view their application answers" ON application_answers
             AND (a.applicant_id = auth.uid() OR a.employer_id = auth.uid())
         )
     );
-
 CREATE POLICY "Job seekers can create application answers" ON application_answers
     FOR INSERT WITH CHECK (
         EXISTS (
@@ -278,12 +257,28 @@ CREATE POLICY "Job seekers can create application answers" ON application_answer
         )
     );
 
--- Comments for documentation
-COMMENT ON TABLE users IS 'User accounts for both job seekers and employers';
-COMMENT ON TABLE user_profiles IS 'Extended profile information for users';
-COMMENT ON TABLE jobs IS 'Job postings created by employers';
-COMMENT ON TABLE custom_questions IS 'Custom application questions for each job';
-COMMENT ON TABLE custom_question_options IS 'Multiple choice options for custom questions';
-COMMENT ON TABLE applications IS 'Job applications submitted by job seekers';
-COMMENT ON TABLE application_answers IS 'Answers to custom questions in applications';
-COMMENT ON TABLE interviews IS 'Scheduled interviews between employers and applicants';
+-- =============================
+-- 👤 Auth Trigger for Supabase
+-- =============================
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.users (id, email, name, role, password, email_verified, whatsapp_verified)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'name', 'User'),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'pelamar_kerja'),
+    'supabase_managed',
+    NEW.email_confirmed_at IS NOT NULL,
+    false
+  );
+  INSERT INTO public.user_profiles (user_id) VALUES (NEW.id);
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();

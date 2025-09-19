@@ -47,7 +47,7 @@ export async function PATCH(
 
     // Get user profile to check role
     const { data: userProfile } = await supabase
-      .from('profiles')
+      .from('users')
       .select('role')
       .eq('id', user.id)
       .single();
