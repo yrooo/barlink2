@@ -9,20 +9,24 @@ import Link from 'next/link';
 import InterviewScheduler from '@/components/InterviewScheduler';
 import { Calendar, Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useLoading } from '@/components/LoadingProvider';
 
 export default function JobApplications() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
   const jobId = params.id as string;
+  const { setLoading } = useLoading();
   
   const [job, setJob] = useState<Job | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLocalLoading] = useState(true);
   const [isInterviewSchedulerOpen, setIsInterviewSchedulerOpen] = useState(false);
   const [currentApplicationForInterview, setCurrentApplicationForInterview] = useState<Application | null>(null);
 
   const fetchJobAndApplications = useCallback(async () => {
+    setLoading(true, 'Loading job applications...');
+    setLocalLoading(true);
     try {
       // Fetch job details
       const jobResponse = await fetch(`/api/jobs/${jobId}`);
@@ -40,9 +44,9 @@ export default function JobApplications() {
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
-  }, [jobId]);
+  }, [jobId, setLoading]);
 
   useEffect(() => {
     if (status === 'loading') {
@@ -113,11 +117,8 @@ export default function JobApplications() {
   };
 
   if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen bg-main flex items-center justify-center">
-        <div className="text-2xl font-bold">Loading...</div>
-      </div>
-    );
+    // Loading is handled by LoadingProvider
+    return null;
   }
 
   if (!session || session.user.role !== 'pencari_kandidat') {

@@ -51,6 +51,7 @@ export interface Job {
   customQuestions: CustomQuestion[];
   status: 'active' | 'inactive' | 'closed';
   applicationsCount: number;
+  syarat?: string[];
   createdAt: string;
   updatedAt: string;
 }

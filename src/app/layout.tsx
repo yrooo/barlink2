@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthProvider from "@/components/AuthProvider";
 import WhatsAppVerificationWrapper from "@/components/WhatsAppVerificationWrapper";
+import { LoadingProvider } from "@/components/LoadingProvider";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -38,11 +39,13 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <AuthProvider>
-          <div className="flex flex-col min-h-screen">
-            {children}
-          </div>
-          <WhatsAppVerificationWrapper />
-          <Toaster position="top-right" richColors />
+          <LoadingProvider>
+            <div className="flex flex-col min-h-screen">
+              {children}
+            </div>
+            <WhatsAppVerificationWrapper />
+            <Toaster position="top-right" richColors />
+          </LoadingProvider>
         </AuthProvider>
       </body>
     </html>

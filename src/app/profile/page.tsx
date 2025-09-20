@@ -2,12 +2,13 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { ChevronLeft, Mail, Phone, MapPin, Calendar, Briefcase, Edit3, Save, X } from 'lucide-react';
 import Link from 'next/link';
 import { useUserData } from '@/hooks/useUserData';
-import { toast } from 'sonner';
-import { ChevronLeft } from 'lucide-react';
+import { useLoading } from '@/components/LoadingProvider';
 import {
   Dialog,
   DialogContent,
@@ -21,7 +22,8 @@ export default function ProfilePage() {
   const { data: session, status } = useSession();
   const { userData, loading: userDataLoading, refetch } = useUserData();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { setLoading } = useLoading();
+  const [loading, setLocalLoading] = useState(false);
   const [isFormInitialized, setIsFormInitialized] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -185,7 +187,8 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(true, 'Updating profile...');
+    setLocalLoading(true);
 
     try {
       const response = await fetch('/api/users/profile', {
@@ -207,6 +210,7 @@ export default function ProfilePage() {
       console.error('Error updating profile:', error);
       toast.error('Terjadi kesalahan');
     } finally {
+      setLocalLoading(false);
       setLoading(false);
     }
   };
@@ -280,11 +284,7 @@ export default function ProfilePage() {
   };
 
   if (status === 'loading' || userDataLoading) {
-    return (
-      <div className="min-h-screen bg-main flex items-center justify-center">
-        <div className="text-2xl font-bold">Loading...</div>
-      </div>
-    );
+    return null; // Loading is handled by LoadingProvider
   }
 
   if (!session || !userData) { // If no session or user data (after loading), render nothing or a message.

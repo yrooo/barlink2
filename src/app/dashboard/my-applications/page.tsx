@@ -7,13 +7,15 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { ApplicationWithJobDetails } from '@/types';
 import Link from 'next/link';
+import { useLoading } from '@/components/LoadingProvider';
 
 
 export default function MyApplicationsPage() {
   const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
+  const { setLoading } = useLoading();
   const [applications, setApplications] = useState<ApplicationWithJobDetails[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLocalLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,7 +35,8 @@ export default function MyApplicationsPage() {
     }
 
     const fetchUserApplications = async () => {
-      setLoading(true);
+      setLoading(true, 'Loading your applications...');
+      setLocalLoading(true);
       setError(null);
       try {
         const response = await fetch('/api/applications/my');
@@ -48,6 +51,7 @@ export default function MyApplicationsPage() {
         setError(err instanceof Error ? err.message : 'An unknown error occurred.');
       } finally {
         setLoading(false);
+        setLocalLoading(false);
       }
     };
 
@@ -87,14 +91,7 @@ export default function MyApplicationsPage() {
   };
 
   if (sessionStatus === 'loading' || loading) {
-    return (
-      <div className="min-h-screen bg-main flex flex-col">
-        <Navbar />
-        <div className="flex-grow flex items-center justify-center">
-          <div className="text-2xl font-bold text-black">Loading...</div>
-        </div>
-      </div>
-    );
+    return null; // Loading is handled by LoadingProvider
   }
 
   if (!session || session.user.role !== 'pelamar_kerja') {

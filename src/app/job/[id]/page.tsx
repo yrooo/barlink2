@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
 import { Job, CustomQuestion } from '@/types';
 import { toast } from 'sonner';
+import { useLoading } from '@/components/LoadingProvider';
 
 interface JobApplicationProps {
   job: Job;
@@ -16,8 +17,9 @@ interface JobApplicationProps {
 const JobApplication = ({ job, onClose }: JobApplicationProps) => {
   const { data: session } = useSession();
   const router = useRouter();
+  const { setLoading: setGlobalLoading } = useLoading();
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLocalLoading] = useState(false);
 
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
     setAnswers(prev => ({
@@ -39,7 +41,7 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
       return;
     }
 
-    setLoading(true);
+    setLocalLoading(true);
 
     try {
       // Format answers for submission
@@ -78,7 +80,7 @@ const JobApplication = ({ job, onClose }: JobApplicationProps) => {
       console.error('Error submitting application:', error);
       toast.error('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -241,14 +243,16 @@ const JobDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const { setLoading } = useLoading();
   const [job, setJob] = useState<Job | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLocalLoading] = useState(true);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const jobId = params.id as string;
 
   useEffect(() => {
     const fetchJob = async () => {
-      setLoading(true);
+      setLoading(true, 'Loading job details...');
+      setLocalLoading(true);
       try {
         const response = await fetch(`/api/jobs/${jobId}`, {
           cache: 'no-store'
@@ -263,6 +267,7 @@ const JobDetailPage = () => {
         console.error('Error fetching job:', error);
       } finally {
         setLoading(false);
+        setLocalLoading(false);
       }
     };
 
@@ -286,16 +291,7 @@ const JobDetailPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-main">
-        <Navbar />
-        <div className="section-padding">
-          <div className="container-responsive text-center py-8 sm:py-12">
-            <div className="text-xl sm:text-2xl font-bold">Loading...</div>
-          </div>
-        </div>
-      </div>
-    );
+    return null; // Loading is handled by LoadingProvider
   }
 
   if (!job) {
@@ -364,6 +360,22 @@ const JobDetailPage = () => {
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">{job.description}</p>
               </div>
             </div>
+
+            {job.syarat && job.syarat.length > 0 && (
+              <div className="mb-6 sm:mb-8">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4">Persyaratan</h2>
+                <div className="flex flex-wrap gap-2">
+                  {job.syarat.map((syarat: string, index: number) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-3 py-2 text-sm font-semibold bg-main text-white border-2 border-black rounded"
+                    >
+                      {syarat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {job.customQuestions.length > 0 && (
               <div className="mb-6 sm:mb-8">

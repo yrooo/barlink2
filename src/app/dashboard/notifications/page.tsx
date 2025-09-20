@@ -3,21 +3,27 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useLoading } from '@/components/LoadingProvider';
 
 export default function NotificationsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { setLoading } = useLoading();
 
   useEffect(() => {
-    if (status === 'loading') return;
+    if (status === 'loading') {
+      setLoading(true, 'Loading notifications...');
+      return;
+    }
+    setLoading(false);
     if (!session) {
       router.push('/auth/signin');
       return;
     }
-  }, [session, status, router]);
+  }, [session, status, router, setLoading]);
 
   if (status === 'loading') {
-    return <div>Loading...</div>;
+    return null; // Loading is handled by LoadingProvider
   }
 
   if (!session) {

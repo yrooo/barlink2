@@ -7,11 +7,13 @@ import { Button } from '@/components/ui/button';
 import { CustomQuestion } from '@/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useLoading } from '@/components/LoadingProvider';
 
 export default function CreateJob() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { setLoading } = useLoading();
+  const [loading, setLocalLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -21,7 +23,9 @@ export default function CreateJob() {
     gender: '',
     age: '',
     degree: '',
+    syarat: [] as string[],
   });
+  const [syaratInput, setSyaratInput] = useState('');
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([
     {
       question: 'Nama Lengkap',
@@ -128,9 +132,27 @@ export default function CreateJob() {
     setCustomQuestions(updated);
   };
 
+  const addSyarat = () => {
+    if (syaratInput.trim() && formData.syarat.length < 5) {
+      setFormData({
+        ...formData,
+        syarat: [...formData.syarat, syaratInput.trim()],
+      });
+      setSyaratInput('');
+    }
+  };
+
+  const removeSyarat = (index: number) => {
+    setFormData({
+      ...formData,
+      syarat: formData.syarat.filter((_, i) => i !== index),
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoading(true, 'Creating job...');
+    setLocalLoading(true);
 
     try {
       const response = await fetch('/api/jobs', {
@@ -141,6 +163,7 @@ export default function CreateJob() {
         body: JSON.stringify({
           ...formData,
           customQuestions,
+          syarat: formData.syarat,
         }),
       });
 
@@ -154,16 +177,13 @@ export default function CreateJob() {
       console.error('Error creating job:', error);
       toast.error('Terjadi kesalahan. Silakan coba lagi.');
     } finally {
-      setLoading(false);
+      setLocalLoading(false);
     }
   };
 
   if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-main flex items-center justify-center">
-        <div className="text-2xl font-bold">Loading...</div>
-      </div>
-    );
+    // Loading is handled by LoadingProvider
+    return null;
   }
 
   if (!session || session.user.role !== 'pencari_kandidat') {
@@ -276,6 +296,60 @@ export default function CreateJob() {
                   className="w-full p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
                   placeholder="Jelaskan detail pekerjaan, requirements, dan benefit..."
                 />
+              </div>
+
+              <div>
+                <label className="block text-lg font-bold mb-2">Persyaratan (Syarat)</label>
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={syaratInput}
+                      onChange={(e) => setSyaratInput(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addSyarat();
+                        }
+                      }}
+                      className="flex-1 p-3 border-4 border-black rounded focus:outline-none focus:ring-2 focus:ring-main"
+                      placeholder="Tambahkan persyaratan (misal: 'S1 Teknik Informatika')"
+                      maxLength={50}
+                    />
+                    <Button
+                      type="button"
+                      onClick={addSyarat}
+                      disabled={!syaratInput.trim() || formData.syarat.length >= 5}
+                      variant="default"
+                    >
+                      Tambah
+                    </Button>
+                  </div>
+                  
+                  {formData.syarat.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formData.syarat.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 bg-main text-white px-3 py-1 rounded border-2 border-black"
+                        >
+                          <span className="text-sm font-semibold">{item}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeSyarat(index)}
+                            className="text-white hover:text-red-200 font-bold"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <p className="text-sm text-gray-600">
+                    {formData.syarat.length}/5 persyaratan • Tekan Enter untuk menambahkan
+                  </p>
+                </div>
               </div>
             </div>
           </div>

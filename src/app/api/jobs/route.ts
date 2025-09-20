@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
     const body = await request.json();
     
-    const { title, description, location, salary, customQuestions } = body;
+    const { title, description, location, salary, customQuestions, syarat } = body;
     
     if (!title || !description) {
       return NextResponse.json(
@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       salary,
       employerId: session.user.id,
       customQuestions: customQuestions || [],
+      syarat: syarat || [],
     });
 
     await job.save();

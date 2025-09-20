@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Job } from '@/types';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useLoading } from '@/components/LoadingProvider';
 import {
   Dialog,
   DialogContent,
@@ -20,8 +21,9 @@ import {
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { setLoading } = useLoading();
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLocalLoading] = useState(true);
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string>('');
 
@@ -43,6 +45,7 @@ export default function Dashboard() {
 
   const fetchJobs = async () => {
     try {
+      setLoading(true, 'Loading your jobs...');
       const response = await fetch('/api/jobs/employer');
       if (response.ok) {
         const data = await response.json();
@@ -52,6 +55,7 @@ export default function Dashboard() {
       console.error('Error fetching jobs:', error);
     } finally {
       setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -84,11 +88,7 @@ export default function Dashboard() {
   };
 
   if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen bg-main flex items-center justify-center">
-        <div className="text-2xl font-bold">Loading...</div>
-      </div>
-    );
+    return null; // Loading is handled by LoadingProvider
   }
 
   if (!session || session.user.role !== 'pencari_kandidat') {

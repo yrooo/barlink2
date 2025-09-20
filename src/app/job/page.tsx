@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Job, JobFilters } from '@/types';
 import { ChevronDown, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLoading } from '@/components/LoadingProvider';
 import {
   Pagination,
   PaginationContent,
@@ -22,9 +23,10 @@ const JobPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { data: session } = useSession();
+  const { setLoading } = useLoading();
   const type = searchParams.get('type');
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLocalLoading] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -55,7 +57,8 @@ const JobPageContent = () => {
   }, [type, session, router]);
 
   const fetchJobs = async () => {
-    setLoading(true);
+    setLoading(true, 'Loading jobs...');
+    setLocalLoading(true);
     try {
       const response = await fetch('/api/jobs', {
         cache: 'no-store'
@@ -68,6 +71,7 @@ const JobPageContent = () => {
       console.error('Error fetching jobs:', error);
     } finally {
       setLoading(false);
+      setLocalLoading(false);
     }
   };
 
@@ -378,7 +382,7 @@ const JobPageContent = () => {
 
             {loading ? (
               <div className="text-center py-12">
-                <div className="text-2xl font-bold">Loading...</div>
+                {/* Loading is handled by LoadingProvider */}
               </div>
             ) : (
               <div>
@@ -390,50 +394,92 @@ const JobPageContent = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {currentJobs.map((job) => (
-                      <div key={job._id} className="bg-white content-padding border-responsive shadow-responsive  hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 hover:-translate-y-1">
-                        <div className="flex flex-col h-full">
-                          <div className="flex-1">
-                            <h2 className="text-lg sm:text-xl font-bold px-2 bg-main line-clamp-2">{job.title}</h2>
-                            <p className="text-base sm:text-lg mb-2">{job.company}</p>
-                            {job.location && <p className="text-xs sm:text-sm mb-2 text-gray-600">📍 {job.location}</p>}
-                            {job.salary && <p className="text-xs sm:text-sm mb-2 text-green-600">💰 Rp {job.salary}</p>}
-                            <p className="text-xs sm:text-sm mb-4 text-gray-700 line-clamp-3">
-                              {job.description.length > 80 
-                                ? `${job.description.substring(0, 80)}...` 
-                                : job.description
-                              }
-                            </p>
+                  <div>
+                    <div className="grid-responsive">
+                      {currentJobs.map((job) => (
+                        <div 
+                          key={job._id} 
+                          className="bg-secondary-background border-4 border-border p-6 rounded-base shadow-shadow hover:translate-x-boxShadowX hover:translate-y-boxShadowY hover:shadow-none transition-all group"
+                        >
+                          <div className="space-y-4">
+                            <div>
+                              <div className="relative overflow-hidden">
+                                <h3 className="text-xl font-bold transition-colors line-clamp-2 relative z-10">
+                                  {job.title}
+                                </h3>
+                                <div className="absolute inset-0 bg-main transform -translate-x-full group-hover:translate-x-0 transition-transform duration-600 ease-out"></div>
+                              </div>
+                              <p className="text-lg font-semibold text-muted-foreground">
+                                {job.company}
+                              </p>
+                            </div>
                             
-                            {job.customQuestions.length > 0 && (
-                              <div className="mb-4">
-                                <p className="text-xs text-gray-500">
-                                  📝 {job.customQuestions.length} pertanyaan tambahan
-                                </p>
+                            <div className="space-y-2">
+                              {job.location && (
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-4 h-4 text-chart-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  </svg>
+                                  <span className="text-foreground">{job.location}</span>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-chart-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <span className="text-foreground">Full-time</span>
+                              </div>
+                              
+                              {job.salary && (
+                                <div className="flex items-center gap-2">
+                                  <svg className="w-4 h-4 text-chart-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span className="text-foreground font-semibold">Rp {job.salary}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {job.syarat && job.syarat.length > 0 && (
+                              <div className="space-y-2">
+                                <h4 className="text-sm font-bold text-foreground">Persyaratan:</h4>
+                                <div className="flex flex-wrap gap-1">
+                                  {job.syarat.map((syarat: string, index: number) => (
+                                    <span
+                                      key={index}
+                                      className="inline-flex items-center px-2 py-1 text-xs font-semibold bg-main text-white border-2 border-black rounded"
+                                    >
+                                      {syarat}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
                             )}
+                          </div>
                             
                             <div className="mb-4">
                               <p className="text-xs text-gray-400">
                                 Diposting: {new Date(job.createdAt).toLocaleDateString('id-ID')}
                               </p>
                             </div>
-                          </div>
-                          
-                          <div className="mt-auto">
+                            
                             <Button 
                               onClick={() => window.open(`/job/${job._id}`, '_blank')}
-                              className="w-full px-4 py-2 text-sm touch-target"
+                              className="w-full"
                             >
                               Lihat Detail
+                              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                              </svg>
                             </Button>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                  )}
+                )}
+                  
                   {totalPages > 1 && (
                     <div className="mt-8 flex justify-center">
                       <Pagination>

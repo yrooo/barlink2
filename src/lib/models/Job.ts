@@ -42,6 +42,10 @@ const JobSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  syarat: [{
+    type: String,
+    trim: true,
+  }],
   employerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
