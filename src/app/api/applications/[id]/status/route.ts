@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Application from '@/lib/models/Application';
-// import Job from '@/lib/models/Job';
+import { requireRole, createServerSupabaseClient } from '@/lib/supabase-auth';
 
 export async function PATCH(
   request: NextRequest,
@@ -11,22 +7,17 @@ export async function PATCH(
 ) {
   const { id: applicationId } = (await context.params);
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireRole('pencari_kandidat');
     
-    if (!session) {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    if (session.user.role !== 'pencari_kandidat') {
-      return NextResponse.json(
-        { error: 'Forbidden - Only employers can update application status' },
-        { status: 403 }
-      );
-    }
-
+    const { user } = authResult;
+    const supabase = await createServerSupabaseClient();
     const { status } = await request.json();
     
     if (!status) {
@@ -43,15 +34,17 @@ export async function PATCH(
       );
     }
 
-    await dbConnect();
-
-
-
-
-    // Find the application and populate job data to verify ownership
-    const application = await Application.findById(applicationId).populate('jobId');
+    // Find the application and verify ownership through job
+    const { data: application, error: fetchError } = await supabase
+      .from('applications')
+      .select(`
+        *,
+        jobs!inner(employer_id)
+      `)
+      .eq('id', applicationId)
+      .single();
     
-    if (!application) {
+    if (fetchError || !application) {
       return NextResponse.json(
         { error: 'Application not found' },
         { status: 404 }
@@ -59,7 +52,7 @@ export async function PATCH(
     }
 
     // Verify that the job belongs to the current user
-    if (application.jobId.employerId.toString() !== session.user.id) {
+    if (application.jobs.employer_id !== user.id) {
       return NextResponse.json(
         { error: 'Forbidden - You can only update applications for your own jobs' },
         { status: 403 }
@@ -67,15 +60,28 @@ export async function PATCH(
     }
 
     // Update the application status
-    application.status = status;
-    application.updatedAt = new Date();
+    const { data: updatedApplication, error: updateError } = await supabase
+      .from('applications')
+      .update({ 
+        status,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', applicationId)
+      .select()
+      .single();
 
-    await application.save();
+    if (updateError) {
+      console.error('Error updating application status:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to update application status' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
       message: 'Application status updated successfully',
-      application
+      application: updatedApplication
     });
   } catch (error) {
     console.error('Error updating application status:', error);

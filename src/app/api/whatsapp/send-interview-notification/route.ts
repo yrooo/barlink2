@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { createServerSupabaseClient } from '@/lib/supabase-auth';
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3001';
 const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
@@ -8,17 +7,34 @@ const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
 export async function POST(request: NextRequest) {
   try {
     // Check authentication - only companies/admin can send notifications
-    const session = await getServerSession(authOptions);
-    if (!session) {
+    const supabase = await createServerSupabaseClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    // Get user profile to check role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    
+    if (profileError || !profile) {
+      return NextResponse.json(
+        { success: false, error: 'User profile not found' },
+        { status: 404 }
+      );
+    }
+
     // Check if user is admin (by email) or company
-    const isAdmin = session.user?.email === process.env.ADMIN_EMAIL;
-    const isCompany = session.user.role === 'pencari_kandidat';
+    const isAdmin = user.email === process.env.ADMIN_EMAIL;
+    const isCompany = profile.role === 'pencari_kandidat';
     
     if (!isAdmin && !isCompany) {
       return NextResponse.json(

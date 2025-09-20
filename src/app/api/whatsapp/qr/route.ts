@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { createServerSupabaseClient } from '@/lib/supabase-auth';
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3001';
 const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
@@ -9,18 +8,34 @@ export async function GET() {
   try {
     // In production, require authentication and admin access
     if (process.env.NODE_ENV === 'production') {
-      const session = await getServerSession(authOptions);
+      const supabase = await createServerSupabaseClient();
       
-      if (!session) {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
         return NextResponse.json(
           { success: false, error: 'Authentication required' },
           { status: 401 }
         );
       }
 
+      // Get user profile to check role
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      if (profileError || !profile) {
+        return NextResponse.json(
+          { success: false, error: 'User profile not found' },
+          { status: 404 }
+        );
+      }
+
       // Check if user is admin (either by email or role)
-      const emailMatch = session.user?.email === process.env.ADMIN_EMAIL;
-      const roleMatch = (session.user?.role as string) === 'admin';
+      const emailMatch = user.email === process.env.ADMIN_EMAIL;
+      const roleMatch = profile.role === 'admin';
       const isAdmin = emailMatch || roleMatch;
       
       if (!isAdmin) {

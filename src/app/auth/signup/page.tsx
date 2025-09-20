@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { signUp } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
@@ -62,26 +64,18 @@ export default function SignUp() {
     }
 
     try {
-      const response = await fetch('/api/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-          company: formData.company,
-        }),
+      const result = await signUp({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role as 'pelamar_kerja' | 'pencari_kandidat',
+        company: formData.company,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        router.push('/auth/verify-email?message=Akun berhasil dibuat. Silakan cek email Anda untuk verifikasi.');
+      if (result.error) {
+        setError(result.error);
       } else {
-        setError(data.error || 'Terjadi kesalahan saat mendaftar');
+        router.push('/auth/verify-email?message=Akun berhasil dibuat. Silakan cek email Anda untuk verifikasi.');
       }
     } catch {
       setError('Terjadi kesalahan. Silakan coba lagi.');

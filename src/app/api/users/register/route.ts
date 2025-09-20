@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     // Send verification email
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const verificationLink = `${process.env.NEXTAUTH_URL}/auth/verify-email?token=${verificationToken}`;
+    const verificationLink = `${process.env.APP_URL || process.env.VERCEL_URL || 'http://localhost:3000'}/auth/verify-email?token=${verificationToken}`;
 
     try {
       console.log('Attempting to send verification email...');

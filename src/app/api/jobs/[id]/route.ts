@@ -1,22 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Job from '@/lib/models/Job';
+import { requireRole, createServerSupabaseClient } from '@/lib/supabase-auth';
 
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await dbConnect();
+    const supabase = await createServerSupabaseClient();
     
     const resolvedParams = await context.params;
     const id = resolvedParams.id;
-    const job = await Job.findById(id)
-      .populate('employerId', 'name company');
     
-    if (!job) {
+    const { data: job, error } = await supabase
+      .from('jobs')
+      .select(`
+        *,
+        users!jobs_employer_id_fkey(name, company)
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (error || !job) {
       return NextResponse.json(
         { error: 'Job not found' },
         { status: 404 }
@@ -38,26 +42,30 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireRole('pencari_kandidat');
     
-    if (!session || session.user.role !== 'pencari_kandidat') {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { user } = authResult;
+    const supabase = await createServerSupabaseClient();
     
     // Verify job belongs to the employer
     const resolvedParams = await context.params;
     const id = resolvedParams.id;
-    const job = await Job.findOne({ 
-      _id: id, 
-      employerId: session.user.id 
-    });
     
-    if (!job) {
+    const { data: existingJob, error: fetchError } = await supabase
+      .from('jobs')
+      .select('id')
+      .eq('id', id)
+      .eq('employer_id', user.id)
+      .single();
+    
+    if (fetchError || !existingJob) {
       return NextResponse.json(
         { error: 'Job not found or unauthorized' },
         { status: 404 }
@@ -65,11 +73,21 @@ export async function PATCH(
     }
     
     const body = await request.json();
-    const updatedJob = await Job.findByIdAndUpdate(
-      id,
-      body,
-      { new: true }
-    );
+    
+    const { data: updatedJob, error: updateError } = await supabase
+      .from('jobs')
+      .update(body)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (updateError) {
+      console.error('Error updating job:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to update job' },
+        { status: 500 }
+      );
+    }
     
     return NextResponse.json(updatedJob);
   } catch (error) {

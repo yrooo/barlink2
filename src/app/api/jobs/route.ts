@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Job from '@/lib/models/Job';
+import { requireRole, createServerSupabaseClient } from '@/lib/supabase-auth';
 
 export async function GET() {
   try {
-    await dbConnect();
-    const jobs = await Job.find({ status: 'active' })
-      .populate('employerId', 'name company')
-      .sort({ createdAt: -1 });
+    const supabase = await createServerSupabaseClient();
+    
+    const { data: jobs, error } = await supabase
+      .from('jobs')
+      .select(`
+        *,
+        users!jobs_employer_id_fkey(name, company)
+      `)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching jobs:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch jobs' },
+        { status: 500 }
+      );
+    }
+    
     return NextResponse.json(jobs);
   } catch (error) {
     console.error('Error fetching jobs:', error);
@@ -22,16 +34,17 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireRole('pencari_kandidat');
     
-    if (!session || session.user.role !== 'pencari_kandidat') {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized. Only employers can create jobs.' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { user, profile } = authResult;
+    const supabase = await createServerSupabaseClient();
     const body = await request.json();
     
     const { title, description, location, salary, customQuestions } = body;
@@ -43,17 +56,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const job = new Job({
-      title,
-      company: session.user.company,
-      description,
-      location,
-      salary,
-      employerId: session.user.id,
-      customQuestions: customQuestions || [],
-    });
+    const { data: job, error: jobError } = await supabase
+      .from('jobs')
+      .insert({
+        title,
+        company: profile.company,
+        description,
+        location,
+        salary,
+        employer_id: user.id,
+        custom_questions: customQuestions || [],
+        status: 'active',
+        applications_count: 0
+      })
+      .select()
+      .single();
 
-    await job.save();
+    if (jobError) {
+      console.error('Error creating job:', jobError);
+      return NextResponse.json(
+        { error: 'Failed to create job' },
+        { status: 500 }
+      );
+    }
     
     return NextResponse.json(job, { status: 201 });
   } catch (error) {

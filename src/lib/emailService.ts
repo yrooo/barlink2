@@ -43,7 +43,7 @@ export class EmailService {
    */
   async sendPasswordResetEmail(email: string, resetToken: string): Promise<boolean> {
     try {
-      const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`;
+      const resetUrl = `${process.env.APP_URL || process.env.VERCEL_URL || 'http://localhost:3000'}/auth/reset-password?token=${resetToken}`;
       
       const { error } = await resend.emails.send({
         from: this.fromEmail,
@@ -477,7 +477,7 @@ export class EmailService {
               <li>Pertimbangkan untuk memperbarui profil dan CV Anda</li>
             </ul>
             
-            <a href="${process.env.NEXTAUTH_URL}/job" class="cta-button">Cari Lowongan Lain</a>
+            <a href="${process.env.APP_URL || process.env.VERCEL_URL || 'http://localhost:3000'}/job" class="cta-button">Cari Lowongan Lain</a>
           </div>
           
           <div class="footer">
@@ -620,7 +620,7 @@ export class EmailService {
           <div style="text-align: center; padding: 20px; color: #6c757d; font-size: 12px;">
             <p style="margin: 0;">&copy; 2024 Barlink ID. All rights reserved.</p>
             <p style="margin: 5px 0 0 0;">
-              <a href="${process.env.NEXTAUTH_URL}" style="color: #667eea; text-decoration: none;">www.barlink.id</a>
+              <a href="${process.env.APP_URL || process.env.VERCEL_URL || 'http://localhost:3000'}" style="color: #667eea; text-decoration: none;">www.barlink.id</a>
             </p>
           </div>
         </body>

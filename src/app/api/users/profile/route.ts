@@ -1,37 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import User from '@/lib/models/User';
+import { requireAuth, createServerSupabaseClient } from '@/lib/supabase-auth';
 import { formatPhoneNumber } from '@/lib/utils';
 
-interface UpdateData {
-  name: string;
-  updatedAt: Date;
-  company?: string;
-  description?: string;
-  website?: string;
-  location?: string;
-  whatsappNumber?: string;
-  'profile.phone'?: string;
-  'profile.whatsappNumber'?: string;
-  'profile.description'?: string;
-  'profile.website'?: string;
-  'profile.location'?: string;
-}
+
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireAuth();
     
-    if (!session) {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { user, profile } = authResult;
+    const supabase = await createServerSupabaseClient();
     const body = await request.json();
     
     const { name, company, description, website, location, phone, whatsappNumber } = body;
@@ -44,13 +29,13 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare update object based on user role
-    const updateData: UpdateData = {
+    const updateData: Record<string, string | Date> = {
       name,
-      updatedAt: new Date(),
+      updated_at: new Date().toISOString(),
     };
 
     // Add role-specific fields
-    if (session.user.role === 'pencari_kandidat') {
+    if (profile.role === 'pencari_kandidat') {
       if (!company) {
         return NextResponse.json(
           { error: 'Company is required for employers' },
@@ -61,42 +46,34 @@ export async function PUT(request: NextRequest) {
       updateData.description = description;
       updateData.website = website;
       updateData.location = location;
-      updateData.whatsappNumber = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
+      updateData.whatsapp_number = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
     } else {
-      // For job seekers, update profile nested object
-      updateData['profile.phone'] = phone ? formatPhoneNumber(phone) : phone;
-      updateData['profile.whatsappNumber'] = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
-      updateData['profile.description'] = description;
-      updateData['profile.website'] = website;
-      updateData['profile.location'] = location;
+      // For job seekers, update profile fields
+      updateData.phone = phone ? formatPhoneNumber(phone) : phone;
+      updateData.whatsapp_number = whatsappNumber ? formatPhoneNumber(whatsappNumber) : whatsappNumber;
+      updateData.description = description;
+      updateData.website = website;
+      updateData.location = location;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      session.user.id,
-      updateData,
-      { new: true }
-    );
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('users')
+      .update(updateData)
+      .eq('id', user.id)
+      .select()
+      .single();
 
-    if (!updatedUser) {
+    if (updateError) {
+      console.error('Error updating profile:', updateError);
       return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
+        { error: 'Failed to update profile' },
+        { status: 500 }
       );
     }
 
     return NextResponse.json({
       message: 'Profile updated successfully',
-      user: {
-        id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        role: updatedUser.role,
-        company: updatedUser.company,
-        description: updatedUser.description,
-        website: updatedUser.website,
-        location: updatedUser.location,
-        profile: updatedUser.profile,
-      }
+      user: updatedProfile
     });
   } catch (error) {
     console.error('Error updating profile:', error);
@@ -109,27 +86,25 @@ export async function PUT(request: NextRequest) {
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireAuth();
     
-    if (!session) {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { profile } = authResult;
     
-    const user = await User.findById(session.user.id).select('-password');
-    
-    if (!user) {
+    if (!profile) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'User profile not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json(profile);
   } catch (error) {
     console.error('Error fetching profile:', error);
     return NextResponse.json(

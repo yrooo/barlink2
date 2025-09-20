@@ -1,43 +1,49 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Application from '@/lib/models/Application';
-import Job from '@/lib/models/Job'; // Ensure Job model is imported to populate jobDetails
-import User from '@/lib/models/User'; // Ensure User model is imported for applicantId population if needed elsewhere
+import { requireRole, createServerSupabaseClient } from '@/lib/supabase-auth';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user || !session.user.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    if (session.user.role !== 'pelamar_kerja') {
+    const authResult = await requireRole('pelamar_kerja');
+    
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Forbidden: Only job seekers can view their applications.' },
-        { status: 403 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { user } = authResult;
+    const supabase = await createServerSupabaseClient();
 
-    const applications = await Application.find({ applicantId: session.user.id })
-      .populate({
-        path: 'jobId',
-        select: 'title company location salary createdAt', // Select fields you want to show from Job
-        model: Job, // Explicitly providing model here
-      })
-      .populate({
-        path: 'employerId',
-        select: 'name company', // Select fields from the employer/company if needed
-        model: User, // Explicitly providing model here
-      })
-      .sort({ createdAt: -1 }); // Sort by most recent applications
+    const { data: applications, error } = await supabase
+      .from('applications')
+      .select(`
+        *,
+        jobs!inner(
+          title,
+          company,
+          location,
+          salary,
+          created_at
+        ),
+        users!applications_employer_id_fkey(
+          name,
+          company
+        )
+      `)
+      .eq('applicant_id', user.id)
+      .order('created_at', { ascending: false });
 
-    if (!applications) {
-      return NextResponse.json({ error: 'No applications found' }, { status: 404 });
+    if (error) {
+      console.error('Error fetching user applications:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch applications' },
+        { status: 500 }
+      );
+    }
+
+    if (!applications || applications.length === 0) {
+      return NextResponse.json({ applications: [] });
     }
 
     return NextResponse.json(applications);

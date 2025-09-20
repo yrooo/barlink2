@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 
 interface UserProfile {
   phone?: string;
@@ -35,13 +35,13 @@ interface UseUserDataReturn {
 }
 
 export function useUserData(): UseUserDataReturn {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchUserData = useCallback(async () => {
-    if (!session?.user?.id) {
+    if (!user?.id) {
       setLoading(false);
       return;
     }
@@ -50,7 +50,7 @@ export function useUserData(): UseUserDataReturn {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/users/${session.user.id}`);
+      const response = await fetch(`/api/users/${user.id}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
@@ -69,19 +69,19 @@ export function useUserData(): UseUserDataReturn {
     } finally {
       setLoading(false);
     }
-  }, [session?.user?.id]);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (status === 'loading') {
+    if (authLoading) {
       return;
     }
     
-    if (session?.user?.id) {
+    if (user?.id) {
       fetchUserData();
     } else {
       setLoading(false);
     }
-  }, [session?.user?.id, status, fetchUserData]);
+  }, [user?.id, authLoading, fetchUserData]);
 
   const refetch = async () => {
     await fetchUserData();

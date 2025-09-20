@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import {
  
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
+  const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,20 +26,20 @@ export default function Dashboard() {
   const [selectedJobId, setSelectedJobId] = useState<string>('');
 
   useEffect(() => {
-    if (status === 'loading') return;
+    if (authLoading) return;
     
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin');
       return;
     }
 
-    if (session.user.role !== 'pencari_kandidat') {
+    if (profile?.role !== 'pencari_kandidat') {
       router.push('/');
       return;
     }
 
     fetchJobs();
-  }, [session, status, router]);
+  }, [user, profile, authLoading, router]);
 
   const fetchJobs = async () => {
     try {
@@ -83,7 +83,7 @@ export default function Dashboard() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-main flex items-center justify-center">
         <div className="text-2xl font-bold">Loading...</div>
@@ -91,7 +91,7 @@ export default function Dashboard() {
     );
   }
 
-  if (!session || session.user.role !== 'pencari_kandidat') {
+  if (!user || profile?.role !== 'pencari_kandidat') {
     return null;
   }
 
@@ -103,11 +103,11 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
             <div className="flex items-center space-x-3 sm:space-x-4">
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-main rounded-full border-4 border-black flex items-center justify-center flex-shrink-0">
-                <span className="text-lg sm:text-2xl font-black">{session.user.company?.[0] || 'C'}</span>
+                <span className="text-lg sm:text-2xl font-black">{profile?.company?.[0] || 'C'}</span>
               </div>
               <div className="min-w-0">
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-black truncate">Welcome Back! 👋</h1>
-                <p className="text-gray-600 text-sm sm:text-base truncate">{session.user.company}</p>
+                <p className="text-gray-600 text-sm sm:text-base truncate">{profile?.company}</p>
               </div>
             </div>
             <div className="flex space-x-2 sm:space-x-4 w-full sm:w-auto">

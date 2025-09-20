@@ -1,34 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Job from '@/lib/models/Job';
+import { requireRole, createServerSupabaseClient } from '@/lib/supabase-auth';
 
 export async function PATCH(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireRole('pencari_kandidat');
     
-    if (!session || session.user.role !== 'pencari_kandidat') {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { user } = authResult;
+    const supabase = await createServerSupabaseClient();
     
     // Verify job belongs to the employer
     const resolvedParams = await context.params;
     const id = resolvedParams.id;
-    const job = await Job.findOne({ 
-      _id: id, 
-      employerId: session.user.id 
-    });
     
-    if (!job) {
+    const { data: job, error: fetchError } = await supabase
+      .from('jobs')
+      .select('id, status')
+      .eq('id', id)
+      .eq('employer_id', user.id)
+      .single();
+    
+    if (fetchError || !job) {
       return NextResponse.json(
         { error: 'Job not found or unauthorized' },
         { status: 404 }
@@ -38,11 +39,20 @@ export async function PATCH(
     // Toggle status between active and inactive
     const newStatus = job.status === 'active' ? 'inactive' : 'active';
     
-    const updatedJob = await Job.findByIdAndUpdate(
-      id,
-      { status: newStatus },
-      { new: true }
-    );
+    const { data: updatedJob, error: updateError } = await supabase
+      .from('jobs')
+      .update({ status: newStatus })
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (updateError) {
+      console.error('Error toggling job status:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to toggle job status' },
+        { status: 500 }
+      );
+    }
     
     return NextResponse.json(updatedJob);
   } catch (error) {

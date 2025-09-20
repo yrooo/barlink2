@@ -1,50 +1,98 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Application from '@/lib/models/Application';
+import { requireRole, createServerSupabaseClient } from '@/lib/supabase-auth';
 import EmailService from '@/lib/emailService';
+import { 
+  withErrorHandling, 
+  createSuccessResponse, 
+  createValidationError,
+  createAuthorizationError,
+  validateRequired 
+} from '@/lib/error-handler';
 
-export async function PATCH(
+export const PATCH = withErrorHandling(async (
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || session.user.role !== 'pencari_kandidat') {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+) => {
+  const authResult = await requireRole('pencari_kandidat');
+  
+  if ('error' in authResult) {
+    return NextResponse.json(
+      { success: false, error: authResult.error },
+      { status: authResult.status }
+    );
+  }
 
-    await dbConnect();
+  const { user } = authResult;
+  const supabase = await createServerSupabaseClient();
+  
+  // Verify application belongs to the employer
+  const resolvedParams = await context.params;
+  const id = resolvedParams.id;
+  
+  // Validate UUID format
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(id)) {
+    throw createValidationError('Invalid application ID format');
+  }
     
-    // Verify application belongs to the employer
-    const resolvedParams = await context.params;
-    const id = resolvedParams.id;
-    const application = await Application.findOne({
-      _id: id,
-      employerId: session.user.id
-    });
+  const { data: application, error: fetchError } = await supabase
+    .from('applications')
+    .select(`
+      *,
+      applicant:users!applications_applicant_id_fkey(name, email, whatsapp_number, whatsapp_verified),
+      job:jobs!applications_job_id_fkey(title, company, employer_id)
+    `)
+    .eq('id', id)
+    .single();
+  
+  if (fetchError) {
+    throw fetchError;
+  }
+  
+  if (!application) {
+    throw createValidationError('Application not found', { applicationId: id });
+  }
+
+  // Verify that the job belongs to the current user
+  if (application.job.employer_id !== user.id) {
+    throw createAuthorizationError(
+      'You can only update applications for your own jobs'
+    );
+  }
+  
+  const body = await request.json();
+  const { status, notes } = body;
+  
+  // Validate required fields
+  validateRequired({ status }, ['status']);
+
+  // Validate status value
+  const validStatuses = ['pending', 'reviewed', 'accepted', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    throw createValidationError(
+      `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+      { validStatuses, receivedStatus: status }
+    );
+  }
     
-    if (!application) {
-      return NextResponse.json(
-        { error: 'Application not found or unauthorized' },
-        { status: 404 }
-      );
-    }
-    
-    const body = await request.json();
-    const { status, notes } = body;
-    
-    const updatedApplication = await Application.findByIdAndUpdate(
-      id,
-      { status, notes },
-      { new: true }
-    ).populate('applicantId', 'name email whatsappNumber whatsappVerified')
-     .populate('jobId', 'title company');
+  const { data: updatedApplication, error: updateError } = await supabase
+    .from('applications')
+    .update({ 
+      status, 
+      notes,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .select(`
+      *,
+      applicant:users!applications_applicant_id_fkey(name, email, whatsapp_number, whatsapp_verified),
+      job:jobs!applications_job_id_fkey(title, company)
+    `)
+    .single();
+  
+  if (updateError) {
+    throw updateError;
+  }
     
     // Send email notification for accepted/rejected applications
     if (status === 'accepted' || status === 'rejected') {
@@ -57,19 +105,20 @@ export async function PATCH(
       }
 
       // Send WhatsApp notification if applicant has verified WhatsApp number
-      if (updatedApplication.applicantId.whatsappNumber && updatedApplication.applicantId.whatsappVerified) {
+      if (updatedApplication.applicant.whatsapp_number && updatedApplication.applicant.whatsapp_verified) {
         try {
-          const whatsappResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/whatsapp/send-application-notification`, {
+        const appUrl = process.env.APP_URL || process.env.VERCEL_URL || 'http://localhost:3000';
+        const whatsappResponse = await fetch(`${appUrl}/api/whatsapp/send-application-notification`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Cookie': request.headers.get('cookie') || ''
             },
             body: JSON.stringify({
-              phoneNumber: updatedApplication.applicantId.whatsappNumber,
-              applicantName: updatedApplication.applicantId.name,
-              jobTitle: updatedApplication.jobId.title,
-              companyName: updatedApplication.jobId.company,
+              phoneNumber: updatedApplication.applicant.whatsapp_number,
+              applicantName: updatedApplication.applicant.name,
+              jobTitle: updatedApplication.job.title,
+              companyName: updatedApplication.job.company,
               status,
               notes
             })
@@ -87,13 +136,10 @@ export async function PATCH(
       }
     }
     
-    return NextResponse.json(updatedApplication);
-  } catch (error) {
-    console.error('Error updating application:', error);
-    return NextResponse.json(
-      { error: 'Failed to update application' },
-      { status: 500 }
-    );
-  }
-}
+  return createSuccessResponse(
+    updatedApplication,
+    `Application status updated to ${status}`,
+    200
+  );
+});
 

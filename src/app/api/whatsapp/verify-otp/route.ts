@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import User from '@/lib/models/User';
+import { createServerSupabaseClient } from '@/lib/supabase-auth';
 import { formatPhoneNumber } from '@/lib/utils';
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3001';
@@ -11,8 +8,11 @@ const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const supabase = await createServerSupabaseClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -59,22 +59,19 @@ export async function POST(request: NextRequest) {
     // If OTP verification was successful, update user's database record
     if (data.success && phoneNumber) {
       try {
-        await dbConnect();
-        
-        const updatedUser = await User.findByIdAndUpdate(
-          session.user.id,
-          {
-            whatsappNumber: formatPhoneNumber(phoneNumber),
-            whatsappVerified: true,
-            whatsappVerifiedAt: new Date()
-          },
-          { new: true }
-        );
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            whatsapp_number: formatPhoneNumber(phoneNumber),
+            whatsapp_verified: true,
+            whatsapp_verified_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
 
-        if (!updatedUser) {
-          console.error('User not found when updating WhatsApp verification');
+        if (updateError) {
+          console.error('Error updating WhatsApp verification:', updateError);
         } else {
-          console.log(`WhatsApp verification updated for user ${session.user.id}: ${phoneNumber}`);
+          console.log(`WhatsApp verification updated for user ${user.id}: ${phoneNumber}`);
         }
       } catch (dbError) {
         console.error('Database error when updating WhatsApp verification:', dbError);

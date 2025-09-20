@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,26 +22,18 @@ export default function SignIn() {
     setError('');
 
     try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
+      const result = await signIn(email, password);
 
-      if (result?.error) {
+      if (result.error) {
         if (result.error === 'EmailNotVerified') {
           router.push('/auth/verify-email');
         } else {
           setError('Invalid email or password');
         }
       } else {
-        // Get session to check user role
-        const session = await getSession();
-        if (session?.user?.role === 'pencari_kandidat') {
-          router.push('/dashboard');
-        } else {
-          router.push('/job?type=seek');
-        }
+        // The auth provider will handle the session state
+        // We'll redirect based on the user role after auth state updates
+        router.push('/dashboard');
       }
     } catch {
       setError('An error occurred. Please try again.');

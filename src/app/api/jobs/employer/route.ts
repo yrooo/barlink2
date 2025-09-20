@@ -1,24 +1,33 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Job from '@/lib/models/Job';
+import { requireRole, createServerSupabaseClient } from '@/lib/supabase-auth';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireRole('pencari_kandidat');
     
-    if (!session || session.user.role !== 'pencari_kandidat') {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { user } = authResult;
+    const supabase = await createServerSupabaseClient();
     
-    const jobs = await Job.find({ employerId: session.user.id })
-      .sort({ createdAt: -1 });
+    const { data: jobs, error } = await supabase
+      .from('jobs')
+      .select('*')
+      .eq('employer_id', user.id)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching employer jobs:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch jobs' },
+        { status: 500 }
+      );
+    }
     
     return NextResponse.json(jobs);
   } catch (error) {

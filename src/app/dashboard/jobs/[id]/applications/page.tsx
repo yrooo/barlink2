@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ import { Calendar, Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 export default function JobApplications() {
-  const { data: session, status } = useSession();
+  const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
   const jobId = params.id as string;
@@ -45,22 +45,22 @@ export default function JobApplications() {
   }, [jobId]);
 
   useEffect(() => {
-    if (status === 'loading') {
+    if (authLoading) {
       return;
     }
 
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin');
       return;
     }
 
-    if (session.user.role !== 'pencari_kandidat') {
+    if (profile?.role !== 'pencari_kandidat') {
       router.push('/');
       return;
     }
 
     fetchJobAndApplications();
-  }, [session, status, router, jobId, fetchJobAndApplications]);
+  }, [user, profile, authLoading, router, jobId, fetchJobAndApplications]);
 
   const updateApplicationStatus = async (applicationId: string, status: string, notes?: string) => {
     try {
@@ -112,7 +112,7 @@ export default function JobApplications() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-main flex items-center justify-center">
         <div className="text-2xl font-bold">Loading...</div>
@@ -120,7 +120,7 @@ export default function JobApplications() {
     );
   }
 
-  if (!session || session.user.role !== 'pencari_kandidat') {
+  if (!user || user.role !== 'pencari_kandidat') {
     return null;
   }
 

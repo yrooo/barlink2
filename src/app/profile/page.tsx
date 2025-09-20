@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 
 export default function ProfilePage() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const { userData, loading: userDataLoading, refetch } = useUserData();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -50,13 +50,13 @@ export default function ProfilePage() {
   const [otpVerifying, setOtpVerifying] = useState(false);
 
   useEffect(() => {
-    if (status === 'loading' || userDataLoading) {
-      // Still loading session or user data
+    if (authLoading || userDataLoading) {
+      // Still loading auth or user data
       return;
     }
     
-    if (!session) {
-      // No session, redirect to signin
+    if (!user) {
+      // No user, redirect to signin
       router.push('/auth/signin');
       return;
     }
@@ -91,7 +91,7 @@ export default function ProfilePage() {
       });
     }
 
-  }, [userData, userDataLoading, status, router, isFormInitialized, session]);
+  }, [userData, userDataLoading, authLoading, router, isFormInitialized, user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -279,7 +279,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (status === 'loading' || userDataLoading) {
+  if (authLoading || userDataLoading) {
     return (
       <div className="min-h-screen bg-main flex items-center justify-center">
         <div className="text-2xl font-bold">Loading...</div>
@@ -287,7 +287,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (!session || !userData) { // If no session or user data (after loading), render nothing or a message.
+  if (!user || !userData) { // If no user or user data (after loading), render nothing or a message.
     return null; // Or a message like <p>Please sign in to view your profile.</p>
   }
 

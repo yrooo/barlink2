@@ -1,50 +1,77 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { NextRequest } from 'next/server';
+import { createServerSupabaseClient } from '@/lib/supabase-auth';
+import { 
+  withErrorHandling, 
+  createSuccessResponse, 
+  createValidationError,
+  createAuthorizationError,
+  validateRequired,
+  validatePhoneNumber 
+} from '@/lib/error-handler';
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || 'http://localhost:3001';
 const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
 
-export async function POST(request: NextRequest) {
-  try {
-    // Check authentication - only companies/admin can send notifications
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+export const POST = withErrorHandling(async (request: NextRequest) => {
+  // Check authentication - only companies/admin can send notifications
+  const supabase = await createServerSupabaseClient();
+  
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (authError || !user) {
+    throw createAuthorizationError('Authentication required');
+  }
 
-    // Check if user is admin (by email) or company
-    const isAdmin = session.user?.email === process.env.ADMIN_EMAIL;
-    const isCompany = session.user.role === 'pencari_kandidat';
-    
-    if (!isAdmin && !isCompany) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  // Get user profile to check role
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+  
+  if (profileError) {
+    throw profileError;
+  }
+  
+  if (!profile) {
+    throw createValidationError('User profile not found', { userId: user.id });
+  }
 
-    const body = await request.json();
-    const { phoneNumber, applicantName, jobTitle, companyName, status, notes } = body;
+  // Check if user is admin (by email) or company
+  const isAdmin = user.email === process.env.ADMIN_EMAIL;
+  const isCompany = profile.role === 'pencari_kandidat';
+  
+  if (!isAdmin && !isCompany) {
+    throw createAuthorizationError(
+      'Only companies and administrators can send WhatsApp notifications'
+    );
+  }
 
-    // Validate required fields
-    if (!phoneNumber || !applicantName || !jobTitle || !companyName || !status) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: phoneNumber, applicantName, jobTitle, companyName, status' },
-        { status: 400 }
-      );
-    }
+  const body = await request.json();
+  const { phoneNumber, applicantName, jobTitle, companyName, status, notes } = body;
 
-    // Validate status
-    if (!['accepted', 'rejected'].includes(status)) {
-      return NextResponse.json(
-        { success: false, error: 'Status must be either "accepted" or "rejected"' },
-        { status: 400 }
-      );
-    }
+  // Validate required fields
+  validateRequired(
+    { phoneNumber, applicantName, jobTitle, companyName, status },
+    ['phoneNumber', 'applicantName', 'jobTitle', 'companyName', 'status']
+  );
+
+  // Validate phone number format
+  if (!validatePhoneNumber(phoneNumber)) {
+    throw createValidationError(
+      'Invalid phone number format. Please use international format (e.g., +1234567890)',
+      { phoneNumber }
+    );
+  }
+
+  // Validate status
+  const validStatuses = ['accepted', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    throw createValidationError(
+      `Status must be one of: ${validStatuses.join(', ')}`,
+      { validStatuses, receivedStatus: status }
+    );
+  }
 
     // Proxy request to VPS WhatsApp service
     const headers: Record<string, string> = {
@@ -56,34 +83,41 @@ export async function POST(request: NextRequest) {
       headers['X-API-Key'] = WHATSAPP_API_KEY;
     }
     
-    const response = await fetch(`${WHATSAPP_SERVICE_URL}/api/whatsapp/send-application-notification`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
+  // Validate WhatsApp service configuration
+  if (!WHATSAPP_SERVICE_URL) {
+    throw createValidationError('WhatsApp service is not configured');
+  }
+
+  const response = await fetch(`${WHATSAPP_SERVICE_URL}/api/whatsapp/send-application-notification`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      phoneNumber,
+      applicantName,
+      jobTitle,
+      companyName,
+      status,
+      notes
+    })
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw createValidationError(
+      result.error || 'Failed to send WhatsApp notification',
+      { 
+        whatsappServiceStatus: response.status,
+        whatsappServiceError: result.error,
         phoneNumber,
-        applicantName,
-        jobTitle,
-        companyName,
-        status,
-        notes
-      })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { success: false, error: result.error || 'Failed to send WhatsApp notification' },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error('Error in send-application-notification API:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
+        status 
+      }
     );
   }
-}
+
+  return createSuccessResponse(
+    result,
+    `WhatsApp notification sent successfully to ${applicantName}`,
+    200
+  );
+});

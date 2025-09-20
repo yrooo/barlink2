@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 
 export default function CreateJob() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,18 +42,18 @@ export default function CreateJob() {
   ]);
 
   useEffect(() => {
-    if (status === 'loading') return;
+    if (authLoading) return;
     
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin');
       return;
     }
 
-    if (session.user.role !== 'pencari_kandidat') {
+    if (user.role !== 'pencari_kandidat') {
       router.push('/');
       return;
     }
-  }, [session, status, router]);
+  }, [user, authLoading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -158,7 +158,7 @@ export default function CreateJob() {
     }
   };
 
-  if (status === 'loading') {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-main flex items-center justify-center">
         <div className="text-2xl font-bold">Loading...</div>
@@ -166,7 +166,7 @@ export default function CreateJob() {
     );
   }
 
-  if (!session || session.user.role !== 'pencari_kandidat') {
+  if (!user || user.role !== 'pencari_kandidat') {
     return null;
   }
 

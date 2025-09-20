@@ -1,16 +1,44 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
+import { createServerSupabaseClient } from '@/lib/supabase-auth';
 import { getWhatsAppService } from '@/lib/whatsappService';
 
 export async function GET() {
   try {
     // Check authentication (only admin should access this)
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const supabase = await createServerSupabaseClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    // Get user profile to check role
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    
+    if (profileError || !profile) {
+      return NextResponse.json(
+        { success: false, error: 'User profile not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if user is admin
+    const emailMatch = user.email === process.env.ADMIN_EMAIL;
+    const roleMatch = profile.role === 'admin';
+    const isAdmin = emailMatch || roleMatch;
+    
+    if (!isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
       );
     }
 

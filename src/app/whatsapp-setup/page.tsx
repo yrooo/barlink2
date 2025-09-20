@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 
 export default function WhatsAppSetup() {
-  const { data: session, status } = useSession();
+  const { user, profile, loading: authLoading } = useAuth();
   const router = useRouter();
   const [qrCode, setQrCode] = useState<string>('');
   const [isReady, setIsReady] = useState<boolean>(false);
@@ -16,23 +16,22 @@ export default function WhatsAppSetup() {
 
   // Check authentication and admin access
   useEffect(() => {
-    if (status === 'loading') return; // Still loading
+    if (authLoading) return; // Still loading
     
-    if (!session) {
+    if (!user) {
       router.push('/auth/signin?callbackUrl=/whatsapp-setup');
       return;
     }
 
     // Check if user is admin (you can adjust this logic based on your user model)
-    const userEmail = session.user?.email;
-    const isAdmin = userEmail === process.env.NEXT_PUBLIC_ADMIN_EMAIL || 
-                   (session.user as { role?: string })?.role === 'admin';
+    const userEmail = user.email;
+    const isAdmin = userEmail === process.env.ADMIN_EMAIL
     
     if (!isAdmin) {
       router.push('/dashboard');
       return;
     }
-  }, [session, status, router]);
+  }, [user, profile, authLoading, router]);
 
   const fetchQRCode = async () => {
     try {
@@ -58,7 +57,7 @@ export default function WhatsAppSetup() {
 
   useEffect(() => {
     // Only fetch QR code if user is authenticated and admin
-    if (session && status === 'authenticated') {
+    if (user && !authLoading) {
       fetchQRCode();
       
       // Poll for QR code updates every 5 seconds
@@ -66,10 +65,10 @@ export default function WhatsAppSetup() {
       
       return () => clearInterval(interval);
     }
-  }, [session, status]);
+  }, [user, authLoading]);
 
   // Show loading while checking authentication
-  if (status === 'loading') {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -81,14 +80,13 @@ export default function WhatsAppSetup() {
   }
 
   // Don't render anything if not authenticated (will redirect)
-  if (!session) {
+  if (!user) {
     return null;
   }
 
   // Check admin access
-  const userEmail = session.user?.email;
-  const isAdmin = userEmail === process.env.NEXT_PUBLIC_ADMIN_EMAIL || 
-                 (session.user as { role?: string })?.role === 'admin';
+  const userEmail = user?.email;
+  const isAdmin = userEmail === process.env.ADMIN_EMAIL
   
   if (!isAdmin) {
     return (

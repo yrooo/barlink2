@@ -1,22 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/authOptions';
-import dbConnect from '@/lib/mongodb';
-import Application from '@/lib/models/Application';
-import Job from '@/lib/models/Job';
+import { requireAuth, requireRole, createServerSupabaseClient } from '@/lib/supabase-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireRole('pelamar_kerja');
     
-    if (!session || session.user.role !== 'pelamar_kerja') {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized. Only job seekers can apply.' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { user } = authResult;
+    const supabase = await createServerSupabaseClient();
     const body = await request.json();
     
     const { jobId, answers } = body;
@@ -29,8 +26,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if job exists
-    const job = await Job.findById(jobId);
-    if (!job) {
+    const { data: job, error: jobError } = await supabase
+      .from('jobs')
+      .select('id, employer_id')
+      .eq('id', jobId)
+      .single();
+
+    if (jobError || !job) {
       return NextResponse.json(
         { error: 'Job not found' },
         { status: 404 }
@@ -38,10 +40,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already applied
-    const existingApplication = await Application.findOne({
-      jobId,
-      applicantId: session.user.id,
-    });
+    const { data: existingApplication } = await supabase
+      .from('applications')
+      .select('id')
+      .eq('job_id', jobId)
+      .eq('applicant_id', user.id)
+      .single();
 
     if (existingApplication) {
       return NextResponse.json(
@@ -50,19 +54,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const application = new Application({
-      jobId,
-      applicantId: session.user.id,
-      employerId: job.employerId,
-      answers,
-    });
+    // Create application
+    const { data: application, error: applicationError } = await supabase
+      .from('applications')
+      .insert({
+        job_id: jobId,
+        applicant_id: user.id,
+        employer_id: job.employer_id,
+        answers,
+        status: 'pending'
+      })
+      .select()
+      .single();
 
-    await application.save();
+    if (applicationError) {
+      console.error('Error creating application:', applicationError);
+      return NextResponse.json(
+        { error: 'Failed to submit application' },
+        { status: 500 }
+      );
+    }
 
     // Update job applications count
-    await Job.findByIdAndUpdate(jobId, {
-      $inc: { applicationsCount: 1 }
-    });
+    await supabase.rpc('increment_applications_count', { job_id: jobId });
     
     return NextResponse.json(application, { status: 201 });
   } catch (error) {
@@ -76,30 +90,47 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const authResult = await requireAuth();
     
-    if (!session) {
+    if ('error' in authResult) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
+        { error: authResult.error },
+        { status: authResult.status }
       );
     }
 
-    await dbConnect();
+    const { user, profile } = authResult;
+    const supabase = await createServerSupabaseClient();
     
     let applications;
     
-    if (session.user.role === 'pencari_kandidat') {
+    if (profile.role === 'pencari_kandidat') {
       // Employer: get applications for their jobs
-      applications = await Application.find({ employerId: session.user.id })
-        .populate('jobId', 'title')
-        .populate('applicantId', 'name email')
-        .sort({ createdAt: -1 });
+      const { data, error } = await supabase
+        .from('applications')
+        .select(`
+          *,
+          jobs!inner(title),
+          users!applications_applicant_id_fkey(name, email)
+        `)
+        .eq('employer_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      applications = data;
+      if (error) throw error;
     } else {
       // Job seeker: get their applications
-      applications = await Application.find({ applicantId: session.user.id })
-        .populate('jobId', 'title company')
-        .sort({ createdAt: -1 });
+      const { data, error } = await supabase
+        .from('applications')
+        .select(`
+          *,
+          jobs!inner(title, company)
+        `)
+        .eq('applicant_id', user.id)
+        .order('created_at', { ascending: false });
+      
+      applications = data;
+      if (error) throw error;
     }
     
     return NextResponse.json(applications);
