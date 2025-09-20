@@ -159,7 +159,7 @@ export default function LoadingScreenDemo() {
               <ul className="space-y-2 text-foreground/80">
                 <li><strong>isLoading:</strong> boolean - Show/hide the loading screen</li>
                 <li><strong>text:</strong> string - Custom loading text</li>
-                <li><strong>size:</strong> 'sm' | 'md' | 'lg' - Animation size</li>
+                <li><strong>size:</strong> &apos;sm&apos; | &apos;md&apos; | &apos;lg&apos; - Animation size</li>
                 <li><strong>variant:</strong> 'default' | 'minimal' - Animation complexity</li>
                 <li><strong>className:</strong> string - Additional CSS classes</li>
               </ul>

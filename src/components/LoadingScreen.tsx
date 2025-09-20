@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface LoadingScreenProps {
@@ -52,13 +53,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({
           >
             {/* Website Logo in Center */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <img 
+              <Image 
                 src="/logo.png" 
                 alt="BarLink Logo"
-                className={cn(
-                  'object-contain',
-                  size === 'sm' ? 'w-14 h-14' : size === 'md' ? 'w-16 h-16' : 'w-18 h-18'
-                )}
+                width={size === 'sm' ? 56 : size === 'md' ? 64 : 72}
+                height={size === 'sm' ? 56 : size === 'md' ? 64 : 72}
+                className="object-contain"
               />
             </div>
           </div>

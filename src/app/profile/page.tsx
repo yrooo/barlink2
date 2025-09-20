@@ -2,10 +2,10 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ChevronLeft, Mail, Phone, MapPin, Calendar, Briefcase, Edit3, Save, X } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useUserData } from '@/hooks/useUserData';
 import { useLoading } from '@/components/LoadingProvider';
