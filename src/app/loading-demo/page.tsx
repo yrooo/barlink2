@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import Image from 'next/image';
 import LoadingScreen from '@/components/LoadingScreen';
 import { Button } from '@/components/ui/button';
 import { useLoading } from '@/components/LoadingProvider';
@@ -95,10 +96,12 @@ export default function LoadingScreenDemo() {
               <div className="flex justify-center">
                 <div className="w-8 h-8 animate-spin border-4 border-border bg-main shadow-shadow relative overflow-hidden">
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <img 
+                    <Image 
                       src="/logo.png" 
                       alt="BarLink Logo"
-                      className="w-8 h-8 object-contain"
+                      width={32}
+                      height={32}
+                      className="object-contain"
                     />
                   </div>
                   <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-border transform rotate-45 translate-x-1/3 -translate-y-1/3" />
@@ -159,8 +162,8 @@ export default function LoadingScreenDemo() {
               <ul className="space-y-2 text-foreground/80">
                 <li><strong>isLoading:</strong> boolean - Show/hide the loading screen</li>
                 <li><strong>text:</strong> string - Custom loading text</li>
-                <li><strong>size:</strong> &apos;sm&apos; | &apos;md&apos; | &apos;lg&apos; - Animation size</li>
-                <li><strong>variant:</strong> 'default' | 'minimal' - Animation complexity</li>
+                <li><strong>size:</strong> &lsquo;sm&rsquo; | &lsquo;md&rsquo; | &lsquo;lg&rsquo; - Animation size</li>
+                <li><strong>variant:</strong> &lsquo;default&rsquo; | &lsquo;minimal&rsquo; - Animation complexity</li>
                 <li><strong>className:</strong> string - Additional CSS classes</li>
               </ul>
             </div>

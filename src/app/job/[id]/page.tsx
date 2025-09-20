@@ -17,7 +17,6 @@ interface JobApplicationProps {
 const JobApplication = ({ job, onClose }: JobApplicationProps) => {
   const { data: session } = useSession();
   const router = useRouter();
-  const { setLoading: setGlobalLoading } = useLoading();
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [loading, setLocalLoading] = useState(false);
 
@@ -274,7 +273,7 @@ const JobDetailPage = () => {
     if (jobId) {
       fetchJob();
     }
-  }, [jobId]);
+  }, [jobId, setLoading]);
 
   const handleApply = (job: Job) => {
     if (!session) {

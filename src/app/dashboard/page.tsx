@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Job } from '@/types';
 import Link from 'next/link';
@@ -23,9 +23,23 @@ export default function Dashboard() {
   const router = useRouter();
   const { setLoading } = useLoading();
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLocalLoading] = useState(true);
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
-  const [selectedJobId, setSelectedJobId] = useState<string>('');
+  const [selectedJobId, setSelectedJobId] = useState('');
+
+  const fetchJobs = useCallback(async () => {
+    try {
+      setLoading(true, 'Loading your jobs...');
+      const response = await fetch('/api/jobs/employer');
+      if (response.ok) {
+        const data = await response.json();
+        setJobs(data);
+      }
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setLoading]);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -41,23 +55,7 @@ export default function Dashboard() {
     }
 
     fetchJobs();
-  }, [session, status, router]);
-
-  const fetchJobs = async () => {
-    try {
-      setLoading(true, 'Loading your jobs...');
-      const response = await fetch('/api/jobs/employer');
-      if (response.ok) {
-        const data = await response.json();
-        setJobs(data);
-      }
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-    } finally {
-      setLoading(false);
-      setLocalLoading(false);
-    }
-  };
+  }, [session, status, router, fetchJobs]);
 
   const handleToggleJobStatus = (jobId: string, currentStatus: string) => {
     if (currentStatus === 'active') {
@@ -87,7 +85,7 @@ export default function Dashboard() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading') {
     return null; // Loading is handled by LoadingProvider
   }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import React, { useState, useEffect, Suspense, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
 import Navbar from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -40,23 +40,7 @@ const JobPageContent = () => {
 
   const JOBS_PER_PAGE = 15;
 
-  useEffect(() => {
-    if (type === 'seek') {
-      fetchJobs();
-    } else if (type === 'list') {
-      // Redirect to appropriate page based on authentication
-      if (!session) {
-        router.push('/auth/signin');
-      } else if (session.user.role === 'pencari_kandidat') {
-        router.push('/dashboard/jobs/create');
-      } else {
-        toast.error('Hanya pencari kandidat yang dapat memposting lowongan');
-        router.push('/');
-      }
-    }
-  }, [type, session, router]);
-
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     setLoading(true, 'Loading jobs...');
     setLocalLoading(true);
     try {
@@ -73,7 +57,23 @@ const JobPageContent = () => {
       setLoading(false);
       setLocalLoading(false);
     }
-  };
+  }, [setLoading]);
+
+  useEffect(() => {
+    if (type === 'seek') {
+      fetchJobs();
+    } else if (type === 'list') {
+      // Redirect to appropriate page based on authentication
+      if (!session) {
+        router.push('/auth/signin');
+      } else if (session.user.role === 'pencari_kandidat') {
+        router.push('/dashboard/jobs/create');
+      } else {
+        toast.error('Hanya pencari kandidat yang dapat memposting lowongan');
+        router.push('/');
+      }
+    }
+  }, [type, session, router, fetchJobs]);
 
   // Generate filter options from jobs data
   const filterOptions = useMemo(() => {
@@ -188,7 +188,7 @@ const JobPageContent = () => {
   // Reset to first page when search term changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, setLoading]);
 
   if (type !== 'seek') {
     return null;

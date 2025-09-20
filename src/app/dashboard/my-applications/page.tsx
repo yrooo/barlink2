@@ -58,7 +58,7 @@ export default function MyApplicationsPage() {
     if (session && session.user.role === 'pelamar_kerja') {
       fetchUserApplications();
     }
-  }, [session, sessionStatus, router]);
+  }, [session, sessionStatus, router, setLoading]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

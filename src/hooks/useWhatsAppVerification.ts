@@ -17,8 +17,8 @@ export const useWhatsAppVerification = (): UseWhatsAppVerificationReturn => {
     if (status === 'loading') return;
     
     if (session?.user) {
-      // Check if user has WhatsApp number linked
-      const hasWhatsApp = session.user.whatsappNumber;
+      // Check if user has phone number linked (assuming WhatsApp uses phone number)
+      const hasWhatsApp = session.user.profile?.phone;
       
       // Check if user has opted to not show the dialog again
       const dontShowAgain = localStorage.getItem('whatsapp-verification-dismissed');
